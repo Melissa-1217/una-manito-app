@@ -7,6 +7,7 @@ import LocationControl from './LocationControl.jsx';
 import CapacityField from './CapacityField.jsx';
 import { validateCapacity } from '../lib/participation.js';
 import { isActive } from '../lib/lifecycle.js';
+import useOnline from '../lib/useOnline.js';
 
 const modes = {
   solicitud: ['Pedir una manito', '¿Qué ayuda necesitas?'],
@@ -17,8 +18,9 @@ const modes = {
 const categories = ['Herramientas', 'Gasfitería', 'Electricidad', 'Compras y traslados', 'Clases', 'Agua y alimentos', 'Otros'];
 const normalize = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-export default function ManitoChat({ initialMode, name, barrio, posts, onClose, onOpen, onPublish, onManual, saving, loading }) {
+export default function ManitoChat({ initialMode, name, barrio, posts, onClose, onOpen, onPublish, onManual, saving, loading, readOnly = false }) {
   const dialog = useRef(null);
+  const online = useOnline();
   const bottom = useRef(null);
   const request = useRef(null);
   const [mode, setMode] = useState(initialMode);
@@ -88,7 +90,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
       <div aria-live="polite">{turns.map((t,i) => <div key={i}><p className="chat-user">{t.text}</p>{i < turns.length - 1 && <p className="chat-answer">{t.reply}</p>}</div>)}</div>
       {busy && <p role="status">Manolito está preparando tu respuesta…</p>}
       {draft && <form className="panel chat-draft" onSubmit={async e => {
-        e.preventDefault(); if (saving || busy) return;
+        e.preventDefault(); if (saving || busy || readOnly) return;
         if (draft.titulo.trim().length < 5 || draft.descripcion.trim().length < 10) { setError('Completa el título y la descripción.'); return; }
         let cupos;
         try { cupos = validateCapacity({ tipo: mode, cupos: capacity }); }
@@ -101,16 +103,18 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
       {draft.por_confirmar?.length > 0 && <ul>{draft.por_confirmar.map(q=><li key={q}>{q}</li>)}</ul>}
       <LocationControl forPublication value={location} onChange={setLocation}/>
       <CapacityField type={mode} value={capacity} onChange={setCapacity}/>
-      <button className="button primary wide" disabled={busy || saving || loading}>{saving ? 'Publicando…' : 'Confirmar y publicar'}</button></form>}
+      {readOnly && <p role="status">Necesitas conexión y publicaciones actualizadas para confirmar. Puedes guardar el borrador en el formulario.</p>}
+      <button className="button primary wide" disabled={busy || saving || loading || readOnly}>{saving ? 'Publicando…' : 'Confirmar y publicar'}</button></form>}
       {search && <section><h3>{search.interpretacion}</h3>{hits.length ? hits.map(p=><button className="chat-result" key={p.id} onClick={()=>onOpen(p.id)}><strong>{p.titulo}</strong><span>{p.categoria} · Ver servicio →</span></button>) : <p>{loading ? 'Consultando publicaciones…' : 'Sin coincidencias en las publicaciones disponibles.'}</p>}</section>}
       {error && <p className="auth-error" role="alert">{error}</p>}
       </>}<div ref={bottom}/></div>
-    {mode && mode !== 'guia' && <footer><form onSubmit={send}><input aria-label="Mensaje para Manolito" maxLength={2000} required value={message} disabled={busy || saving || dictating} onChange={e=>setMessage(e.target.value)} placeholder={turns.length ? 'Cambia o agrega un detalle…' : 'Escribe con tus palabras…'}/><button className="button primary" aria-label="Enviar mensaje" disabled={busy || saving || dictating || !message.trim()}><Send size={18}/></button></form>
+    {mode && mode !== 'guia' && <footer><form onSubmit={send}><input aria-label="Mensaje para Manolito" maxLength={2000} required value={message} disabled={busy || saving || dictating} onChange={e=>setMessage(e.target.value)} placeholder={turns.length ? 'Cambia o agrega un detalle…' : 'Escribe con tus palabras…'}/><button className="button primary" aria-label="Enviar mensaje" disabled={busy || saving || dictating || !message.trim() || !online}><Send size={18}/></button></form>
+    {!online && <small>La IA necesita conexión. Continúa manualmente para preparar tu borrador.</small>}
     <VoiceDictation key={mode} disabled={busy || saving} onListeningChange={setDictating} onTranscript={text => {
       const next = [message.trim(), text].filter(Boolean).join(' ');
       if (next.length > 2000) { setError('El mensaje completo supera 2000 caracteres. Acorta el texto antes de añadir el dictado.'); return false; }
       setMessage(next); setError(''); return true;
     }}/>
-    <small>Gemini procesa tu mensaje. Solo se comparte lo que publiques.</small><button className="text-button" disabled={saving} onClick={()=>onManual(mode)}>Continuar manualmente</button></footer>}
+    <small>Gemini procesa tu mensaje. Solo se comparte lo que publiques.</small><button className="text-button" disabled={saving} onClick={()=>onManual(mode, draft ? { ...draft, barrio, cupos: capacity, ...location } : null)}>{draft ? 'Guardar borrador y continuar manualmente' : 'Continuar manualmente'}</button></footer>}
   </dialog>;
 }

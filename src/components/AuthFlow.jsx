@@ -1,4 +1,5 @@
-import SkipLink from './SkipLink.jsx';
+import useOnline from '../lib/useOnline.js';
+import { readOfflineProfile, saveOfflineProfile, clearOfflineAccount } from '../lib/offline.js';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, HandHeart, MapPin, MailCheck, ShieldCheck, LogOut } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase.js';
@@ -6,7 +7,7 @@ import App from '../App.jsx';
 import NeighborhoodField from './NeighborhoodField.jsx';
 
 function AuthLayout({ children }) {
-  return <><SkipLink/><div className="auth-page">
+  return <><div className="auth-page">
     <aside className="auth-story">
       <div className="brand"><span className="brand-mark"><HandHeart size={28} /></span>Una Manito</div>
       <div><HandHeart size={90} strokeWidth={1} /><h1>Tu barrio te da una mano.</h1><p>Encuentra servicios, comparte lo que puedes y conecta con tus vecinos.</p></div>
@@ -143,6 +144,8 @@ export default function AuthFlow() {
     try { return getSupabaseClient(); } catch { return null; }
   }, []);
   const [demo, setDemo] = useState(false);
+  const online = useOnline();
+  const [offlineProfile, setOfflineProfile] = useState(readOfflineProfile);
   const [sessionResult, setSessionResult] = useState(null);
   const [profileResult, setProfileResult] = useState(null);
   const [retry, setRetry] = useState(0);
@@ -165,33 +168,41 @@ export default function AuthFlow() {
   }, [client]);
 
   useEffect(() => {
-    if (!client || !userId) return;
+    if (!client || !userId || !online) return;
     let active = true;
     async function loadProfile() {
       try {
         const { data, error } = await client.from('perfiles').select('id,nombre,barrio').eq('id', userId).maybeSingle();
-        if (active) setProfileResult({ userId, profile: data, error, attempt: retry });
+        if (active) { setProfileResult({ userId, profile: data, error, attempt: retry }); if (data && !error) { setOfflineProfile(data); try { saveOfflineProfile(data); } catch { /* Offline storage is optional. */ } } }
       } catch {
         if (active) setProfileResult({ userId, error: true, attempt: retry });
       }
     }
     void loadProfile();
     return () => { active = false; };
-  }, [client, userId, retry]);
+  }, [client, userId, retry, online]);
 
   async function signOut() {
     const { error } = await client.auth.signOut({ scope: 'local' });
     if (error) { window.alert('No se pudo cerrar la sesión. Intenta nuevamente.'); return; }
+    if (profileResult?.profile) { try { clearOfflineAccount(profileResult.profile); } catch { /* Storage may be unavailable. */ } }
+    setOfflineProfile(null);
     setProfileResult(null);
     setEditingNeighborhood(false);
   }
 
+  function profileSaved(profile) {
+    setProfileResult({ userId, profile, attempt: retry }); setOfflineProfile(profile); setEditingNeighborhood(false);
+    try { saveOfflineProfile(profile); } catch { /* Offline storage is optional. */ }
+  }
+
   if (demo) return <App onExitDemo={() => setDemo(false)} />;
+  if (!online && offlineProfile) return <App key={`offline-${offlineProfile.id}-${offlineProfile.barrio}`} account={offlineProfile} offlineSession onSignOut={() => { try { clearOfflineAccount(offlineProfile); } catch { /* Storage may be unavailable. */ } setOfflineProfile(null); }} />;
   if (client && !sessionResult) return <AuthLayout><p role="status">Recuperando tu sesión…</p></AuthLayout>;
   if (!session) return <Credentials client={client} onDemo={() => setDemo(true)} />;
   if (profileResult?.userId !== userId || profileResult.attempt !== retry) return <AuthLayout><p role="status">Cargando tu perfil…</p></AuthLayout>;
   if (profileResult.error) return <AuthLayout><h1>Tu perfil está pendiente</h1><p role="alert">No pudimos consultar tu perfil. Revisa la conexión y los permisos de Supabase.</p><button className="button primary wide" onClick={() => setRetry(retry + 1)}>Volver a intentar</button><button className="text-button" onClick={signOut}>Cerrar sesión</button></AuthLayout>;
-  if (!profileResult.profile) return <ChooseNeighborhood key={userId} client={client} session={session} onSaved={(profile) => setProfileResult({ userId, profile, attempt: retry })} onSignOut={signOut} />;
-  if (editingNeighborhood) return <ChooseNeighborhood key={userId} client={client} session={session} profile={profileResult.profile} onSaved={profile => { setProfileResult({ userId, profile, attempt: retry }); setEditingNeighborhood(false); }} onCancel={() => setEditingNeighborhood(false)} onSignOut={signOut} />;
+  if (!profileResult.profile) return <ChooseNeighborhood key={userId} client={client} session={session} onSaved={profileSaved} onSignOut={signOut} />;
+  if (editingNeighborhood) return <ChooseNeighborhood key={userId} client={client} session={session} profile={profileResult.profile} onSaved={profileSaved} onCancel={() => setEditingNeighborhood(false)} onSignOut={signOut} />;
   return <App key={`${userId}-${profileResult.profile.barrio}`} account={profileResult.profile} onSignOut={signOut} onChangeNeighborhood={() => setEditingNeighborhood(true)} />;
 }

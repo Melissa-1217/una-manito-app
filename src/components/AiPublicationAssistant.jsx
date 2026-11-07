@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Sparkles, ArrowDown, LoaderCircle } from 'lucide-react';
+import useOnline from '../lib/useOnline.js';
 
 const modes = {
   solicitud: {
@@ -31,6 +32,7 @@ const modes = {
 export default function AiPublicationAssistant({ type, text, onApply }) {
   const mode = modes[type];
   const isSearch = type === 'busqueda';
+  const online = useOnline();
 
   const [proposal, setProposal] = useState(null);
   const [pending, setPending] = useState(false);
@@ -49,6 +51,7 @@ export default function AiPublicationAssistant({ type, text, onApply }) {
   }
 
   async function prepare() {
+    if (!online) return;
     resetResult();
     if (text.trim().length < 3) {
       setError('Escribe qué necesitas u ofreces. Puedes usar una frase corta.');
@@ -78,10 +81,11 @@ export default function AiPublicationAssistant({ type, text, onApply }) {
 
   if (text.trim().length < 3) return null;
   return <section className="inline-manito">
-    <button className="button secondary" type="button" disabled={pending} onClick={prepare}>
+    <button className="button secondary" type="button" disabled={pending || !online} onClick={prepare}>
       {pending ? <LoaderCircle className="loading-icon" size={18} /> : <Sparkles size={18} />}
       {pending ? 'Interpretando tu mensaje…' : mode.action}
     </button>
+    {!online && <small>La IA necesita conexión. Puedes completar los campos manualmente.</small>}
     {error && <p className="ai-error" role="alert">{error}</p>}
     {proposal && <div className="ai-proposal" aria-live="polite">
       <span className="badge">{isSearch ? 'Búsqueda interpretada' : 'Propuesta para revisar'}</span>

@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "Una Manito",
+  "short_name": "Una Manito",
+  "description": "Servicios, favores y apoyo cerca de casa.",
+  "lang": "es-PE",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#1E4532",
+  "background_color": "#FAF7F0",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

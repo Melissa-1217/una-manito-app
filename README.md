@@ -81,6 +81,20 @@ Validación local: pruebas de interfaz en móvil/escritorio, reglas de la demo y
 
 ## Vercel
 
+### PWA: instalación y uso sin conexión
+
+La compilación incluye `manifest.webmanifest`, iconos de 192/512 px y un service worker generado por `pwa-build.js`, sin dependencias adicionales. El icono reutiliza la mano de la identidad visual de la app. Se mantiene el despliegue Vite en Vercel; no requiere SQL ni claves nuevas. La instalación utiliza HTTPS (o localhost para pruebas).
+
+- Abre la página online una vez y espera a que cargue. **Instalar app** ofrece la instalación cuando el navegador la permite; de lo contrario explica cómo encontrarla en su menú. En iPhone/iPad se indica Safari → Compartir → Añadir a pantalla de inicio. Instalar no es obligatorio para usarla como web.
+- Se guardan la interfaz, fuentes, iconos y las imágenes del tutorial. El worker solo atiende archivos públicos de esa compilación: no intercepta Supabase ni `/api/`, ni guarda respuestas de autenticación o de Gemini.
+- Después de una consulta correcta con una cuenta real se guarda una copia de hasta 200 publicaciones públicas relevantes, por cuenta y barrio, con fecha de consulta. Incluye nombres de participantes confirmados; excluye ofrecimientos, mensajes privados, datos de contacto del perfil y valoraciones. Las publicaciones pueden contener información antigua: la copia se identifica como tal.
+- Al volver a abrir sin internet, el dispositivo puede mostrar esa copia de consulta con el último nombre y barrio guardados. **No es un inicio de sesión offline ni una validación de identidad**. Los botones de publicación, respuestas, aceptaciones, cambios de estado y barrio requieren conexión y datos actualizados. Los mapas, Gemini y el servicio de dictado pueden necesitar internet.
+- El formulario conserva un borrador por cuenta/barrio en este navegador. En el chat, **Guardar borrador y continuar manualmente** pasa la propuesta al formulario antes de salir. Al volver la conexión se consultan datos del servidor; nunca se envían borradores ni se repiten operaciones automáticamente.
+- Cerrar sesión online elimina las copias y borradores locales de esa cuenta. **Cerrar copia**, durante la consulta offline, elimina esa información local y vuelve al acceso; no revoca por sí mismo una sesión de Supabase. Los datos locales también pueden desaparecer si el usuario borra el almacenamiento del navegador.
+- Las versiones nuevas muestran **Actualizar app** y esperan a que el vecino lo pulse. El borrador del formulario se conserva antes de recargar. Una conversación de IA que todavía no se haya pasado al formulario no se guarda: la interfaz pide guardar antes de actualizar.
+
+`npm run dev` no registra el worker. `npm run test:pwa` compila y prueba la versión de producción en localhost: recarga offline, tutorial con imágenes, copia pública, borrador persistente, ausencia de envíos al reconectar, interacción de instalación simulada y actualización real del worker sin recarga anticipada. La instalación efectiva en Android/iOS se comprueba manualmente después de desplegar en Vercel. [Requisitos y diferencias de instalación entre navegadores](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
+
 ### Accesibilidad del MVP
 
 Se aumentan tamaños de lectura y áreas de interacción, con controles principales de al menos 44 px de alto, campos de 16 px y ajustes de contraste. El diseño permite una vista de 320 px y se comprueba el uso del formulario con ampliación al 200 %. Se añade **Saltar al contenido**, navegación actual identificada con `aria-current`, anuncio del estado de ubicación y restauración del foco al cerrar Manolito. El mapa anuncia si está desplegado. Se respetan movimiento reducido y colores forzados del sistema.

@@ -6,7 +6,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 export default [
   { ignores: ['dist/**', 'node_modules/**', 'test-results/**', 'playwright-report/**'] },
   js.configs.recommended,
-  { files: ['api/**/*.js', 'vite.config.js'], languageOptions: { globals: globals.node } },
+  { files: ['api/**/*.js', 'vite.config.js', 'pwa-build.js'], languageOptions: { globals: globals.node } },
   {
     files: ['src/**/*.{js,jsx}'],
     languageOptions: { ecmaVersion: 'latest', sourceType: 'module', globals: globals.browser, parserOptions: { ecmaFeatures: { jsx: true } } },

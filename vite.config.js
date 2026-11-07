@@ -1,11 +1,12 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import pwaBuild from './pwa-build.js';
 import handler from './api/prepare-publication.js';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    plugins: [react(), {
+    plugins: [react(), pwaBuild(), {
       name: 'local-publication-api',
       configureServer(server) {
         server.middlewares.use('/api/prepare-publication', (req, res) => {
