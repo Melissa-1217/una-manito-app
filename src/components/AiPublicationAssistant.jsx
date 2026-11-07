@@ -28,10 +28,10 @@ const modes = {
   },
 };
 
-export default function AiPublicationAssistant({ type, onApply }) {
+export default function AiPublicationAssistant({ type, text, onApply }) {
   const mode = modes[type];
   const isSearch = type === 'busqueda';
-  const [text, setText] = useState('');
+
   const [proposal, setProposal] = useState(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
@@ -76,13 +76,9 @@ export default function AiPublicationAssistant({ type, onApply }) {
     }
   }
 
-  return <section className="ai-assistant" aria-labelledby="assistant-title">
-    <div className="ai-heading"><Sparkles size={22} /><h2 id="assistant-title">{mode.title}</h2></div>
-    <p>{mode.description}</p>
-    <label htmlFor="ai-message">Escribe con tus propias palabras</label>
-    <textarea id="ai-message" maxLength={2000} value={text} onChange={(event) => { resetResult(); setText(event.target.value); }} placeholder={mode.placeholder} aria-describedby="ai-privacy" />
-    <p id="ai-privacy" className="ai-hint">El mensaje se envía a Gemini para organizarlo. Evita incluir tu dirección exacta, DNI o teléfono.</p>
-    <button className="button primary wide" type="button" disabled={pending} onClick={prepare}>
+  if (text.trim().length < 3) return null;
+  return <section className="inline-manito">
+    <button className="button secondary" type="button" disabled={pending} onClick={prepare}>
       {pending ? <LoaderCircle className="loading-icon" size={18} /> : <Sparkles size={18} />}
       {pending ? 'Interpretando tu mensaje…' : mode.action}
     </button>
@@ -93,6 +89,6 @@ export default function AiPublicationAssistant({ type, onApply }) {
       {proposal.por_confirmar?.length > 0 && <div className="ai-questions"><strong>Detalles que puedes agregar</strong><ul>{proposal.por_confirmar.map((question) => <li key={question}>{question}</li>)}</ul><p>Puedes completarlos al editar la descripción.</p></div>}
       <button className="button secondary wide" type="button" onClick={() => { onApply(isSearch ? proposal : { titulo: proposal.titulo, descripcion: proposal.descripcion, categoria: proposal.categoria }); setProposal(null); }}><ArrowDown size={17} />{isSearch ? 'Buscar en los servicios publicados' : 'Usar propuesta en los campos'}</button>
     </div>}
-    <p className="ai-hint">{isSearch ? 'También puedes buscar directamente por nombre u oficio.' : 'También puedes completar directamente los campos de abajo.'}</p>
+    <small>Al usar IA, este texto se envía a Gemini.</small>
   </section>;
 }

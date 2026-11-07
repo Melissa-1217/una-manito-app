@@ -18,9 +18,7 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Ofrece una manito/ }).click();
   await page.getByRole('button', { name: 'Continuar manualmente' }).click();
-  await page.getByText('Redactar con IA', {exact:true}).click();
-  await expect(page.getByRole('heading', { name: 'IA para dar una manito' })).toBeVisible();
-  await page.getByLabel('Escribe con tus propias palabras').fill('Presto escalera los sábados');
+  await page.getByLabel('Cuéntale un poco más al barrio').fill('Presto escalera los sábados');
   await page.getByRole('button', { name: 'Preparar mi ofrecimiento con IA' }).click();
   await page.getByRole('button', { name: 'Usar propuesta en los campos' }).click();
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Presto una escalera');
@@ -28,8 +26,7 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Busca un servicio/ }).click();
   await page.getByRole('button', { name: 'Continuar manualmente' }).click();
-  await page.getByText('Buscar con IA', {exact:true}).click();
-  await page.getByLabel('Escribe con tus propias palabras').fill('Se rompió un caño');
+  await page.getByLabel('Buscar publicaciones').fill('Se rompió un caño');
   await page.getByRole('button', { name: 'Interpretar mi búsqueda con IA' }).click();
   await page.getByRole('button', { name: 'Buscar en los servicios publicados' }).click();
   await expect(page.getByRole('heading', { name: 'Una mano con tus caños' })).toBeVisible();
@@ -45,8 +42,7 @@ test('revisa y aplica una propuesta de IA antes de publicar', async ({ page }) =
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
   await page.getByRole('button', { name: 'Continuar manualmente' }).click();
-  await page.getByText('Redactar con IA', {exact:true}).click();
-  await page.getByLabel('Escribe con tus propias palabras').fill('Veci se rompió un caño y necesito un gasfitero cerca.');
+  await page.getByLabel('Cuéntale un poco más al barrio').fill('Veci se rompió un caño y necesito un gasfitero cerca.');
   await page.getByRole('button', { name: 'Preparar mi pedido con IA', exact: true }).click();
   await expect(page.getByText('Propuesta para revisar', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('');
