@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Send, ArrowLeft } from 'lucide-react';
 import './manito-chat.css';
+import LocationControl from './LocationControl.jsx';
 
 const modes = {
   solicitud: ['Pedir una manito', '¿Qué ayuda necesitas?'],
@@ -22,6 +23,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
   const [search, setSearch] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [location, setLocation] = useState(null);
   useEffect(() => {
     const node = dialog.current;
     node.showModal();
@@ -31,7 +33,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
 
   function choose(next) {
     request.current?.abort();
-    setBusy(false); setMode(next); setTurns([]); setDraft(null); setSearch(null); setMessage(''); setError('');
+    setBusy(false); setMode(next); setTurns([]); setDraft(null); setSearch(null); setMessage(''); setError(''); setLocation(null);
   }
 
   async function send(event) {
@@ -76,12 +78,13 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
       {draft && <form className="panel chat-draft" onSubmit={async e => {
         e.preventDefault(); if (saving || busy) return;
         if (draft.titulo.trim().length < 5 || draft.descripcion.trim().length < 10) { setError('Completa el título y la descripción.'); return; }
-        const ok = await onPublish({ tipo: mode, titulo: draft.titulo, descripcion: draft.descripcion, categoria: draft.categoria, barrio, es_emergencia: false });
+        const ok = await onPublish({ tipo: mode, titulo: draft.titulo, descripcion: draft.descripcion, categoria: draft.categoria, barrio, es_emergencia: false, ...location });
         if (ok) onClose(); else setError('No se confirmó el guardado. Comprueba Mi actividad antes de reintentar.');
       }}><h3>Tu borrador</h3><label>Título del borrador<input value={draft.titulo} required minLength={5} maxLength={120} onChange={e=>setDraft({...draft,titulo:e.target.value})}/></label>
       <label>Descripción del borrador<textarea required minLength={10} maxLength={2000} value={draft.descripcion} onChange={e=>setDraft({...draft,descripcion:e.target.value})}/></label>
       <label>Categoría del borrador<select value={draft.categoria} onChange={e=>setDraft({...draft,categoria:e.target.value})}>{categories.map(c=><option key={c}>{c}</option>)}</select></label>
       {draft.por_confirmar?.length > 0 && <ul>{draft.por_confirmar.map(q=><li key={q}>{q}</li>)}</ul>}
+      <LocationControl forPublication value={location} onChange={setLocation}/>
       <button className="button primary wide" disabled={busy || saving || loading}>{saving ? 'Publicando…' : 'Confirmar y publicar'}</button></form>}
       {search && <section><h3>{search.interpretacion}</h3>{hits.length ? hits.map(p=><button className="chat-result" key={p.id} onClick={()=>onOpen(p.id)}><strong>{p.titulo}</strong><span>{p.categoria} · Ver servicio →</span></button>) : <p>{loading ? 'Consultando publicaciones…' : 'Sin coincidencias en las publicaciones disponibles.'}</p>}</section>}
       {error && <p className="auth-error" role="alert">{error}</p>}

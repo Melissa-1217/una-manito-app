@@ -110,3 +110,22 @@ test('Manito conserva el borrador al corregirlo y publica con confirmación', as
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('heading',{name:'Busco una escalera',exact:true})).toBeVisible();
 });
+
+test('ubicación opcional se redondea y permite abrir el mapa', async ({ page, context }) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: -12.076456, longitude: -77.086456, accuracy: 10 });
+  await page.route('https://www.openstreetmap.org/**', route => route.fulfill({ contentType:'text/html',body:'<p>Mapa de prueba</p>' }));
+  await page.getByRole('button',{name:'Pedir una manito',exact:true}).click();
+  await page.getByRole('button',{name:'Continuar manualmente'}).click();
+  await page.getByLabel('Título',{exact:true}).fill('Prueba de zona aproximada');
+  await page.getByLabel('Cuéntale un poco más al barrio').fill('Necesito una herramienta para esta tarde.');
+  await page.getByRole('button',{name:'Añadir ubicación aproximada'}).click();
+  await expect(page.getByText('Ubicación aproximada añadida.',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Revisar publicación'}).click();
+  await page.getByRole('button',{name:'Publicar solicitud',exact:true}).click();
+  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('una-manito-demo-v1')).publicaciones[0]);
+  expect(stored.latitud).toBe(-12.076);
+  expect(stored.longitud).toBe(-77.086);
+  await page.getByRole('button',{name:'Ver ubicación aproximada en el mapa'}).click();
+  await expect(page.getByTitle('Mapa de la ubicación aproximada')).toHaveAttribute('src',/marker=-12.076%2C-77.086/);
+});

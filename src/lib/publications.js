@@ -1,4 +1,5 @@
 import { getSupabaseClient } from './supabase.js';
+import { approximateLocation, hasCoordinates } from './location.js';
 
 const fields = 'id,autor_id,tipo,titulo,descripcion,categoria,barrio,latitud,longitud,es_emergencia,estado,creado_en,perfiles(nombre)';
 
@@ -17,6 +18,7 @@ export async function createPublication(draft, authorId) {
     categoria: draft.categoria,
     barrio: draft.barrio.trim(),
     es_emergencia: draft.es_emergencia,
+    ...(hasCoordinates(draft) ? approximateLocation(draft.latitud, draft.longitud) : {}),
   }).select(fields).single();
   if (error) throw error;
   return data;
