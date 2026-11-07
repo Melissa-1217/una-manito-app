@@ -39,6 +39,13 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
     await page.getByRole('button', { name: 'Entrar a mi barrio', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Actualizar publicaciones', exact: true })).toBeEnabled();
   }
+  await page.route('**/src/lib/recommendations.js*', route => route.fulfill({contentType:'text/javascript',body: `
+    let saved=[];
+    export async function recommendNeighbor(id,author,neighbor,comment){
+      saved=[{id:'rec-1',autor_id:author,comentario:comment,creado_en:new Date().toISOString(),autor:{nombre:'Ana'}}];
+    }
+    export async function loadNeighbor(id){return {profile:{id,nombre:id==='luis-uuid'?'Luis':'Ana',barrio:'Barrio Demo'},recommendations:saved}}
+  `}));
   await page.goto('/');
   await login('ana@example.com');
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
@@ -63,4 +70,11 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
   await expect(page.getByText('Aceptado',{exact:true})).toBeVisible();
   await page.getByRole('button', { name: 'Marcar como resuelta', exact: true }).click();
   await expect(page.getByText('Esta publicación ya está cerrada.')).toBeVisible();
+  await page.getByRole('button',{name:'Recomendar la ayuda recibida'}).click();
+  await page.getByLabel('¿Cómo fue la ayuda?').fill('Luis fue puntual y prestó el carrito.');
+  await page.getByRole('button',{name:'Dar mi visto bueno'}).click();
+  await expect(page.getByText('Tu visto bueno quedó registrado.')).toBeVisible();
+  await page.getByRole('button',{name:'Ver perfil de Luis',exact:true}).click();
+  await expect(page.getByRole('dialog',{name:'Perfil vecinal'})).toBeVisible();
+  await expect(page.getByText('Luis fue puntual y prestó el carrito.',{exact:true})).toBeVisible();
 });
