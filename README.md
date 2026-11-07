@@ -25,7 +25,7 @@ Prueba del recorrido en escritorio y móvil: `npx playwright install chromium` y
 
 React + Vite, JavaScript, iconos Lucide y Plus Jakarta Sans alojada en el propio proyecto. CSS con variables, sin Tailwind ni Next.js.
 
-La interfaz combina acceso y perfiles conectables a Supabase con publicaciones de demostración guardadas en localStorage. La sincronización de publicaciones entre dispositivos sigue pendiente. El selector Ana/Luis solo sirve para la demo; sus comprobaciones de autor no sustituyen RLS.
+Las cuentas conectadas usan Supabase para perfiles y publicaciones. La demostración Ana/Luis conserva sus datos en localStorage. El selector Ana/Luis solo sirve para la demo; sus comprobaciones de autor no sustituyen RLS.
 
 Recorrido: Ana publica una necesidad → cambia el selector a Luis → abre la publicación y responde → cambia a Ana → acepta → marca como resuelta. `Reiniciar demo` restablece los datos iniciales tras confirmación.
 
@@ -79,6 +79,12 @@ El endpoint todavía no usa una sesión Supabase. Antes de abrir el uso de IA a 
 
 Configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` localmente y en Vercel. Reinicia el servidor o vuelve a desplegar tras guardar las variables. En Supabase, Authentication → URL Configuration, configura Site URL con el dominio público y permite también la URL local y el dominio de producción en Redirect URLs. La tabla `perfiles` necesita los permisos y políticas RLS ya creados por el equipo.
 
-Después del acceso, la cuenta y el barrio provienen de Supabase. Las publicaciones todavía usan localStorage, separado por cuenta; no se sincronizan entre vecinos. El selector Ana/Luis se limita a la demostración. La sesión de Supabase se conserva con su SDK y puede cerrarse desde el encabezado.
+Después del acceso, la cuenta, el barrio y las publicaciones provienen de Supabase. El botón Actualizar publicaciones consulta los cambios de otros vecinos; la lista se filtra por el barrio del perfil. El selector Ana/Luis se limita a la demostración. La sesión de Supabase se conserva con su SDK y puede cerrarse desde el encabezado.
 
 Las pruebas de las pantallas de acceso y selección de barrio usan dobles del SDK. Falta probar con las credenciales reales del proyecto. No hay usuarios de prueba incrustados ni contraseñas guardadas en el código.
+
+## Publicaciones compartidas
+
+`src/lib/publications.js` consulta, crea y cierra publicaciones con la sesión de Supabase y las políticas RLS existentes. El autor procede del perfil autenticado. El formulario conserva sus datos si falla el guardado. La interfaz muestra el nombre del autor mediante la relación con perfiles. Las solicitudes, ofrecimientos, servicios y recursos de emergencia comparten esta tabla.
+
+Las respuestas Yo te ayudo, su aceptación y las recomendaciones siguen disponibles en la demostración. Su conexión remota es la siguiente etapa y todavía no se ofrece en cuentas conectadas. Las pruebas de publicación compartida usan dobles de los servicios; la prueba entre dos dispositivos reales sigue pendiente.

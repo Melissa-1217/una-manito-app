@@ -27,6 +27,7 @@ test('cuenta sin perfil elige barrio, persiste y cierra sesión', async ({ page 
           async signOut(){listener('SIGNED_OUT',null);return {error:null}},
         },
         from(table){
+          if(table==='publicaciones') return {select(){return {async order(){return {data:[],error:null}}}}};
           if(table!=='perfiles') throw new Error('Unexpected table');
           return {
             select(){return {eq(){return {async maybeSingle(){return {data:null,error:null}}}}}},
