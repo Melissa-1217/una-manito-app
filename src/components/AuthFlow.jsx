@@ -8,7 +8,7 @@ function AuthLayout({ children }) {
     <aside className="auth-story">
       <div className="brand"><span className="brand-mark"><HandHeart size={28} /></span>Una Manito</div>
       <div><HandHeart size={90} strokeWidth={1} /><h1>Tu barrio te da una mano.</h1><p>Encuentra servicios, comparte lo que puedes y conecta con tus vecinos.</p></div>
-      <span>De vecino a vecino.</span>
+      
     </aside>
     <main className="auth-content"><div className="auth-mobile-brand"><HandHeart size={27} />Una Manito</div>{children}</main>
   </div>;
@@ -74,7 +74,7 @@ function Credentials({ client, onDemo }) {
 
   return <AuthLayout>
     {screen === 'register' && <button className="text-button" onClick={() => switchScreen('login')}><ArrowLeft size={17} />Volver</button>}
-    <div className="auth-symbol"><HandHeart size={35} /></div>
+    
     <h1>{screen === 'register' ? 'Únete a tu comunidad' : 'Entra a tu barrio'}</h1>
     <p className="muted">{screen === 'register' ? 'Crea tu cuenta. Después podrás elegir el barrio donde quieres participar.' : 'Servicios, favores y apoyo cerca de casa.'}</p>
     {!client && <div className="auth-configuration" role="status">La conexión con Supabase está pendiente. Puedes explorar las pantallas en la demostración.</div>}
@@ -90,7 +90,7 @@ function Credentials({ client, onDemo }) {
       </fieldset>
     </form>
     <button className="button secondary wide" onClick={() => switchScreen(screen === 'register' ? 'login' : 'register')}>{screen === 'register' ? 'Ya tengo cuenta' : 'Crear cuenta de vecino'}</button>
-    <div className="privacy"><ShieldCheck size={21} />Tu dirección exacta no forma parte de tu perfil público.</div>
+    
     <button className="text-button auth-demo-link" onClick={onDemo}>Explorar demostración</button>
   </AuthLayout>;
 }
@@ -128,7 +128,7 @@ function ChooseNeighborhood({ client, session, onSaved, onSignOut }) {
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button type="submit" className="button primary wide">{pending ? 'Guardando…' : 'Entrar a mi barrio'}<ArrowRight size={17} /></button>
     </fieldset></form>
-    <div className="privacy"><ShieldCheck size={20} />Elegir un barrio indica dónde quieres participar. Los respaldos vecinales se mostrarán en tu perfil cuando estén disponibles.</div>
+    <div className="privacy"><ShieldCheck size={20} />El barrio es una referencia para encontrar publicaciones cercanas.</div>
     <button className="text-button" onClick={onSignOut}><LogOut size={16} />Cerrar sesión</button>
   </AuthLayout>;
 }

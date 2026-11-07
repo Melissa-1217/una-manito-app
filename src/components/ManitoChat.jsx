@@ -67,11 +67,11 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
     <header><img src="/manito.png" alt="" /><div><strong id="manito-title">Chat con Manito</strong><small>Asistente de IA · {barrio}</small></div>
       <button autoFocus disabled={saving} aria-label="Cerrar chat" onClick={onClose}><X /></button></header>
     <div className="chat-scroll">
-      <h2>Hola, {name}</h2>
+      {!mode && <h2>Hola, {name}</h2>}
       {!mode ? <><p>¿En qué te doy una manito hoy?</p><div className="chat-choices">{Object.entries(modes).map(([id, [label]]) => <button key={id} onClick={() => choose(id)}>{label}</button>)}</div></> :
         <><button disabled={saving} className="text-button" onClick={() => choose(null)}><ArrowLeft size={16}/>Cambiar de tema</button>
           <h3>{modes[mode][0]}</h3><p>{modes[mode][1]}</p></>}
-      <div aria-live="polite">{turns.map((t,i) => <div key={i}><p className="chat-user">{t.text}</p><p className="chat-answer">{t.reply}</p></div>)}</div>
+      <div aria-live="polite">{turns.map((t,i) => <div key={i}><p className="chat-user">{t.text}</p>{i < turns.length - 1 && <p className="chat-answer">{t.reply}</p>}</div>)}</div>
       {busy && <p role="status">Manito está preparando tu respuesta…</p>}
       {draft && <form className="panel chat-draft" onSubmit={async e => {
         e.preventDefault(); if (saving || busy) return;
@@ -83,7 +83,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
       <label>Categoría del borrador<select value={draft.categoria} onChange={e=>setDraft({...draft,categoria:e.target.value})}>{categories.map(c=><option key={c}>{c}</option>)}</select></label>
       {draft.por_confirmar?.length > 0 && <ul>{draft.por_confirmar.map(q=><li key={q}>{q}</li>)}</ul>}
       <button className="button primary wide" disabled={busy || saving || loading}>{saving ? 'Publicando…' : 'Confirmar y publicar'}</button></form>}
-      {search && <section><h3>Servicios en {barrio}</h3>{hits.length ? hits.map(p=><button className="chat-result" key={p.id} onClick={()=>onOpen(p.id)}><strong>{p.titulo}</strong><span>{p.categoria} · Ver servicio →</span></button>) : <p>{loading ? 'Consultando publicaciones…' : 'Sin coincidencias en las publicaciones disponibles.'}</p>}</section>}
+      {search && <section><h3>{search.interpretacion}</h3>{hits.length ? hits.map(p=><button className="chat-result" key={p.id} onClick={()=>onOpen(p.id)}><strong>{p.titulo}</strong><span>{p.categoria} · Ver servicio →</span></button>) : <p>{loading ? 'Consultando publicaciones…' : 'Sin coincidencias en las publicaciones disponibles.'}</p>}</section>}
       {error && <p className="auth-error" role="alert">{error}</p>}
       <div ref={bottom}/></div>
     {mode && mode !== 'guia' && <footer><form onSubmit={send}><input aria-label="Mensaje para Manito" maxLength={2000} required value={message} disabled={busy || saving} onChange={e=>setMessage(e.target.value)} placeholder={turns.length ? 'Cambia o agrega un detalle…' : 'Escribe con tus palabras…'}/><button className="button primary" aria-label="Enviar mensaje" disabled={busy || saving || !message.trim()}><Send size={18}/></button></form>

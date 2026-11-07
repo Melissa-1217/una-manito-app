@@ -18,6 +18,7 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Ofrece una manito/ }).click();
   await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+  await page.getByText('Redactar con IA', {exact:true}).click();
   await expect(page.getByRole('heading', { name: 'IA para dar una manito' })).toBeVisible();
   await page.getByLabel('Escribe con tus propias palabras').fill('Presto escalera los sábados');
   await page.getByRole('button', { name: 'Preparar mi ofrecimiento con IA' }).click();
@@ -27,6 +28,7 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Busca un servicio/ }).click();
   await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+  await page.getByText('Buscar con IA', {exact:true}).click();
   await page.getByLabel('Escribe con tus propias palabras').fill('Se rompió un caño');
   await page.getByRole('button', { name: 'Interpretar mi búsqueda con IA' }).click();
   await page.getByRole('button', { name: 'Buscar en los servicios publicados' }).click();
@@ -43,6 +45,7 @@ test('revisa y aplica una propuesta de IA antes de publicar', async ({ page }) =
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
   await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+  await page.getByText('Redactar con IA', {exact:true}).click();
   await page.getByLabel('Escribe con tus propias palabras').fill('Veci se rompió un caño y necesito un gasfitero cerca.');
   await page.getByRole('button', { name: 'Preparar mi pedido con IA', exact: true }).click();
   await expect(page.getByText('Propuesta para revisar', { exact: true })).toBeVisible();
@@ -58,7 +61,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await expect(page.getByRole('heading', { name: 'Tu barrio te da una mano.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Hola, Ana' })).toBeVisible();
   await page.screenshot({ path: `../una-manito-${testInfo.project.name}.png`, fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   if (testInfo.project.name === 'mobile') await expect(page.getByRole('button', { name: 'Apoyo en emergencia', exact: true })).toBeVisible();
