@@ -2,35 +2,39 @@ import { useState } from 'react';
 import { House, Wrench, Plus, ClipboardList, HandHeart, MapPin, ArrowRight, ArrowLeft, Search, Heart, ShieldCheck, AlertTriangle, Check, RotateCcw, Users, X } from 'lucide-react';
 import PublicationCard, { statusLabels } from './components/PublicationCard.jsx';
 import AiPublicationAssistant from './components/AiPublicationAssistant.jsx';
-import { people, initialData, offerHelp, acceptOffer, resolvePublication, recommendHelper, helperHistory } from './lib/demo.js';
+import { people as demoPeople, initialData, offerHelp, acceptOffer, resolvePublication, recommendHelper, helperHistory } from './lib/demo.js';
 
 const STORE = 'una-manito-demo-v1';
 const emptyDraft = { tipo: 'solicitud', titulo: '', descripcion: '', categoria: 'Herramientas', barrio: 'Barrio Demo', es_emergencia: false };
 const navItems = [{ id: 'inicio', label: 'Mi barrio', icon: House }, { id: 'servicios', label: 'Servicios', icon: Wrench }, { id: 'publicar', label: 'Publicar', icon: Plus }, { id: 'actividad', label: 'Mi actividad', icon: ClipboardList }];
 
-function loadData() {
+function loadData(storageKey) {
   try {
-    const data = JSON.parse(localStorage.getItem(STORE));
+    const data = JSON.parse(localStorage.getItem(storageKey));
     if (Array.isArray(data?.publicaciones) && Array.isArray(data?.ofrecimientos)) return data;
   } catch { /* Si el almacenamiento no está disponible, usar la demo en memoria. */ }
   return structuredClone(initialData);
 }
 
-export default function App() {
-  const [data, setStoredData] = useState(loadData);
-  const [user, setUser] = useState('ana');
+export default function App({ account, onSignOut, onExitDemo }) {
+  const storageKey = account ? `${STORE}-${account.id}` : STORE;
+  const people = account ? { ...demoPeople, [account.id]: account.nombre } : demoPeople;
+  const neighborhood = account?.barrio || 'Barrio Demo · San Miguel';
+  const newDraft = { ...emptyDraft, barrio: account?.barrio || emptyDraft.barrio };
+  const [data, setStoredData] = useState(() => loadData(storageKey));
+  const [user, setUser] = useState(account?.id || 'ana');
   const [view, setView] = useState('inicio');
   const [selected, setSelected] = useState(null);
   const [query, setQuery] = useState('');
   const [serviceIntent, setServiceIntent] = useState(null);
-  const [draft, setDraft] = useState(emptyDraft);
+  const [draft, setDraft] = useState(newDraft);
   const [review, setReview] = useState(false);
   const [message, setMessage] = useState('');
   const [notice, setNotice] = useState('');
   const [storageError, setStorageError] = useState(false);
 
   function setData(next) {
-    try { localStorage.setItem(STORE, JSON.stringify(next)); }
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); }
     catch { setStorageError(true); }
     setStoredData(next);
   }
@@ -41,11 +45,11 @@ export default function App() {
     try { setData(action(data)); setNotice(success); }
     catch (error) { setNotice(error.message); }
   }
-  function startPublication(type = 'solicitud', emergency = false) { navigate('publicar'); setDraft({ ...emptyDraft, tipo: type, es_emergencia: emergency }); }
+  function startPublication(type = 'solicitud', emergency = false) { navigate('publicar'); setDraft({ ...newDraft, tipo: type, es_emergencia: emergency }); }
   function publish() {
     const publication = { ...draft, titulo: draft.titulo.trim(), descripcion: draft.descripcion.trim(), barrio: draft.barrio.trim(), id: crypto.randomUUID(), autor_id: user, estado: 'pendiente' };
     setData({ ...data, publicaciones: [publication, ...data.publicaciones] });
-    setReview(false); setView('actividad'); setSelected(publication.id); setDraft(emptyDraft); setNotice('¡Tu publicación ya está en el barrio!');
+    setReview(false); setView('actividad'); setSelected(publication.id); setDraft(newDraft); setNotice('¡Tu publicación ya está en el barrio!');
   }
   const publication = data.publicaciones.find((p) => p.id === selected);
   const offers = data.ofrecimientos.filter((o) => o.publicacion_id === selected);
@@ -66,15 +70,15 @@ export default function App() {
   return <div className="app-shell">
     <aside className="sidebar">
       <a className="brand" href="#" onClick={(e) => { e.preventDefault(); navigate('inicio'); }}><span className="brand-mark"><HandHeart size={28} /></span><span>Una Manito<small>ENTRE VECINOS, MEJOR.</small></span></a>
-      <div className="neighborhood"><MapPin size={17} /><span>Tu comunidad<strong>Barrio Demo · San Miguel</strong></span></div>
+      <div className="neighborhood"><MapPin size={17} /><span>Tu comunidad<strong>{neighborhood}</strong></span></div>
       <nav aria-label="Navegación principal">{navItems.map(({ id, label, icon: Icon }) => <button key={id} className={`nav-item ${view === id ? 'active' : ''}`} onClick={() => navigate(id)}><Icon size={20} />{label}{view === id && <span className="nav-dot" />}</button>)}</nav>
       <button className={`nav-item emergency-link ${view === 'emergencia' ? 'active' : ''}`} onClick={() => navigate('emergencia')}><AlertTriangle size={20} />Apoyo en emergencia</button>
       <div className="sidebar-note"><Users size={27} /><h3>Un barrio se construye entre todos.</h3><p>Una herramienta, un oficio o un poquito de tu tiempo pueden hacer la diferencia.</p><span>Hoy por ti, mañana por mí. <Heart size={13} /></span></div>
       <div className="sidebar-bottom"><ShieldCheck size={16} />Con cercanía y respeto</div>
     </aside>
     <div className="workspace">
-      <header className="topbar"><span className="topbar-location"><MapPin size={16} />San Miguel <span>/</span> Barrio Demo</span><label className="user-switch"><span className="avatar">{people[user][0]}</span><select aria-label="Cambiar usuario de demostración" value={user} onChange={(e) => { setUser(e.target.value); setSelected(null); setMessage(''); setNotice(''); }}><option value="ana">Ana · demo</option><option value="luis">Luis · demo</option></select></label></header>
-      <div className="demo-banner"><span><strong>Prototipo local</strong> · Datos ilustrativos guardados en este navegador. Aún sin conexión a Supabase.</span><button onClick={() => { if (window.confirm('¿Restablecer los datos de ejemplo? Se borrarán las publicaciones de esta demo local.')) { setData(structuredClone(initialData)); navigate('inicio'); } }}><RotateCcw size={13} />Reiniciar demo</button></div>
+      <header className="topbar"><span className="topbar-location"><MapPin size={16} />{neighborhood}</span>{account ? <button className="account-menu" onClick={onSignOut}><span className="avatar">{account.nombre[0]}</span><span>{account.nombre}</span><span>Cerrar sesión</span></button> : <label className="user-switch"><span className="avatar">{people[user][0]}</span><select aria-label="Cambiar usuario de demostración" value={user} onChange={(e) => { setUser(e.target.value); setSelected(null); setMessage(''); setNotice(''); }}><option value="ana">Ana · demo</option><option value="luis">Luis · demo</option></select></label>}</header>
+      <div className="demo-banner"><span><strong>{account ? "Cuenta conectada" : "Demostración"}</strong> · {account ? "Perfil guardado en Supabase. Las publicaciones aún son ejemplos locales." : "Datos ilustrativos guardados en este navegador."}</span><button onClick={() => { if (window.confirm('¿Restablecer los datos de ejemplo? Se borrarán las publicaciones de esta demo local.')) { setData(structuredClone(initialData)); navigate('inicio'); } }}><RotateCcw size={13} />Reiniciar demo</button>{!account && <button onClick={onExitDemo}>Volver al acceso</button>}</div>
       {storageError && <p className="notice" role="alert">No se pudo guardar en este navegador. Los cambios durarán mientras mantengas esta página abierta.</p>}
       <main id="contenido">
         {view === 'inicio' && !selected && <button className="mobile-emergency" onClick={() => navigate('emergencia')}><AlertTriangle size={16} />Apoyo en emergencia<ArrowRight size={16} /></button>}

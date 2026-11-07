@@ -25,11 +25,11 @@ Prueba del recorrido en escritorio y móvil: `npx playwright install chromium` y
 
 React + Vite, JavaScript, iconos Lucide y Plus Jakarta Sans alojada en el propio proyecto. CSS con variables, sin Tailwind ni Next.js.
 
-La interfaz es un **prototipo local**, no una aplicación conectada a Supabase. Los datos de ejemplo se guardan en localStorage del mismo navegador. No hay sincronización entre dispositivos ni autenticación real. El selector Ana/Luis solo sirve para la demo; sus comprobaciones de autor no sustituyen RLS.
+La interfaz combina acceso y perfiles conectables a Supabase con publicaciones de demostración guardadas en localStorage. La sincronización de publicaciones entre dispositivos sigue pendiente. El selector Ana/Luis solo sirve para la demo; sus comprobaciones de autor no sustituyen RLS.
 
 Recorrido: Ana publica una necesidad → cambia el selector a Luis → abre la publicación y responde → cambia a Ana → acepta → marca como resuelta. `Reiniciar demo` restablece los datos iniciales tras confirmación.
 
-Incluye inicio, directorio de servicios de ejemplo, formulario y revisión, detalle, actividad y listado de apoyo en emergencia. Recomendaciones, contacto, mapa, registro, tutorial, notificaciones, fotos y PWA/offline completo están pendientes. localStorage por sí solo no permite abrir la aplicación sin conexión.
+Incluye inicio, directorio de servicios de ejemplo, formulario y revisión, detalle, actividad y listado de apoyo en emergencia. Recomendaciones, contacto, mapa, tutorial, notificaciones, fotos y PWA/offline completo están pendientes. localStorage por sí solo no permite abrir la aplicación sin conexión.
 
 ## Diseño y archivos
 
@@ -72,3 +72,13 @@ Configura `GEMINI_API_KEY` y, opcionalmente, `GEMINI_MODEL` en `.env.local`. El 
 `api/prepare-publication.js` es una función Node de Vercel. Vite la sirve localmente mediante middleware. `npm run preview` solo sirve los archivos estáticos y no incluye la función. Las pruebas automatizadas usan respuestas simuladas del proveedor. La conexión real necesita la clave de Gemini y cuota disponible.
 
 El endpoint todavía no usa una sesión Supabase. Antes de abrir el uso de IA a una audiencia amplia, conectar autenticación y límites de solicitudes por usuario para controlar el consumo. El dictado por voz sigue pendiente.
+
+## Acceso y perfil
+
+`src/components/AuthFlow.jsx` gestiona inicio de sesión, registro, confirmación por correo, creación del perfil y selección manual de barrio. Usa Supabase Auth y la tabla `perfiles` existente. Un perfil existente permite entrar directamente. El registro pendiente de confirmación invita a revisar el correo antes de continuar. La pantalla permite explorar la demo sin cuenta.
+
+Configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` localmente y en Vercel. Reinicia el servidor o vuelve a desplegar tras guardar las variables. En Supabase, Authentication → URL Configuration, configura Site URL con el dominio público y permite también la URL local y el dominio de producción en Redirect URLs. La tabla `perfiles` necesita los permisos y políticas RLS ya creados por el equipo.
+
+Después del acceso, la cuenta y el barrio provienen de Supabase. Las publicaciones todavía usan localStorage, separado por cuenta; no se sincronizan entre vecinos. El selector Ana/Luis se limita a la demostración. La sesión de Supabase se conserva con su SDK y puede cerrarse desde el encabezado.
+
+Las pruebas de las pantallas de acceso y selección de barrio usan dobles del SDK. Falta probar con las credenciales reales del proyecto. No hay usuarios de prueba incrustados ni contraseñas guardadas en el código.
