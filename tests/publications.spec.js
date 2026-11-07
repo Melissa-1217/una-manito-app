@@ -40,9 +40,10 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
     await expect(page.getByRole('button', { name: 'Actualizar publicaciones', exact: true })).toBeEnabled();
   }
   await page.route('**/src/lib/recommendations.js*', route => route.fulfill({contentType:'text/javascript',body: `
+    export function summarizeRatings(reviews){return {average:4,count:reviews.length,endorsements:reviews.length}}
     let saved=[];
-    export async function recommendNeighbor(id,author,neighbor,comment){
-      saved=[{id:'rec-1',autor_id:author,comentario:comment,creado_en:new Date().toISOString(),autor:{nombre:'Ana'}}];
+    export async function recommendNeighbor(id,author,neighbor,comment,stars){
+      saved=[{id:'rec-1',autor_id:author,estrellas:stars,comentario:comment,creado_en:new Date().toISOString(),autor:{nombre:'Ana'}}];
     }
     export async function loadNeighbor(id){return {profile:{id,nombre:id==='luis-uuid'?'Luis':'Ana',barrio:'Barrio Demo'},recommendations:saved}}
   `}));
@@ -70,10 +71,11 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
   await expect(page.getByText('Aceptado',{exact:true})).toBeVisible();
   await page.getByRole('button', { name: 'Marcar como resuelta', exact: true }).click();
   await expect(page.getByText('Esta publicación ya está cerrada.')).toBeVisible();
-  await page.getByRole('button',{name:'Recomendar la ayuda recibida'}).click();
+  await page.getByRole('button',{name:'Valorar la experiencia'}).click();
+  await page.getByLabel('4 estrellas', {exact:true}).check();
   await page.getByLabel('¿Cómo fue la ayuda?').fill('Luis fue puntual y prestó el carrito.');
-  await page.getByRole('button',{name:'Dar mi visto bueno'}).click();
-  await expect(page.getByText('Tu visto bueno quedó registrado.')).toBeVisible();
+  await page.getByRole('button',{name:'Guardar valoración'}).click();
+  await expect(page.getByText('Tu valoración quedó registrada.')).toBeVisible();
   await page.getByRole('button',{name:'Ver perfil de Luis',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Perfil vecinal'})).toBeVisible();
   await expect(page.getByText('Luis fue puntual y prestó el carrito.',{exact:true})).toBeVisible();

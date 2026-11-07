@@ -1,6 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { loadNeighbor, recommendNeighbor } from '../lib/recommendations.js';
+import { loadNeighbor, recommendNeighbor, summarizeRatings } from '../lib/recommendations.js';
+
+function RatingHistory({ reviews }) {
+  const summary = summarizeRatings(reviews);
+  return <>
+    <h3>Experiencias de vecinos</h3>
+    <p>{summary.count ? `${summary.average.toFixed(1)} / 5 · ${summary.count} valoraciones` : 'Aún no hay calificaciones con estrellas.'}</p>
+    <p><strong>Visto Bueno Vecinal</strong> · {summary.endorsements} vecinos lo recomiendan según su última valoración.</p>
+    {reviews.map(item => <blockquote key={item.id}>
+      <strong>{item.estrellas == null ? 'Recomendación anterior sin estrellas' : `${'★'.repeat(item.estrellas)}${'☆'.repeat(5-item.estrellas)} · ${item.estrellas}/5`}</strong>
+      {item.estrellas >= 4 && <span className="badge">Visto Bueno Vecinal</span>}
+      <p>{item.comentario}</p><small>{item.autor?.nombre || 'Vecino'} · {new Date(item.creado_en).toLocaleDateString('es-PE')}</small>
+    </blockquote>)}
+    <small>4 o 5 estrellas expresan el Visto Bueno Vecinal. Cada vecino cuenta una vez, con su opinión más reciente.</small>
+  </>;
+}
 
 function ProfileDialog({ id, onClose }) {
   const dialog = useRef(null);
@@ -19,11 +34,7 @@ function ProfileDialog({ id, onClose }) {
     <button className="neighbor-close" aria-label="Cerrar perfil" onClick={onClose}><X size={22}/></button>
     {error ? <p role="alert">{error}</p> : !result ? <p role="status">Consultando referencias…</p> : <>
       <h2>{result.profile.nombre}</h2><p className="muted">{result.profile.barrio} · Barrio elegido por el vecino</p>
-      <h3>Visto Bueno Vecinal</h3>
-      <p>{new Set(result.recommendations.map(item => item.autor_id)).size} vecinos le dieron su visto bueno.</p>
-      {result.recommendations.length === 0 ? <p className="muted">Todavía no tiene recomendaciones registradas.</p> :
-        result.recommendations.map(item => <blockquote key={item.id}><p>{item.comentario}</p><small>{item.autor?.nombre || 'Vecino'} · {new Date(item.creado_en).toLocaleDateString('es-PE')}</small></blockquote>)}
-      <small>Las recomendaciones se registran después de aceptar y cerrar una ayuda.</small>
+      <RatingHistory reviews={result.recommendations}/>
     </>}
   </dialog>;
 }
@@ -40,21 +51,27 @@ export function RecommendAction({ publication, response, userId }) {
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
+  const [stars, setStars] = useState(0);
+  const [existing, setExisting] = useState(false);
   const receiver = publication.tipo === 'solicitud' ? publication.autor_id : response.vecino_id;
   const helper = publication.tipo === 'solicitud' ? response.vecino_id : publication.autor_id;
   if (publication.estado !== 'resuelta' || response.estado !== 'aceptado' || receiver !== userId || helper === userId) return null;
-  if (done) return <p role="status">Tu visto bueno quedó registrado.</p>;
-  if (!open) return <button className="text-button" onClick={() => setOpen(true)}>Recomendar la ayuda recibida</button>;
+  if (done) return <p role="status">{existing ? 'Ya registraste tu opinión para esta experiencia.' : 'Tu valoración quedó registrada.'}</p>;
+  if (!open) return <button className="text-button" onClick={() => setOpen(true)}>Valorar la experiencia</button>;
   return <form className="recommend-form" onSubmit={async event => {
     event.preventDefault();
-    if (pending || comment.trim().length < 5) return;
+    if (pending || comment.trim().length < 5 || !stars) return;
     setPending(true); setError('');
-    try { await recommendNeighbor(response.id, userId, helper, comment); setDone(true); }
-    catch { setError('No se pudo guardar la recomendación. Comprueba que la ayuda esté aceptada y resuelta.'); }
+    try { const result = await recommendNeighbor(response.id, userId, helper, comment, stars); setExisting(result === 'existing'); setDone(true); }
+    catch { setError('No se pudo guardar la valoración. Comprueba que la ayuda esté aceptada y resuelta.'); }
     finally { setPending(false); }
   }}>
+    <fieldset className="rating-stars" disabled={pending}><legend>¿Cómo fue tu experiencia?</legend>
+      {[1,2,3,4,5].map(value => <label key={value}><input type="radio" name={`stars-${response.id}`} required checked={stars === value} onChange={() => setStars(value)} aria-label={`${value} ${value === 1 ? 'estrella' : 'estrellas'}`}/><span aria-hidden="true">{value <= stars ? '★' : '☆'}</span></label>)}
+    </fieldset>
+    <small>{stars >= 4 ? 'Esta valoración incluye tu Visto Bueno Vecinal.' : stars ? 'Tu experiencia y comentario aparecerán en el perfil.' : '4 o 5 estrellas incluyen tu Visto Bueno Vecinal.'}</small>
     <label>¿Cómo fue la ayuda?<textarea required minLength={5} maxLength={500} value={comment} disabled={pending} onChange={event => setComment(event.target.value)}/></label>
     {error && <p role="alert">{error}</p>}
-    <button className="button secondary" disabled={pending}>{pending ? 'Guardando…' : 'Dar mi visto bueno'}</button>
+    <button className="button secondary" disabled={pending}>{pending ? 'Guardando…' : 'Guardar valoración'}</button>
   </form>;
 }
