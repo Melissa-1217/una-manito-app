@@ -28,6 +28,7 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
       const post={...draft,id:'real-publication',autor_id:authorId,estado:'pendiente',perfiles:{nombre:'Ana'}};
       window.testPost=post;posts.unshift(post);window.createdPost=post;return structuredClone(post);
     }
+    export async function changePublicationLifecycle(){}
     export async function closePublication(id,authorId){
       const post=posts.find(p=>p.id===id && p.autor_id===authorId);
       if(!post)throw new Error('Not allowed');post.estado='resuelta';return structuredClone(post);

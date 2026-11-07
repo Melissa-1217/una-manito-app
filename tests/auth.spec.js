@@ -20,6 +20,7 @@ test('cuenta sin perfil elige barrio, persiste y cierra sesión', async ({ page 
       {id:'new-post',autor_id:'another-user',tipo:'solicitud',titulo:'Ayuda del barrio elegido',descripcion:'Necesito ayuda para mover algunas cajas.',categoria:'Herramientas',barrio:'Barrio Demo',estado:'pendiente',ofrecimientos:[]}
     ]}
     export async function createPublication(){}
+    export async function changePublicationLifecycle(){}
     export async function closePublication(){}
   ` }));
   // Dobles del SDK para verificar pantallas y transiciones sin crear cuentas reales.

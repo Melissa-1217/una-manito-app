@@ -81,6 +81,20 @@ Validación local: pruebas de interfaz en móvil/escritorio, reglas de la demo y
 
 ## Vercel
 
+### Vencimiento e historial de publicaciones
+
+Antes de desplegar esta actualización, ejecuta `supabase/migrations/20261108_ciclo_publicaciones.sql` en SQL Editor. Necesita que la migración de cupos ya esté aplicada. No vuelvas a ejecutar migraciones anteriores que sustituyan las mismas funciones por sus versiones antiguas.
+
+- Una publicación pendiente sin ninguna respuesta vence siete días después de crearla o renovarla. Una respuesta, aunque siga pendiente de aceptación, evita este vencimiento automático. Esto también se aplica a servicios sin consultas; no es una regla de siete días de inactividad.
+- Las publicaciones en coordinación permanecen activas hasta que el autor las resuelva o cancele. Las respuestas anteriores se conservan.
+- Las resueltas salen inmediatamente de Mi barrio, Servicios, Apoyo en emergencia y los resultados de Manito. Quedan en Mi actividad → Historial, donde siguen disponibles las valoraciones de las ayudas aceptadas.
+- Las vencidas y canceladas también aparecen en Historial. Solo las vencidas sin respuestas se pueden renovar; conservan su identificador y reciben otros siete días desde la renovación. Una publicación cancelada no se reabre. La cancelación requiere un motivo de 5 a 300 caracteres, visible en el historial.
+- No se borran publicaciones, respuestas, participantes ni valoraciones. No hay una política de borrado definitivo en este MVP.
+
+El servidor fija las fechas y comprueba los estados al responder, aceptar, resolver, renovar y cancelar. La actualización directa del estado se sustituye por `gestionar_publicacion`, con comprobación de autoría y bloqueo de la publicación. El frontend revisa las fechas cada 30 segundos mientras la página está abierta y oculta las vencidas. `vencer_publicaciones` persiste el estado al cargar o actualizar las listas: no necesita un cron, pero una fila sin visitas puede seguir almacenada como pendiente hasta esa consulta; aun así, el servidor rechaza respuestas fuera del plazo.
+
+Comprobación después de aplicar el SQL: crea una publicación sin respuestas, verifica su renovación desde Historial cuando venza, cancela otra indicando el motivo y confirma que una resuelta conserva sus participantes y valoraciones. La migración conserva las respuestas previas y usa la fecha de creación para calcular el vencimiento de las publicaciones existentes. Algunas publicaciones antiguas sin respuestas dejarán de aparecer en las listas activas al actualizar.
+
 Preset Vite, build `npm run build`, salida `dist`. La base usa navegación por estado sin rutas adicionales. Configura las variables al conectar Supabase.
 
 ## Asistente de publicación con Gemini

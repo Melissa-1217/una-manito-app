@@ -85,6 +85,8 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   await expect(page.getByText('Esta publicación ya está cerrada.')).toBeVisible();
   await page.reload();
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
+  await navigation.getByRole('button', { name: 'Mi actividad', exact: true }).click();
+  await page.getByRole('button', { name: 'Historial', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Necesito un taladro por una hora' })).toBeVisible();
   expect(errors).toEqual([]);
 });

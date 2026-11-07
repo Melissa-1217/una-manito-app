@@ -1,4 +1,5 @@
 import { availableSlots } from './participation.js';
+import { changeDemoLifecycle, isActive, publicationState } from './lifecycle.js';
 
 export const people = { ana: 'Ana', luis: 'Luis' };
 export const initialData = {
@@ -12,12 +13,12 @@ export const initialData = {
 
 export function offerHelp(data, publicationId, userId, message, id) {
   const publication = data.publicaciones.find((p) => p.id === publicationId);
-  if (!publication || publication.estado === 'resuelta') throw new Error('Esta publicación ya no recibe respuestas.');
+  if (!publication || !isActive({ estado: publicationState(publication) })) throw new Error('Esta publicación ya no recibe respuestas.');
   if (publication.autor_id === userId) throw new Error('No puedes responder a tu propia publicación.');
   if (availableSlots(publication, data.ofrecimientos) === 0) throw new Error('Los cupos ya están completos.');
   if (data.ofrecimientos.some((o) => o.publicacion_id === publicationId && o.vecino_id === userId)) throw new Error('Ya respondiste a esta publicación.');
   if (message.trim().length < 2 || message.trim().length > 1000) throw new Error('Escribe un mensaje de 2 a 1000 caracteres.');
-  return { ...data, ofrecimientos: [...data.ofrecimientos, { id, publicacion_id: publicationId, vecino_id: userId, mensaje: message.trim(), estado: 'pendiente' }] };
+  return { ...data, publicaciones: data.publicaciones.map(p => p.id === publicationId ? { ...p, primera_respuesta_en: p.primera_respuesta_en || new Date().toISOString() } : p), ofrecimientos: [...data.ofrecimientos, { id, publicacion_id: publicationId, vecino_id: userId, mensaje: message.trim(), estado: 'pendiente' }] };
 }
 
 export function acceptOffer(data, offerId, userId) {
@@ -25,7 +26,7 @@ export function acceptOffer(data, offerId, userId) {
   const publication = data.publicaciones.find((p) => p.id === offer?.publicacion_id);
   if (!offer || publication?.autor_id !== userId) throw new Error('Solo quien publicó puede aceptar la ayuda.');
   if (offer.estado === 'aceptado') return data;
-  if (publication.estado === 'resuelta' || offer.estado !== 'pendiente') throw new Error('El ofrecimiento ya no está pendiente.');
+  if (!isActive({ estado: publicationState(publication) }) || offer.estado !== 'pendiente') throw new Error('El ofrecimiento ya no está pendiente.');
   if (availableSlots(publication, data.ofrecimientos) === 0) throw new Error('Los cupos ya están completos.');
   return {
     publicaciones: data.publicaciones.map((p) => p.id === publication.id ? { ...p, estado: 'en_coordinacion' } : p),
@@ -36,7 +37,7 @@ export function acceptOffer(data, offerId, userId) {
 export function resolvePublication(data, publicationId, userId) {
   const publication = data.publicaciones.find((p) => p.id === publicationId);
   if (!publication || publication.autor_id !== userId) throw new Error('Solo quien publicó puede cerrar la solicitud.');
-  return { ...data, publicaciones: data.publicaciones.map((p) => p.id === publicationId ? { ...p, estado: 'resuelta' } : p) };
+  return changeDemoLifecycle(data, publicationId, userId, 'resolver');
 }
 
 export function recommendHelper(data, offerId, userId) {

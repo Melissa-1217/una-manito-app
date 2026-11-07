@@ -4,7 +4,7 @@
   "description": "App vecinal para encontrar servicios recomendados, intercambiar ayuda y coordinar apoyo en emergencias.",
   "main": "index.js",
   "scripts": {
-    "test": "node --test tests/demo.test.js tests/ai.test.js",
+    "test": "node --test tests/demo.test.js tests/ai.test.js tests/lifecycle.test.js",
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",

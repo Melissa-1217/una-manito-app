@@ -4,6 +4,7 @@ import './manito-chat.css';
 import LocationControl from './LocationControl.jsx';
 import CapacityField from './CapacityField.jsx';
 import { validateCapacity } from '../lib/participation.js';
+import { isActive } from '../lib/lifecycle.js';
 
 const modes = {
   solicitud: ['Pedir una manito', '¿Qué ayuda necesitas?'],
@@ -65,7 +66,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
     } finally { if (!controller.signal.aborted) setBusy(false); }
   }
 
-  const hits = !search ? [] : posts.filter(p => p.tipo === 'servicio' && p.estado !== 'resuelta' &&
+  const hits = !search ? [] : posts.filter(p => p.tipo === 'servicio' && isActive(p) &&
     normalize(p.barrio.trim()) === normalize(barrio.trim()) &&
     (search.categoria === 'Otros' ? search.terminos.some(t => normalize(p.titulo + ' ' + p.descripcion).includes(normalize(t))) : p.categoria === search.categoria));
 

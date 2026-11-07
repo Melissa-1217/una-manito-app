@@ -2,9 +2,11 @@ import { getSupabaseClient } from './supabase.js';
 import { approximateLocation, hasCoordinates } from './location.js';
 import { validateCapacity } from './participation.js';
 
-const fields = 'id,autor_id,tipo,titulo,descripcion,categoria,barrio,latitud,longitud,es_emergencia,estado,cupos,creado_en,perfiles(nombre)';
+const fields = 'id,autor_id,tipo,titulo,descripcion,categoria,barrio,latitud,longitud,es_emergencia,estado,cupos,creado_en,vence_en,primera_respuesta_en,cerrado_en,motivo_cancelacion,perfiles(nombre)';
 
 export async function listPublications() {
+  const sweep = await getSupabaseClient().rpc('vencer_publicaciones');
+  if (sweep.error) throw sweep.error;
   const { data, error } = await getSupabaseClient().from('publicaciones').select(fields + ',ofrecimientos(id,publicacion_id,vecino_id,mensaje,estado,perfiles(nombre))').order('creado_en', { ascending: false });
   if (error) throw error;
   const result = await getSupabaseClient().rpc('participantes_confirmados');
@@ -34,8 +36,14 @@ export async function createPublication(draft, authorId) {
   return data;
 }
 
-export async function closePublication(id, authorId) {
-  const { data, error } = await getSupabaseClient().from('publicaciones').update({ estado: 'resuelta' }).eq('id', id).eq('autor_id', authorId).select(fields).single();
+export async function changePublicationLifecycle(id, action, reason = '') {
+  const { data, error } = await getSupabaseClient().rpc('gestionar_publicacion', {
+    publicacion_id: id, accion: action, motivo: reason,
+  }).single();
   if (error) throw error;
   return data;
+}
+
+export async function closePublication(id) {
+  return changePublicationLifecycle(id, 'resolver');
 }

@@ -1,6 +1,6 @@
 import { ArrowUpRight, MapPin, Wrench, HandHeart, Droplets, CheckCircle2 } from 'lucide-react';
 
-export const statusLabels = { pendiente: 'Pendiente', en_coordinacion: 'En coordinación', resuelta: 'Resuelta' };
+export const statusLabels = { pendiente: 'Pendiente', en_coordinacion: 'En coordinación', resuelta: 'Resuelta', vencida: 'Vencida', cancelada: 'Cancelada' };
 
 export default function PublicationCard({ publication, onOpen, distance }) {
   const Icon = publication.estado === 'resuelta' ? CheckCircle2 : publication.es_emergencia ? Droplets : publication.tipo === 'servicio' ? Wrench : HandHeart;
