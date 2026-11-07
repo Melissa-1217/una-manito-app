@@ -33,8 +33,12 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
   const [dictating, setDictating] = useState(false);
   useEffect(() => {
     const node = dialog.current;
+    const previousFocus = document.activeElement;
     node.showModal();
-    return () => { request.current?.abort(); node.close(); };
+    return () => {
+      request.current?.abort(); node.close();
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
+    };
   }, []);
   useEffect(() => { bottom.current?.scrollIntoView({ block: 'nearest' }); }, [turns, busy]);
 

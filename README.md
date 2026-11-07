@@ -81,6 +81,12 @@ Validación local: pruebas de interfaz en móvil/escritorio, reglas de la demo y
 
 ## Vercel
 
+### Accesibilidad del MVP
+
+Se aumentan tamaños de lectura y áreas de interacción, con controles principales de al menos 44 px de alto, campos de 16 px y ajustes de contraste. El diseño permite una vista de 320 px y se comprueba el uso del formulario con ampliación al 200 %. Se añade **Saltar al contenido**, navegación actual identificada con `aria-current`, anuncio del estado de ubicación y restauración del foco al cerrar Manolito. El mapa anuncia si está desplegado. Se respetan movimiento reducido y colores forzados del sistema.
+
+`tests/accessibility.spec.js` utiliza axe-core para revisar reglas WCAG A/AA automatizables en acceso, registro, inicio, formulario y tutorial; comprueba además teclado, foco, pantalla estrecha y ampliación. Estas pruebas no certifican conformidad completa. Queda pendiente una prueba manual con TalkBack/VoiceOver y personas representativas del público. [Referencia de criterios WCAG 2.2](https://www.w3.org/TR/WCAG22/).
+
 ### Manolito, tutorial y dictado
 
 El asistente se llama **Manolito**; el nombre del producto sigue siendo **Una Manito**. Se utilizan tres imágenes aportadas por el equipo en `public/manolito-*.png`, sin modificar los archivos originales. El resto de referencias gráficas quedan disponibles para una etapa posterior.

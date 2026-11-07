@@ -1,3 +1,4 @@
+import SkipLink from './components/SkipLink.jsx';
 import VoiceDictation from './components/VoiceDictation.jsx';
 import LifecycleActions from './components/LifecycleActions.jsx';
 import { changeDemoLifecycle, initializeDemoDates, isActive, publicationState, WEEK_MS } from './lib/lifecycle.js';
@@ -203,10 +204,10 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
   });
   if (origin) filtered.sort((a,b) => distanceKm(origin,a) - distanceKm(origin,b));
 
-  return <div className="app-shell">
+  return <><SkipLink/><div className="app-shell">
     <aside className="sidebar">
       <a className="brand" href="#" onClick={(e) => { e.preventDefault(); navigate('inicio'); }}><span className="brand-mark"><HandHeart size={28} /></span><span>Una Manito</span></a>
-      <nav aria-label="Navegación principal">{navItems.map(({ id, label, icon: Icon }) => <button key={id} className={`nav-item ${view === id ? 'active' : ''}`} onClick={() => navigate(id)}><Icon size={20} />{label}{view === id && <span className="nav-dot" />}</button>)}</nav>
+      <nav aria-label="Navegación principal">{navItems.map(({ id, label, icon: Icon }) => <button key={id} aria-current={view === id ? 'page' : undefined} className={`nav-item ${view === id ? 'active' : ''}`} onClick={() => navigate(id)}><Icon size={20} />{label}{view === id && <span className="nav-dot" />}</button>)}</nav>
       <button className={`nav-item emergency-link ${view === 'emergencia' ? 'active' : ''}`} onClick={() => navigate('emergencia')}><AlertTriangle size={20} />Apoyo en emergencia</button>
     </aside>
     <div className="workspace">
@@ -216,7 +217,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
       }}>Cambiar barrio</button>}</div><div className="topbar-actions"><button className="tutorial-entry" aria-label="Cómo usar la app" title="Cómo usar la app" onClick={() => setChat({ mode: 'guia' })}><CircleHelp size={20}/><span>Cómo usar la app</span></button>{account ? <button className="account-menu" onClick={onSignOut}><span className="avatar">{account.nombre[0]}</span><span>{account.nombre}</span><span>Cerrar sesión</span></button> : <label className="user-switch"><span className="avatar">{people[user][0]}</span><select aria-label="Cambiar usuario de demostración" value={user} onChange={(e) => { setUser(e.target.value); setSelected(null); setMessage(''); setNotice(''); }}><option value="ana">Ana · demo</option><option value="luis">Luis · demo</option></select></label>}</div></header>
       <div className="demo-banner"><span><strong>{account ? "Cuenta conectada" : "Demostración"}</strong> {account ? "" : "Datos ilustrativos guardados en este navegador."}</span>{account ? <button disabled={loading || saving} onClick={refreshPublications}><RotateCcw size={13} />{loading ? "Actualizando…" : "Actualizar publicaciones"}</button> : <button onClick={() => { if (window.confirm('¿Restablecer los datos de ejemplo? Se borrarán las publicaciones de esta demo local.')) { setData(initializeDemoDates(structuredClone(initialData))); navigate('inicio'); } }}><RotateCcw size={13} />Reiniciar demo</button>}{!account && <button onClick={onExitDemo}>Volver al acceso</button>}</div>
       {storageError && <p className="notice" role="alert">No se pudo guardar en este navegador. Los cambios durarán mientras mantengas esta página abierta.</p>}
-      <main id="contenido">{account && loading && <p role="status">Cargando publicaciones…</p>}{account && loadError && <div className="auth-error" role="alert">{loadError}<button className="text-button" onClick={refreshPublications}>Volver a intentar</button></div>}
+      <main id="contenido" tabIndex={-1}>{account && loading && <p role="status">Cargando publicaciones…</p>}{account && loadError && <div className="auth-error" role="alert">{loadError}<button className="text-button" onClick={refreshPublications}>Volver a intentar</button></div>}
         {view === 'inicio' && !selected && <button className="mobile-emergency" onClick={() => navigate('emergencia')}><AlertTriangle size={16} />Apoyo en emergencia<ArrowRight size={16} /></button>}
         {notice && <div className="notice" role="status"><Check size={18} /><span>{notice}</span><button aria-label="Cerrar aviso" onClick={() => setNotice('')}><X size={16} /></button></div>}
         {publication ? <section className="detail-page"><button className="text-button" onClick={() => setSelected(null)}><ArrowLeft size={16} />Volver</button><div className="detail-heading"><span className="eyebrow">{publication.categoria}</span><span className={`badge ${publication.estado}`}>{statusLabels[publication.estado]}</span></div><h1>{publication.titulo}</h1><p className="muted"><MapPin size={15} />{publication.barrio} · Publicado por {people[publication.autor_id]}</p>{account && <NeighborProfile id={publication.autor_id} name={people[publication.autor_id]}/>}<div className="panel"><p className="description">{publication.descripcion}</p><div className="privacy"><ShieldCheck size={19} />Esta publicación muestra una zona de referencia.</div><PublicationMap key={publication.id} publication={publication}/></div>
@@ -270,6 +271,6 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
       />}
     </div>
     <nav className="mobile-nav" aria-label="Navegación móvil">{navItems.map(({ id, label, icon: Icon }) => <button key={id} aria-current={view === id ? 'page' : undefined} className={view === id ? 'active' : ''} onClick={() => navigate(id)}><Icon size={21} /><span>{label}</span></button>)}</nav>
-  </div>;
+  </div></>;
 }
 

@@ -5,5 +5,6 @@ import AuthFlow from './components/AuthFlow.jsx';
 import './styles.css';
 import './auth.css';
 import './components/manolito.css';
+import './accessibility.css';
 
 createRoot(document.getElementById('root')).render(<React.StrictMode><AuthFlow /></React.StrictMode>);

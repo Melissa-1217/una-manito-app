@@ -18,7 +18,7 @@ test('tutorial interactivo se puede omitir, completar y volver a abrir desde el 
   await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.getByRole('button', { name: 'Ofrecer ayuda', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Siguiente' })).toBeDisabled();
-  await expect(page.getByRole('status')).toContainText('Probemos otra opción');
+  await expect(page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('status')).toContainText('Probemos otra opción');
   await page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Pedir una manito', exact: true }).click();
   await page.screenshot({ path: `../una-manito-tutorial-${testInfo.project.name}.png`, fullPage: true });
   await page.getByRole('button', { name: 'Siguiente' }).click();

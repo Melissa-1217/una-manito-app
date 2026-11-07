@@ -1,3 +1,4 @@
+import SkipLink from './SkipLink.jsx';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, HandHeart, MapPin, MailCheck, ShieldCheck, LogOut } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase.js';
@@ -5,14 +6,14 @@ import App from '../App.jsx';
 import NeighborhoodField from './NeighborhoodField.jsx';
 
 function AuthLayout({ children }) {
-  return <div className="auth-page">
+  return <><SkipLink/><div className="auth-page">
     <aside className="auth-story">
       <div className="brand"><span className="brand-mark"><HandHeart size={28} /></span>Una Manito</div>
       <div><HandHeart size={90} strokeWidth={1} /><h1>Tu barrio te da una mano.</h1><p>Encuentra servicios, comparte lo que puedes y conecta con tus vecinos.</p></div>
       
     </aside>
-    <main className="auth-content"><div className="auth-mobile-brand"><HandHeart size={27} />Una Manito</div>{children}</main>
-  </div>;
+    <main id="contenido" tabIndex={-1} className="auth-content"><div className="auth-mobile-brand"><HandHeart size={27} />Una Manito</div>{children}</main>
+  </div></>;
 }
 
 function Credentials({ client, onDemo }) {

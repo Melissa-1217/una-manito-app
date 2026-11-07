@@ -36,7 +36,7 @@ export default function LocationControl({ value, onChange, forPublication = fals
     </button>
     {hasCoordinates(value) && <button type="button" aria-label="Quitar ubicación" onClick={() => { onChange(null); setError(''); }}><X size={17}/></button>}</div>
     {forPublication && <small>Opcional. Al publicar se compartirá un punto redondeado de tu zona. Úsalo cuando estés cerca del lugar del pedido.</small>}
-    {hasCoordinates(value) && <small>{forPublication ? 'Ubicación aproximada añadida.' : 'Primero se muestran las publicaciones con ubicación más cercanas, dentro de tu barrio.'}</small>}
+    <span role="status">{pending ? 'Consultando ubicación.' : hasCoordinates(value) ? forPublication ? 'Ubicación aproximada añadida.' : 'Publicaciones ordenadas por cercanía dentro de tu barrio.' : ''}</span>
     {error && <p role="alert">{error}</p>}
   </div>;
 }
