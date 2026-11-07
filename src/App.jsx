@@ -1,3 +1,4 @@
+import { sendResponse, acceptResponse } from './lib/responses.js';
 import ManitoChat from './components/ManitoChat.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { House, Wrench, Plus, ClipboardList, HandHeart, MapPin, ArrowRight, ArrowLeft, Search, Heart, ShieldCheck, AlertTriangle, Check, RotateCcw, Users, X } from 'lucide-react';
@@ -43,6 +44,7 @@ export default function App({ account, onSignOut, onExitDemo }) {
   const loadVersion = useRef(0);
   const people = {
     ...demoPeople,
+    ...Object.fromEntries(data.ofrecimientos.map(o => [o.vecino_id, o.perfiles?.nombre || demoPeople[o.vecino_id] || "Vecino"])),
     ...Object.fromEntries(data.publicaciones.map((post) => [post.autor_id, post.perfiles?.nombre || demoPeople[post.autor_id] || 'Vecino'])),
     ...(account ? { [account.id]: account.nombre } : {}),
   };
@@ -55,7 +57,7 @@ export default function App({ account, onSignOut, onExitDemo }) {
       try {
         const publications = await listPublications();
         if (active && version === loadVersion.current) {
-          setStoredData({ publicaciones: publications, ofrecimientos: [] });
+          setStoredData({ publicaciones: publications, ofrecimientos: publications.flatMap(p => p.ofrecimientos || []) });
           setLoadError('');
         }
       } catch {
@@ -125,6 +127,42 @@ export default function App({ account, onSignOut, onExitDemo }) {
     } catch { setNotice('No se pudo cerrar la solicitud. Revisa tu conexión e intenta nuevamente.'); }
     finally { mutationPending.current = false; setSaving(false); }
   }
+  async function respond() {
+    if (!account) {
+      perform(current => offerHelp(current, selected, user, message, crypto.randomUUID()), 'Tu respuesta quedó registrada en esta demo.');
+      return;
+    }
+    if (mutationPending.current || !message.trim()) return;
+    mutationPending.current = true;
+    setSaving(true);
+    try {
+      const row = await sendResponse(selected, account.id, message);
+      loadVersion.current += 1;
+      setStoredData(current => ({ ...current, ofrecimientos: [...current.ofrecimientos.filter(o => o.id !== row.id), row] }));
+      setMessage('');
+      setNotice('Respuesta enviada. El autor podrá leerla en su publicación.');
+    } catch (error) {
+      setNotice(error.code === '23505' ? 'Ya respondiste. Actualiza las publicaciones para ver tu mensaje.' : 'No se pudo confirmar el envío. Actualiza las publicaciones antes de reintentar.');
+    } finally { mutationPending.current = false; setSaving(false); }
+  }
+
+  async function accept(id) {
+    if (!account) {
+      perform(current => acceptOffer(current, id, user), 'Ayuda aceptada. Ya están en coordinación.');
+      return;
+    }
+    if (mutationPending.current) return;
+    mutationPending.current = true;
+    setSaving(true);
+    try {
+      await acceptResponse(id);
+      setNotice('Respuesta aceptada.');
+      setLoading(true);
+      setRefresh(n => n + 1);
+    } catch {
+      setNotice('No se pudo confirmar la aceptación. Actualiza la publicación para revisar su estado.');
+    } finally { mutationPending.current = false; setSaving(false); }
+  }
   const publication = data.publicaciones.find((p) => p.id === selected);
   const offers = data.ofrecimientos.filter((o) => o.publicacion_id === selected);
   const alreadyOffered = offers.some((o) => o.vecino_id === user);
@@ -159,24 +197,24 @@ export default function App({ account, onSignOut, onExitDemo }) {
         {view === 'inicio' && !selected && <button className="mobile-emergency" onClick={() => navigate('emergencia')}><AlertTriangle size={16} />Apoyo en emergencia<ArrowRight size={16} /></button>}
         {notice && <div className="notice" role="status"><Check size={18} /><span>{notice}</span><button aria-label="Cerrar aviso" onClick={() => setNotice('')}><X size={16} /></button></div>}
         {publication ? <section className="detail-page"><button className="text-button" onClick={() => setSelected(null)}><ArrowLeft size={16} />Volver</button><div className="detail-heading"><span className="eyebrow">{publication.categoria}</span><span className={`badge ${publication.estado}`}>{statusLabels[publication.estado]}</span></div><h1>{publication.titulo}</h1><p className="muted"><MapPin size={15} />{publication.barrio} · Publicado por {people[publication.autor_id]}</p><div className="panel"><p className="description">{publication.descripcion}</p><div className="privacy"><ShieldCheck size={19} />Esta publicación muestra una zona de referencia.</div></div>
-          {publication.tipo === 'servicio' ? <div className="panel"><h2>Visto Bueno Vecinal</h2><p className="muted">Las recomendaciones y el contacto del prestador se incorporarán en la siguiente etapa.</p></div> : !account ? <>
-            {!own && publication.estado !== 'resuelta' && !alreadyOffered && <form className="panel" onSubmit={(e) => { e.preventDefault(); perform((current) => offerHelp(current, publication.id, user, message, crypto.randomUUID()), 'Tu respuesta quedó registrada en esta demo.'); }}><h2>{publication.tipo === 'ofrecimiento' ? 'Coordina con tu vecino' : '¿Cómo puedes ayudar?'}</h2><label>Tu mensaje<textarea required minLength={2} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Tengo una escalera. Te la puedo prestar esta tarde." /></label><button className="button primary" type="submit"><HandHeart size={18} />{publication.tipo === 'ofrecimiento' ? 'Me interesa' : 'Yo te ayudo'}</button></form>}
+          {publication.tipo === 'servicio' && !account ? <div className="panel"><h2>Visto Bueno Vecinal</h2><p className="muted">Las recomendaciones y el contacto del prestador se incorporarán en la siguiente etapa.</p></div> : <>
+            {!own && publication.estado !== 'resuelta' && !alreadyOffered && <form className="panel" onSubmit={(e) => { e.preventDefault(); void respond(); }}><h2>{publication.tipo === 'ofrecimiento' ? 'Coordina con tu vecino' : '¿Cómo puedes ayudar?'}</h2><label>Tu mensaje<textarea required minLength={2} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Escribe cómo te gustaría coordinar con tu vecino." /></label><button className="button primary" disabled={saving || loading} type="submit"><HandHeart size={18} />{publication.tipo === 'servicio' ? 'Solicitar servicio' : publication.tipo === 'ofrecimiento' ? 'Me interesa' : 'Yo te ayudo'}</button></form>}
             {alreadyOffered && <p className="privacy"><Check size={18} />Ya enviaste una respuesta. Puedes verla en Mi actividad.</p>}
             <div className="panel"><h2>{own ? 'Respuestas de tus vecinos' : 'Tu respuesta'}</h2>{offers.filter((o) => own || o.vecino_id === user).length === 0 ? <p className="muted">Todavía no hay respuestas para mostrar.</p> : offers.filter((o) => own || o.vecino_id === user).map((o) => {
               const history = helperHistory(data, o.vecino_id);
               return <div className="offer" key={o.id}><div><strong>{people[o.vecino_id]}</strong><p>{o.mensaje}</p><span className="badge">{o.estado === 'aceptado' ? 'Aceptado' : o.estado === 'rechazado' ? 'Rechazado' : 'Por confirmar'}</span>
-                {own && <section className="helper-history">
+                {own && !account && <section className="helper-history">
                   <strong>Referencias del barrio</strong>
                   <p>{history.total ? `Ayudas aceptadas en solicitudes cerradas: ${history.total}.` : 'Todavía no hay ayudas anteriores registradas.'}</p>
                   <p>{history.neighbors ? `Vecinos que le dieron su visto bueno: ${history.neighbors}.` : 'Sin recomendaciones por ahora.'}</p>
                 </section>}
-                </div>{own && o.estado === 'pendiente' && publication.estado !== 'resuelta' && <button className="button secondary" onClick={() => perform((current) => acceptOffer(current, o.id, user), 'Ayuda aceptada. Ya están en coordinación.')}>Aceptar ayuda</button>}
-                {own && publication.estado === 'resuelta' && o.estado === 'aceptado' &&
+                </div>{own && o.estado === 'pendiente' && publication.estado !== 'resuelta' && <button className="button secondary" disabled={saving || loading} onClick={() => accept(o.id)}>Aceptar ayuda</button>}
+                {own && !account && publication.estado === 'resuelta' && o.estado === 'aceptado' &&
                   (o.recomendado ? <span className="badge">Diste tu visto bueno</span> :
                   <button className="button secondary" onClick={() => perform((current) => recommendHelper(current, o.id, user), 'Tu recomendación quedó registrada.')}>Cumplió lo acordado. Recomendar</button>)}
               </div>;
             })}</div>
-          </> : null}
+          </>}
           {own && publication.estado !== 'resuelta' && <button className="button primary" disabled={saving} onClick={resolveSelected}><Check size={18} />Marcar como resuelta</button>}
           {publication.estado === 'resuelta' && <div className="resolved"><HandHeart size={25} /><strong>Una manito que hizo la diferencia.</strong><span>Esta publicación ya está cerrada.</span></div>}
         </section> : view === 'publicar' ? <section className="form-page"><button className="text-button" onClick={() => review ? setReview(false) : navigate('inicio')}><ArrowLeft size={16} />{review ? 'Editar publicación' : 'Volver al barrio'}</button><span className="eyebrow">{review ? 'PASO 2 DE 2' : 'PASO 1 DE 2'} · UNA MANITO</span><h1>{review ? `¿Así está bien, ${people[user]}?` : 'Cuéntanos qué necesitas'}</h1><p className="muted">{review ? 'Revisa los datos antes de compartirlos con el barrio.' : 'Unas pocas palabras pueden ser el comienzo de una buena ayuda.'}</p>

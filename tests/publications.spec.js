@@ -14,12 +14,19 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
       from(){return {select(){return {eq(){return {async maybeSingle(){return {data:{id:user.id,nombre:user.id==='ana-uuid'?'Ana':'Luis',barrio:'Barrio Demo'},error:null}}}}}}}}
     }}
   ` }));
-  await page.route('**/src/lib/publications.js', (route) => route.fulfill({ contentType: 'text/javascript', body: `
+  await page.route('**/src/lib/responses.js*', route => route.fulfill({contentType:'text/javascript', body: `
+    export async function sendResponse(id, user, msg){
+      const row={id:'offer-1',publicacion_id:id,vecino_id:user,mensaje:msg,estado:'pendiente',perfiles:{nombre:'Luis'}};
+      window.testPost.ofrecimientos=[row];return structuredClone(row);
+    }
+    export async function acceptResponse(){window.testPost.estado='en_coordinacion';window.testPost.ofrecimientos[0].estado='aceptado'}
+  ` }));
+  await page.route('**/src/lib/publications.js*', (route) => route.fulfill({ contentType: 'text/javascript', body: `
     let posts=[];
     export async function listPublications(){return structuredClone(posts)}
     export async function createPublication(draft,authorId){
       const post={...draft,id:'real-publication',autor_id:authorId,estado:'pendiente',perfiles:{nombre:'Ana'}};
-      posts.unshift(post);window.createdPost=post;return structuredClone(post);
+      window.testPost=post;posts.unshift(post);window.createdPost=post;return structuredClone(post);
     }
     export async function closePublication(id,authorId){
       const post=posts.find(p=>p.id===id && p.autor_id===authorId);
@@ -46,9 +53,14 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
   await login('luis@example.com');
   await page.getByRole('button').filter({ has: page.getByRole('heading', { name: 'Necesito un carrito para mudanza' }) }).click();
   await expect(page.getByRole('button', { name: 'Marcar como resuelta' })).toHaveCount(0);
+  await page.getByLabel('Tu mensaje').fill('Puedo prestar mi carrito.');
+  await page.getByRole('button', {name:'Yo te ayudo',exact:true}).click();
+  await expect(page.getByText('Puedo prestar mi carrito.',{exact:true})).toBeVisible();
   await page.getByRole('button', { name: /Cerrar sesión/ }).click();
   await login('ana@example.com');
   await page.getByRole('button').filter({ has: page.getByRole('heading', { name: 'Necesito un carrito para mudanza' }) }).click();
+  await page.getByRole('button', {name:'Aceptar ayuda'}).click();
+  await expect(page.getByText('Aceptado',{exact:true})).toBeVisible();
   await page.getByRole('button', { name: 'Marcar como resuelta', exact: true }).click();
   await expect(page.getByText('Esta publicación ya está cerrada.')).toBeVisible();
 });

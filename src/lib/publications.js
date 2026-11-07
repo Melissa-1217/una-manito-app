@@ -3,7 +3,7 @@ import { getSupabaseClient } from './supabase.js';
 const fields = 'id,autor_id,tipo,titulo,descripcion,categoria,barrio,latitud,longitud,es_emergencia,estado,creado_en,perfiles(nombre)';
 
 export async function listPublications() {
-  const { data, error } = await getSupabaseClient().from('publicaciones').select(fields).order('creado_en', { ascending: false });
+  const { data, error } = await getSupabaseClient().from('publicaciones').select(fields + ',ofrecimientos(id,publicacion_id,vecino_id,mensaje,estado,perfiles(nombre))').order('creado_en', { ascending: false });
   if (error) throw error;
   return data;
 }
