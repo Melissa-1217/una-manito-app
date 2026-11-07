@@ -1,3 +1,5 @@
+import { availableSlots } from './participation.js';
+
 export const people = { ana: 'Ana', luis: 'Luis' };
 export const initialData = {
   publicaciones: [
@@ -12,6 +14,7 @@ export function offerHelp(data, publicationId, userId, message, id) {
   const publication = data.publicaciones.find((p) => p.id === publicationId);
   if (!publication || publication.estado === 'resuelta') throw new Error('Esta publicación ya no recibe respuestas.');
   if (publication.autor_id === userId) throw new Error('No puedes responder a tu propia publicación.');
+  if (availableSlots(publication, data.ofrecimientos) === 0) throw new Error('Los cupos ya están completos.');
   if (data.ofrecimientos.some((o) => o.publicacion_id === publicationId && o.vecino_id === userId)) throw new Error('Ya respondiste a esta publicación.');
   if (message.trim().length < 2 || message.trim().length > 1000) throw new Error('Escribe un mensaje de 2 a 1000 caracteres.');
   return { ...data, ofrecimientos: [...data.ofrecimientos, { id, publicacion_id: publicationId, vecino_id: userId, mensaje: message.trim(), estado: 'pendiente' }] };
@@ -21,7 +24,9 @@ export function acceptOffer(data, offerId, userId) {
   const offer = data.ofrecimientos.find((o) => o.id === offerId);
   const publication = data.publicaciones.find((p) => p.id === offer?.publicacion_id);
   if (!offer || publication?.autor_id !== userId) throw new Error('Solo quien publicó puede aceptar la ayuda.');
+  if (offer.estado === 'aceptado') return data;
   if (publication.estado === 'resuelta' || offer.estado !== 'pendiente') throw new Error('El ofrecimiento ya no está pendiente.');
+  if (availableSlots(publication, data.ofrecimientos) === 0) throw new Error('Los cupos ya están completos.');
   return {
     publicaciones: data.publicaciones.map((p) => p.id === publication.id ? { ...p, estado: 'en_coordinacion' } : p),
     ofrecimientos: data.ofrecimientos.map((o) => o.id === offerId ? { ...o, estado: 'aceptado' } : o),

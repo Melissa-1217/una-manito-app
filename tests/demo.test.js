@@ -26,3 +26,29 @@ test('una publicación resuelta no recibe nuevas respuestas', () => {
   const data = resolvePublication(initialData, 'escalera', 'ana');
   assert.throws(() => offerHelp(data, 'escalera', 'luis', 'Tengo una escalera', '1'), /ya no recibe/);
 });
+
+test('dos interesados: el último cupo solo puede aceptarse una vez', () => {
+  let data = offerHelp(initialData, 'escalera', 'luis', 'Mi mensaje privado.', '1');
+  data = offerHelp(data, 'escalera', 'maria', 'Otra respuesta privada.', '2');
+  data = acceptOffer(data, '1', 'ana');
+  assert.throws(() => acceptOffer(data, '2', 'ana'), /cupos ya están completos/);
+  assert.equal(data.ofrecimientos[1].estado, 'pendiente');
+  assert.equal(acceptOffer(data, '1', 'ana'), data); // reintento idempotente
+  assert.throws(() => offerHelp(data, 'escalera', 'otro', 'Hola, también puedo.', '3'), /cupos/);
+});
+
+test('permite varios participantes hasta completar el cupo indicado', () => {
+  let data = structuredClone(initialData);
+  data.publicaciones[0].cupos = 2;
+  data = offerHelp(data, 'escalera', 'luis', 'Primera ayuda.', '1');
+  data = offerHelp(data, 'escalera', 'maria', 'Segunda ayuda.', '2');
+  data = acceptOffer(acceptOffer(data, '1', 'ana'), '2', 'ana');
+  assert.equal(data.ofrecimientos.filter(o => o.estado === 'aceptado').length, 2);
+});
+
+test('las consultas de servicio no consumen un cupo exclusivo', () => {
+  let data = offerHelp(initialData, 'gasfitero', 'ana', 'Necesito una revisión.', '1');
+  data = offerHelp(data, 'gasfitero', 'maria', '¿Tienes horario mañana?', '2');
+  data = acceptOffer(acceptOffer(data, '1', 'luis'), '2', 'luis');
+  assert.equal(data.ofrecimientos.filter(o => o.estado === 'aceptado').length, 2);
+});

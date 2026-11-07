@@ -1,3 +1,6 @@
+import CapacityField from './components/CapacityField.jsx';
+import Participants from './components/Participants.jsx';
+import { availableSlots, validateCapacity } from './lib/participation.js';
 import NeighborProfile, { RecommendAction } from './components/NeighborProfile.jsx';
 import LocationControl from './components/LocationControl.jsx';
 import PublicationMap from './components/PublicationMap.jsx';
@@ -12,7 +15,7 @@ import { listPublications, createPublication, closePublication } from './lib/pub
 import { people as demoPeople, initialData, offerHelp, acceptOffer, resolvePublication, recommendHelper, helperHistory } from './lib/demo.js';
 
 const STORE = 'una-manito-demo-v1';
-const emptyDraft = { tipo: 'solicitud', titulo: '', descripcion: '', categoria: 'Herramientas', barrio: 'Barrio Demo', es_emergencia: false };
+const emptyDraft = { tipo: 'solicitud', titulo: '', descripcion: '', categoria: 'Herramientas', cupos: 1, barrio: 'Barrio Demo', es_emergencia: false };
 const navItems = [{ id: 'inicio', label: 'Mi barrio', icon: House }, { id: 'servicios', label: 'Servicios', icon: Wrench }, { id: 'publicar', label: 'Publicar', icon: Plus }, { id: 'actividad', label: 'Mi actividad', icon: ClipboardList }];
 
 function loadData(storageKey) {
@@ -100,7 +103,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
     try {
       const publication = account
         ? await createPublication(confirmedDraft, account.id)
-        : { ...confirmedDraft, titulo: confirmedDraft.titulo.trim(), descripcion: confirmedDraft.descripcion.trim(), barrio: confirmedDraft.barrio.trim(), id: crypto.randomUUID(), autor_id: user, estado: 'pendiente' };
+        : { ...confirmedDraft, titulo: confirmedDraft.titulo.trim(), descripcion: confirmedDraft.descripcion.trim(), barrio: confirmedDraft.barrio.trim(), cupos: validateCapacity(confirmedDraft), id: crypto.randomUUID(), autor_id: user, estado: 'pendiente' };
       loadVersion.current += 1;
       if (account) setStoredData((current) => ({ ...current, publicaciones: [publication, ...current.publicaciones.filter((post) => post.id !== publication.id)] }));
       else setData({ ...data, publicaciones: [publication, ...data.publicaciones] });
@@ -146,7 +149,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
       setMessage('');
       setNotice('Respuesta enviada. El autor podrá leerla en su publicación.');
     } catch (error) {
-      setNotice(error.code === '23505' ? 'Ya respondiste. Actualiza las publicaciones para ver tu mensaje.' : 'No se pudo confirmar el envío. Actualiza las publicaciones antes de reintentar.');
+      setNotice(error.message?.includes('CAPACITY_FULL') ? 'Los cupos se completaron. Actualiza la publicación.' : error.message?.includes('PUBLICATION_CLOSED') ? 'La publicación ya está cerrada. Actualiza la lista.' : error.code === '23505' ? 'Ya respondiste. Actualiza las publicaciones para ver tu mensaje.' : 'No se pudo confirmar el envío. Actualiza las publicaciones antes de reintentar.');
     } finally { mutationPending.current = false; setSaving(false); }
   }
 
@@ -163,14 +166,15 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
       setNotice('Respuesta aceptada.');
       setLoading(true);
       setRefresh(n => n + 1);
-    } catch {
-      setNotice('No se pudo confirmar la aceptación. Actualiza la publicación para revisar su estado.');
+    } catch (error) {
+      setNotice(error.message?.includes('CAPACITY_FULL') ? 'El último cupo ya fue ocupado. Actualiza la publicación para ver los participantes.' : 'No se pudo confirmar la aceptación. Actualiza la publicación para revisar su estado.');
     } finally { mutationPending.current = false; setSaving(false); }
   }
   const publication = data.publicaciones.find((p) => p.id === selected);
   const offers = data.ofrecimientos.filter((o) => o.publicacion_id === selected);
   const alreadyOffered = offers.some((o) => o.vecino_id === user);
   const own = publication?.autor_id === user;
+  const remainingSlots = publication ? availableSlots(publication, offers) : null;
   const filtered = data.publicaciones.filter((p) => {
     if (account && view !== 'actividad' && p.barrio.trim().toLocaleLowerCase('es') !== account.barrio.trim().toLocaleLowerCase('es')) return false;
     if (view === 'servicios' && serviceIntent) {
@@ -202,10 +206,12 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
         {view === 'inicio' && !selected && <button className="mobile-emergency" onClick={() => navigate('emergencia')}><AlertTriangle size={16} />Apoyo en emergencia<ArrowRight size={16} /></button>}
         {notice && <div className="notice" role="status"><Check size={18} /><span>{notice}</span><button aria-label="Cerrar aviso" onClick={() => setNotice('')}><X size={16} /></button></div>}
         {publication ? <section className="detail-page"><button className="text-button" onClick={() => setSelected(null)}><ArrowLeft size={16} />Volver</button><div className="detail-heading"><span className="eyebrow">{publication.categoria}</span><span className={`badge ${publication.estado}`}>{statusLabels[publication.estado]}</span></div><h1>{publication.titulo}</h1><p className="muted"><MapPin size={15} />{publication.barrio} · Publicado por {people[publication.autor_id]}</p>{account && <NeighborProfile id={publication.autor_id} name={people[publication.autor_id]}/>}<div className="panel"><p className="description">{publication.descripcion}</p><div className="privacy"><ShieldCheck size={19} />Esta publicación muestra una zona de referencia.</div><PublicationMap key={publication.id} publication={publication}/></div>
-          {publication.tipo === 'servicio' && !account ? <div className="panel"><h2>Visto Bueno Vecinal</h2><p className="muted">Las recomendaciones y el contacto del prestador se incorporarán en la siguiente etapa.</p></div> : <>
-            {!own && publication.estado !== 'resuelta' && !alreadyOffered && <form className="panel" onSubmit={(e) => { e.preventDefault(); void respond(); }}><h2>{publication.tipo === 'ofrecimiento' ? 'Coordina con tu vecino' : '¿Cómo puedes ayudar?'}</h2><label>Tu mensaje<textarea required minLength={2} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Escribe cómo te gustaría coordinar con tu vecino." /></label><button className="button primary" disabled={saving || loading} type="submit"><HandHeart size={18} />{publication.tipo === 'servicio' ? 'Solicitar servicio' : publication.tipo === 'ofrecimiento' ? 'Me interesa' : 'Yo te ayudo'}</button></form>}
+          <Participants publication={publication} responses={offers} people={people}/>
+          <>
+            {!own && publication.estado !== 'resuelta' && remainingSlots !== 0 && !alreadyOffered && <form className="panel" onSubmit={(e) => { e.preventDefault(); void respond(); }}><h2>{publication.tipo === 'servicio' ? 'Consulta al prestador' : publication.tipo === 'ofrecimiento' ? 'Coordina con tu vecino' : '¿Cómo puedes ayudar?'}</h2><p className="ai-hint">Tu mensaje solo lo verán el autor y tú.{publication.tipo !== 'servicio' && ' Si te acepta, tu nombre aparecerá en la lista de participantes.'}</p><label>Tu mensaje<textarea required minLength={2} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Escribe cómo te gustaría coordinar con tu vecino." /></label><button className="button primary" disabled={saving || loading} type="submit"><HandHeart size={18} />{publication.tipo === 'servicio' ? 'Solicitar servicio' : publication.tipo === 'ofrecimiento' ? 'Me interesa' : 'Yo te ayudo'}</button></form>}
+            {!own && !alreadyOffered && remainingSlots === 0 && publication.estado !== 'resuelta' && <p className="privacy">Los cupos están completos. Esta publicación no recibe nuevas respuestas.</p>}
             {alreadyOffered && <p className="privacy"><Check size={18} />Ya enviaste una respuesta. Puedes verla en Mi actividad.</p>}
-            <div className="panel"><h2>{own ? 'Respuestas de tus vecinos' : 'Tu respuesta'}</h2>{offers.filter((o) => own || o.vecino_id === user).length === 0 ? <p className="muted">Todavía no hay respuestas para mostrar.</p> : offers.filter((o) => own || o.vecino_id === user).map((o) => {
+            {(own || alreadyOffered) && <div className="panel"><h2>{own ? 'Mensajes privados recibidos' : 'Tu mensaje privado'}</h2>{offers.filter((o) => own || o.vecino_id === user).length === 0 ? <p className="muted">Todavía no hay respuestas para mostrar.</p> : offers.filter((o) => own || o.vecino_id === user).map((o) => {
               const history = helperHistory(data, o.vecino_id);
               return <div className="offer" key={o.id}><div><strong>{people[o.vecino_id]}</strong>{account && <NeighborProfile id={o.vecino_id} name={people[o.vecino_id]}/>}<p>{o.mensaje}</p><span className="badge">{o.estado === 'aceptado' ? 'Aceptado' : o.estado === 'rechazado' ? 'Rechazado' : 'Por confirmar'}</span>
                 {own && !account && <section className="helper-history">
@@ -213,18 +219,18 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
                   <p>{history.total ? `Ayudas aceptadas en solicitudes cerradas: ${history.total}.` : 'Todavía no hay ayudas anteriores registradas.'}</p>
                   <p>{history.neighbors ? `Vecinos que le dieron su visto bueno: ${history.neighbors}.` : 'Sin recomendaciones por ahora.'}</p>
                 </section>}
-                </div>{own && o.estado === 'pendiente' && publication.estado !== 'resuelta' && <button className="button secondary" disabled={saving || loading} onClick={() => accept(o.id)}>Aceptar ayuda</button>}
+                </div>{own && o.estado === 'pendiente' && publication.estado !== 'resuelta' && <button className="button secondary" disabled={saving || loading || remainingSlots === 0} onClick={() => accept(o.id)}>{publication.tipo === 'servicio' ? 'Aceptar coordinación' : 'Aceptar ayuda'}</button>}
                 {account && <RecommendAction publication={publication} response={o} userId={user}/>}
                 {own && !account && publication.estado === 'resuelta' && o.estado === 'aceptado' &&
                   (o.recomendado ? <span className="badge">Diste tu visto bueno</span> :
                   <button className="button secondary" onClick={() => perform((current) => recommendHelper(current, o.id, user), 'Tu recomendación quedó registrada.')}>Cumplió lo acordado. Recomendar</button>)}
               </div>;
-            })}</div>
-          </>}
+            })}</div>}
+          </>
           {own && publication.estado !== 'resuelta' && <button className="button primary" disabled={saving} onClick={resolveSelected}><Check size={18} />Marcar como resuelta</button>}
           {publication.estado === 'resuelta' && <div className="resolved"><HandHeart size={25} /><span>Esta publicación ya está cerrada.</span></div>}
         </section> : view === 'publicar' ? <section className="form-page"><button className="text-button" onClick={() => review ? setReview(false) : navigate('inicio')}><ArrowLeft size={16} />{review ? 'Editar publicación' : 'Volver al barrio'}</button><span className="eyebrow">{review ? 'PASO 2 DE 2' : 'PASO 1 DE 2'}</span><h1>{review ? `¿Así está bien, ${people[user]}?` : 'Nueva publicación'}</h1>
-          {review ? <div className="panel review"><span className="badge">{draft.categoria}</span><h2>{draft.titulo}</h2><p>{draft.descripcion}</p><p className="muted"><MapPin size={16} />{draft.barrio}</p>{draft.es_emergencia && <span className="badge emergency-badge">Apoyo en emergencia</span>}<div className="privacy"><ShieldCheck size={19} />Solo compartimos tu zona, no tu dirección exacta.</div><button className="button primary wide" disabled={saving || loading} onClick={() => publish()}>Publicar {draft.tipo === 'solicitud' ? 'solicitud' : draft.tipo === 'servicio' ? 'servicio' : 'ofrecimiento'}<ArrowRight size={18} /></button></div> : <form className="panel publish-form" onSubmit={(e) => { e.preventDefault(); if (draft.titulo.trim().length < 5 || draft.descripcion.trim().length < 10 || draft.barrio.trim().length < 2) { setNotice('Completa el título, la descripción y el barrio con más detalle.'); return; } setNotice(''); setReview(true); }}><fieldset><legend>¿Qué quieres compartir?</legend><div className="type-options">{[['solicitud', 'Necesito ayuda'], ['ofrecimiento', 'Ofrezco ayuda'], ['servicio', 'Un servicio']].map(([type, label]) => <button key={type} type="button" aria-pressed={draft.tipo === type} className={draft.tipo === type ? 'selected' : ''} onClick={() => setDraft({ ...draft, tipo: type })}>{label}</button>)}</div></fieldset><label>Título<input required minLength={5} maxLength={120} value={draft.titulo} onChange={(e) => setDraft({ ...draft, titulo: e.target.value })} placeholder="Ej.: Necesito una escalera prestada" /></label><label>Cuéntale un poco más al barrio<textarea required minLength={10} maxLength={2000} value={draft.descripcion} onChange={(e) => setDraft({ ...draft, descripcion: e.target.value })} placeholder="¿Qué necesitas u ofreces y para cuándo?" /></label><AiPublicationAssistant key={draft.tipo + draft.descripcion} text={draft.descripcion} type={draft.tipo} onApply={(proposal) => { setDraft({ ...draft, ...proposal }); setNotice('Propuesta aplicada. Revisa los campos antes de publicar.'); }} /><div className="form-row"><label>Categoría<select value={draft.categoria} onChange={(e) => setDraft({ ...draft, categoria: e.target.value })}>{['Herramientas', 'Gasfitería', 'Electricidad', 'Compras y traslados', 'Clases', 'Agua y alimentos', 'Otros'].map((c) => <option key={c}>{c}</option>)}</select></label><label>Barrio<input required minLength={2} maxLength={120} readOnly={Boolean(account)} value={draft.barrio} onChange={(e) => setDraft({ ...draft, barrio: e.target.value })} /></label></div><LocationControl forPublication value={draft} onChange={point => setDraft({ ...draft, latitud: point?.latitud ?? null, longitud: point?.longitud ?? null })}/><label className="checkbox"><input type="checkbox" checked={draft.es_emergencia} onChange={(e) => setDraft({ ...draft, es_emergencia: e.target.checked })} />Es una necesidad o recurso de apoyo en emergencia</label><button type="submit" className="button primary wide">Revisar publicación<ArrowRight size={18} /></button></form>}
+          {review ? <div className="panel review"><span className="badge">{draft.categoria}</span><h2>{draft.titulo}</h2><p>{draft.descripcion}</p>{draft.tipo !== 'servicio' && <p>{draft.cupos} cupos disponibles</p>}<p className="muted"><MapPin size={16} />{draft.barrio}</p>{draft.es_emergencia && <span className="badge emergency-badge">Apoyo en emergencia</span>}<div className="privacy"><ShieldCheck size={19} />Solo compartimos tu zona, no tu dirección exacta.</div><button className="button primary wide" disabled={saving || loading} onClick={() => publish()}>Publicar {draft.tipo === 'solicitud' ? 'solicitud' : draft.tipo === 'servicio' ? 'servicio' : 'ofrecimiento'}<ArrowRight size={18} /></button></div> : <form className="panel publish-form" onSubmit={(e) => { e.preventDefault(); try { validateCapacity(draft); } catch (failure) { setNotice(failure.message); return; } if (draft.titulo.trim().length < 5 || draft.descripcion.trim().length < 10 || draft.barrio.trim().length < 2) { setNotice('Completa el título, la descripción y el barrio con más detalle.'); return; } setNotice(''); setReview(true); }}><fieldset><legend>¿Qué quieres compartir?</legend><div className="type-options">{[['solicitud', 'Necesito ayuda'], ['ofrecimiento', 'Ofrezco ayuda'], ['servicio', 'Un servicio']].map(([type, label]) => <button key={type} type="button" aria-pressed={draft.tipo === type} className={draft.tipo === type ? 'selected' : ''} onClick={() => setDraft({ ...draft, tipo: type })}>{label}</button>)}</div></fieldset><label>Título<input required minLength={5} maxLength={120} value={draft.titulo} onChange={(e) => setDraft({ ...draft, titulo: e.target.value })} placeholder="Ej.: Necesito una escalera prestada" /></label><label>Cuéntale un poco más al barrio<textarea required minLength={10} maxLength={2000} value={draft.descripcion} onChange={(e) => setDraft({ ...draft, descripcion: e.target.value })} placeholder="¿Qué necesitas u ofreces y para cuándo?" /></label><AiPublicationAssistant key={draft.tipo + draft.descripcion} text={draft.descripcion} type={draft.tipo} onApply={(proposal) => { setDraft({ ...draft, ...proposal }); setNotice('Propuesta aplicada. Revisa los campos antes de publicar.'); }} /><div className="form-row"><label>Categoría<select value={draft.categoria} onChange={(e) => setDraft({ ...draft, categoria: e.target.value })}>{['Herramientas', 'Gasfitería', 'Electricidad', 'Compras y traslados', 'Clases', 'Agua y alimentos', 'Otros'].map((c) => <option key={c}>{c}</option>)}</select></label><label>Barrio<input required minLength={2} maxLength={120} readOnly={Boolean(account)} value={draft.barrio} onChange={(e) => setDraft({ ...draft, barrio: e.target.value })} /></label></div><CapacityField type={draft.tipo} value={draft.cupos} onChange={cupos => setDraft({ ...draft, cupos })}/><LocationControl forPublication value={draft} onChange={point => setDraft({ ...draft, latitud: point?.latitud ?? null, longitud: point?.longitud ?? null })}/><label className="checkbox"><input type="checkbox" checked={draft.es_emergencia} onChange={(e) => setDraft({ ...draft, es_emergencia: e.target.checked })} />Es una necesidad o recurso de apoyo en emergencia</label><button type="submit" className="button primary wide">Revisar publicación<ArrowRight size={18} /></button></form>}
         </section> : <>
           {view === 'inicio' ? <><section className="home-intro">
             <h1>Hola, {people[user]}</h1>

@@ -44,20 +44,40 @@ Paleta: primario `#1E4532`, secundario `#C85A32`, terciario `#D2E3D6`, neutro `#
 
 Antes de editar la misma pantalla, acuerden quién la modifica.
 
-## Siguiente etapa: Supabase
+## Conexión con Supabase
 
 Las tablas existentes son `perfiles`, `publicaciones` y `ofrecimientos`. No vuelvas a ejecutar su creación.
 
 1. Copia `.env.example` a `.env.local`.
 2. Completa URL y clave **publicable** (`sb_publishable_...`).
 3. Reinicia Vite tras cambiar variables.
-4. Implementa Auth, creación del perfil y operaciones con sesiones reales. Sustituye los identificadores demo por UUID de Auth.
+4. Auth, creación del perfil y operaciones reales están implementados; las cuentas reales usan UUID de Auth.
 5. Comprueba RLS con dos sesiones y sin iniciar sesión: Luis no debe editar publicaciones de Ana y solo los participantes deben leer los ofrecimientos.
-6. Implementa la aceptación y el cambio a `en_coordinacion` en una transacción del servidor (RPC) antes de usar datos reales.
+6. Aplica las migraciones de `supabase/migrations` que aún no hayas ejecutado. La aceptación utiliza la RPC `aceptar_ofrecimiento`.
 
 Todo `VITE_*` es visible en el navegador. Nunca incluyas contraseñas de base de datos, `service_role`, `sb_secret_` o claves de IA. La clave publicable depende de RLS y permisos correctos.
 
-Las variables no activan automáticamente el modo conectado. La interfaz sigue usando demo hasta implementar las operaciones reales. El acceso remoto aún no está probado.
+Con las variables configuradas puedes iniciar sesión con una cuenta real o elegir explícitamente la demostración. Las pruebas automáticas de interfaz usan dobles del SDK; no sustituyen la comprobación con dos cuentas en tu proyecto.
+
+## Cupos y participantes: actualización de Supabase
+
+**Antes de publicar este frontend**, ejecuta el contenido completo de `supabase/migrations/20261107_cupos_participantes.sql` en Supabase → SQL Editor → New query → Run. Esta migración necesita las tablas existentes; no vuelve a crearlas. Después haz commit/push y espera al despliegue de Vercel. No modifica las migraciones anteriores ya aplicadas.
+
+- Solicitudes y ofrecimientos: de 1 a 100 cupos, con 1 como valor inicial. Los define el autor tanto en el formulario como en el borrador de IA. Responder no reserva: solo aceptar ocupa un cupo.
+- Servicios: varias consultas privadas; aceptar coordinación no supone reservar un horario ni garantiza disponibilidad del prestador. No hay agenda de reservas en este MVP.
+- La lista de participantes muestra nombres de aceptados de solicitudes/ofrecimientos. Antes de responder, se avisa al vecino de que su nombre aparecerá si es aceptado. No se publica una lista de clientes de servicios.
+- Los mensajes los leen el remitente y el autor. Una política RLS restrictiva impide que una política de lectura más amplia los exponga. La función `participantes_confirmados` devuelve únicamente publicación, identificador del participante y nombre; requiere sesión y comunidad coincidente, autoría o participación previa.
+- La aceptación bloquea la publicación con `FOR UPDATE`, vuelve a contar las aceptaciones y actualiza respuesta/publicación dentro de la misma transacción. Al competir por el último cupo, la segunda aceptación debe fallar con `CAPACITY_FULL`. Repetir una aceptación ya guardada no ocupa otro cupo.
+- Se revoca la actualización directa de ofrecimientos para que los clientes no omitan esta función. Un trigger impide nuevas respuestas a publicaciones llenas o cerradas. Las aceptaciones existentes se conservan ampliando sus cupos cuando sea necesario. Si una publicación tiene más de 100 aceptados, la migración se detiene para revisar ese caso.
+
+Comprobación en Supabase antes de dar la mejora por terminada:
+
+1. Crea una solicitud de un cupo; dos vecinos distintos responden. Ambos quedan pendientes.
+2. Con dos sesiones del autor, acepta respuestas diferentes al mismo tiempo. Debe quedar una sola aceptada, la otra pendiente y aparecer `CAPACITY_FULL` en la segunda transacción. Actualiza ambas pantallas.
+3. Con un tercer vecino, consulta participantes: verá el nombre aceptado, sin mensajes. Comprueba también por API que no puede leer los mensajes de otras personas ni aceptar sus respuestas.
+4. Crea una solicitud de dos cupos y acepta dos respuestas; una tercera no debe aceptarse. Comprueba que un servicio admite más de una coordinación y no muestra su lista de clientes.
+
+Validación local: pruebas de interfaz en móvil/escritorio, reglas de la demo y migración en PostgreSQL embebido con un esquema de prueba (permisos, privacidad, cupos, idempotencia y servicios). La concurrencia real y las políticas del proyecto remoto requieren la comprobación anterior; no se han verificado desde este equipo.
 
 ## Vercel
 
