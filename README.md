@@ -81,6 +81,18 @@ Validación local: pruebas de interfaz en móvil/escritorio, reglas de la demo y
 
 ## Vercel
 
+### Manolito, tutorial y dictado
+
+El asistente se llama **Manolito**; el nombre del producto sigue siendo **Una Manito**. Se utilizan tres imágenes aportadas por el equipo en `public/manolito-*.png`, sin modificar los archivos originales. El resto de referencias gráficas quedan disponibles para una etapa posterior.
+
+El botón **Cómo usar la app** de la cabecera abre un recorrido de cinco pasos, también accesible desde el chat. Incluye prácticas para pedir ayuda, ofrecerla y buscar servicios, con avance, retroceso, corrección y omisión. Cada apertura empieza desde el principio. Las prácticas son locales: no llaman a Gemini ni crean publicaciones. La animación de la mascota respeta la preferencia de movimiento reducido. No se abre automáticamente para interrumpir el uso habitual.
+
+El dictado está disponible en los tres modos del chat y en la descripción del formulario manual cuando el navegador proporciona `SpeechRecognition` o `webkitSpeechRecognition`. Solo se inicia al pulsar **Dictar por voz**, usa español de Perú y deja una transcripción editable. **Usar este texto** la añade al contenido existente, sin enviarlo ni publicarlo. Cerrar el chat o salir del campo detiene la sesión. La escritura sigue disponible cuando no hay compatibilidad, no se concede permiso o falla el servicio.
+
+El navegador puede procesar audio en un servicio externo y necesitar conexión. La app lo indica antes de activar el micrófono; no guarda grabaciones ni las envía a Gemini. Gemini recibe texto solo cuando el vecino pulsa enviar o pide preparar una publicación. [Compatibilidad y procesamiento de SpeechRecognition](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition).
+
+No requiere migraciones nuevas en Supabase ni claves adicionales en Vercel. Las pruebas automatizadas simulan el reconocimiento para verificar revisión, envío manual, permisos denegados y cierre del micrófono; falta comprobar la calidad de transcripción con un micrófono real en los navegadores/dispositivos del equipo.
+
 ### Vencimiento e historial de publicaciones
 
 Antes de desplegar esta actualización, ejecuta `supabase/migrations/20261108_ciclo_publicaciones.sql` en SQL Editor. Necesita que la migración de cupos ya esté aplicada. No vuelvas a ejecutar migraciones anteriores que sustituyan las mismas funciones por sus versiones antiguas.

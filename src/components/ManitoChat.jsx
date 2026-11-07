@@ -1,3 +1,5 @@
+import ManolitoTutorial from './ManolitoTutorial.jsx';
+import VoiceDictation from './VoiceDictation.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { X, Send, ArrowLeft } from 'lucide-react';
 import './manito-chat.css';
@@ -10,7 +12,7 @@ const modes = {
   solicitud: ['Pedir una manito', '¿Qué ayuda necesitas?'],
   ofrecimiento: ['Dar una manito', '¿Qué puedes prestar, compartir o hacer?'],
   busqueda: ['Buscar un servicio', '¿Qué problema quieres resolver?'],
-  guia: ['Cómo usar la app', 'Elige una de las tres opciones. Puedes revisar el pedido antes de publicarlo y verlo después en Mi actividad. Para emergencias, abre Apoyo en emergencia desde Mi barrio.'],
+  guia: ['Cómo usar la app'],
 };
 const categories = ['Herramientas', 'Gasfitería', 'Electricidad', 'Compras y traslados', 'Clases', 'Agua y alimentos', 'Otros'];
 const normalize = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -28,6 +30,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
   const [error, setError] = useState('');
   const [location, setLocation] = useState(null);
   const [capacity, setCapacity] = useState(1);
+  const [dictating, setDictating] = useState(false);
   useEffect(() => {
     const node = dialog.current;
     node.showModal();
@@ -44,7 +47,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
   async function send(event) {
     event.preventDefault();
     const text = message.trim();
-    if (!text || busy || saving) return;
+    if (!text || busy || saving || dictating) return;
     if (!navigator.onLine) { setError('Sin conexión. Conserva tu mensaje o abre el formulario manual.'); return; }
     const controller = new AbortController();
     request.current = controller;
@@ -62,7 +65,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
       setTurns(previous => [...previous, { text, reply: item.interpretacion || item.titulo }]);
       setMessage('');
     } catch (e) {
-      if (!controller.signal.aborted) setError(e.message || 'No se pudo conectar con Manito.');
+      if (!controller.signal.aborted) setError(e.message || 'No se pudo conectar con Manolito.');
     } finally { if (!controller.signal.aborted) setBusy(false); }
   }
 
@@ -71,15 +74,15 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
     (search.categoria === 'Otros' ? search.terminos.some(t => normalize(p.titulo + ' ' + p.descripcion).includes(normalize(t))) : p.categoria === search.categoria));
 
   return <dialog className="manito-dialog" ref={dialog} aria-labelledby="manito-title" onCancel={e => { e.preventDefault(); if (!saving) onClose(); }}>
-    <header><img src="/manito.png" alt="" /><div><strong id="manito-title">Chat con Manito</strong><small>Asistente de IA · {barrio}</small></div>
+    <header><img src="/manolito-avatar.png" alt="" /><div><strong id="manito-title">{mode === 'guia' ? 'Aprende con Manolito' : 'Chat con Manolito'}</strong><small>{mode === 'guia' ? 'Tutorial sin publicaciones' : `Asistente de IA · ${barrio}`}</small></div>
       <button autoFocus disabled={saving} aria-label="Cerrar chat" onClick={onClose}><X /></button></header>
-    <div className="chat-scroll">
+    <div className="chat-scroll">{mode === 'guia' ? <ManolitoTutorial name={name} onClose={onClose}/> : <>
       {!mode && <h2>Hola, {name}</h2>}
       {!mode ? <><p>¿En qué te doy una manito hoy?</p><div className="chat-choices">{Object.entries(modes).map(([id, [label]]) => <button key={id} onClick={() => choose(id)}>{label}</button>)}</div></> :
         <><button disabled={saving} className="text-button" onClick={() => choose(null)}><ArrowLeft size={16}/>Cambiar de tema</button>
           <h3>{modes[mode][0]}</h3><p>{modes[mode][1]}</p></>}
       <div aria-live="polite">{turns.map((t,i) => <div key={i}><p className="chat-user">{t.text}</p>{i < turns.length - 1 && <p className="chat-answer">{t.reply}</p>}</div>)}</div>
-      {busy && <p role="status">Manito está preparando tu respuesta…</p>}
+      {busy && <p role="status">Manolito está preparando tu respuesta…</p>}
       {draft && <form className="panel chat-draft" onSubmit={async e => {
         e.preventDefault(); if (saving || busy) return;
         if (draft.titulo.trim().length < 5 || draft.descripcion.trim().length < 10) { setError('Completa el título y la descripción.'); return; }
@@ -97,8 +100,13 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
       <button className="button primary wide" disabled={busy || saving || loading}>{saving ? 'Publicando…' : 'Confirmar y publicar'}</button></form>}
       {search && <section><h3>{search.interpretacion}</h3>{hits.length ? hits.map(p=><button className="chat-result" key={p.id} onClick={()=>onOpen(p.id)}><strong>{p.titulo}</strong><span>{p.categoria} · Ver servicio →</span></button>) : <p>{loading ? 'Consultando publicaciones…' : 'Sin coincidencias en las publicaciones disponibles.'}</p>}</section>}
       {error && <p className="auth-error" role="alert">{error}</p>}
-      <div ref={bottom}/></div>
-    {mode && mode !== 'guia' && <footer><form onSubmit={send}><input aria-label="Mensaje para Manito" maxLength={2000} required value={message} disabled={busy || saving} onChange={e=>setMessage(e.target.value)} placeholder={turns.length ? 'Cambia o agrega un detalle…' : 'Escribe con tus palabras…'}/><button className="button primary" aria-label="Enviar mensaje" disabled={busy || saving || !message.trim()}><Send size={18}/></button></form>
+      </>}<div ref={bottom}/></div>
+    {mode && mode !== 'guia' && <footer><form onSubmit={send}><input aria-label="Mensaje para Manolito" maxLength={2000} required value={message} disabled={busy || saving || dictating} onChange={e=>setMessage(e.target.value)} placeholder={turns.length ? 'Cambia o agrega un detalle…' : 'Escribe con tus palabras…'}/><button className="button primary" aria-label="Enviar mensaje" disabled={busy || saving || dictating || !message.trim()}><Send size={18}/></button></form>
+    <VoiceDictation key={mode} disabled={busy || saving} onListeningChange={setDictating} onTranscript={text => {
+      const next = [message.trim(), text].filter(Boolean).join(' ');
+      if (next.length > 2000) { setError('El mensaje completo supera 2000 caracteres. Acorta el texto antes de añadir el dictado.'); return false; }
+      setMessage(next); setError(''); return true;
+    }}/>
     <small>Gemini procesa tu mensaje. Solo se comparte lo que publiques.</small><button className="text-button" disabled={saving} onClick={()=>onManual(mode)}>Continuar manualmente</button></footer>}
   </dialog>;
 }

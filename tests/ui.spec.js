@@ -91,7 +91,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   expect(errors).toEqual([]);
 });
 
-test('Manito conserva el borrador al corregirlo y publica con confirmación', async ({ page }) => {
+test('Manolito conserva el borrador al corregirlo y publica con confirmación', async ({ page }) => {
   await page.route('**/api/prepare-publication', async route => {
     const body = route.request().postDataJSON();
     const correction = body.texto === 'mejor mañana';
@@ -102,10 +102,10 @@ test('Manito conserva el borrador al corregirlo y publica con confirmación', as
     } } });
   });
   await page.getByRole('button', {name:'Pedir una manito',exact:true}).click();
-  await page.getByLabel('Mensaje para Manito').fill('Necesito una escalera hoy');
+  await page.getByLabel('Mensaje para Manolito').fill('Necesito una escalera hoy');
   await page.getByLabel('Enviar mensaje').click();
   await expect(page.getByLabel('Descripción del borrador')).toHaveValue(/hoy/);
-  await page.getByLabel('Mensaje para Manito').fill('mejor mañana');
+  await page.getByLabel('Mensaje para Manolito').fill('mejor mañana');
   await page.getByLabel('Enviar mensaje').click();
   await expect(page.getByLabel('Descripción del borrador')).toHaveValue(/mañana/);
   await page.getByRole('button',{name:'Confirmar y publicar'}).click();

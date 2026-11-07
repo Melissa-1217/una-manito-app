@@ -4,5 +4,6 @@ import '@fontsource-variable/plus-jakarta-sans';
 import AuthFlow from './components/AuthFlow.jsx';
 import './styles.css';
 import './auth.css';
+import './components/manolito.css';
 
 createRoot(document.getElementById('root')).render(<React.StrictMode><AuthFlow /></React.StrictMode>);
