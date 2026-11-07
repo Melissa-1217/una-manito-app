@@ -17,6 +17,7 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Ofrece una manito/ }).click();
+  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
   await expect(page.getByRole('heading', { name: 'IA para dar una manito' })).toBeVisible();
   await page.getByLabel('Escribe con tus propias palabras').fill('Presto escalera los sábados');
   await page.getByRole('button', { name: 'Preparar mi ofrecimiento con IA' }).click();
@@ -25,6 +26,7 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Busca un servicio/ }).click();
+  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
   await page.getByLabel('Escribe con tus propias palabras').fill('Se rompió un caño');
   await page.getByRole('button', { name: 'Interpretar mi búsqueda con IA' }).click();
   await page.getByRole('button', { name: 'Buscar en los servicios publicados' }).click();
@@ -40,6 +42,7 @@ test('revisa y aplica una propuesta de IA antes de publicar', async ({ page }) =
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
   await page.getByLabel('Escribe con tus propias palabras').fill('Veci se rompió un caño y necesito un gasfitero cerca.');
   await page.getByRole('button', { name: 'Preparar mi pedido con IA', exact: true }).click();
   await expect(page.getByText('Propuesta para revisar', { exact: true })).toBeVisible();
@@ -60,6 +63,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   if (testInfo.project.name === 'mobile') await expect(page.getByRole('button', { name: 'Apoyo en emergencia', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
   await page.getByLabel('Título', { exact: true }).fill('Necesito un taladro por una hora');
   await page.getByLabel('Cuéntale un poco más al barrio').fill('Para colocar una repisa esta tarde. Lo devuelvo al terminar.');
   await page.getByRole('button', { name: 'Revisar publicación' }).click();
@@ -84,4 +88,26 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await expect(page.getByRole('heading', { name: 'Necesito un taladro por una hora' })).toBeVisible();
   expect(errors).toEqual([]);
+});
+
+test('Manito conserva el borrador al corregirlo y publica con confirmación', async ({ page }) => {
+  await page.route('**/api/prepare-publication', async route => {
+    const body = route.request().postDataJSON();
+    const correction = body.texto === 'mejor mañana';
+    if (correction) expect(body.contexto.anterior.descripcion).toContain('hoy');
+    await route.fulfill({ json: { propuesta: {
+      titulo: 'Busco una escalera', descripcion: 'Necesito una escalera ' + (correction ? 'mañana' : 'hoy'),
+      categoria: 'Herramientas', por_confirmar: [],
+    } } });
+  });
+  await page.getByRole('button', {name:'Pedir una manito',exact:true}).click();
+  await page.getByLabel('Mensaje para Manito').fill('Necesito una escalera hoy');
+  await page.getByLabel('Enviar mensaje').click();
+  await expect(page.getByLabel('Descripción del borrador')).toHaveValue(/hoy/);
+  await page.getByLabel('Mensaje para Manito').fill('mejor mañana');
+  await page.getByLabel('Enviar mensaje').click();
+  await expect(page.getByLabel('Descripción del borrador')).toHaveValue(/mañana/);
+  await page.getByRole('button',{name:'Confirmar y publicar'}).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('heading',{name:'Busco una escalera',exact:true})).toBeVisible();
 });
