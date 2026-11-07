@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, HandHeart, MapPin, MailCheck, ShieldCheck, LogOut } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase.js';
 import App from '../App.jsx';
+import NeighborhoodField from './NeighborhoodField.jsx';
 
 function AuthLayout({ children }) {
   return <div className="auth-page">
@@ -95,9 +96,9 @@ function Credentials({ client, onDemo }) {
   </AuthLayout>;
 }
 
-function ChooseNeighborhood({ client, session, onSaved, onSignOut }) {
-  const [name, setName] = useState(session.user.user_metadata?.nombre || '');
-  const [neighborhood, setNeighborhood] = useState('');
+function ChooseNeighborhood({ client, session, profile, onSaved, onSignOut, onCancel }) {
+  const [name, setName] = useState(profile?.nombre || session.user.user_metadata?.nombre || '');
+  const [neighborhood, setNeighborhood] = useState(profile?.barrio || '');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
 
@@ -106,9 +107,11 @@ function ChooseNeighborhood({ client, session, onSaved, onSignOut }) {
     setPending(true);
     setError('');
     try {
-      const profile = { id: session.user.id, nombre: name.trim(), barrio: neighborhood.trim() };
-      if (profile.nombre.length < 2 || profile.barrio.length < 2) throw new Error('Completa tu nombre y barrio con al menos dos caracteres.');
-      let result = await client.from('perfiles').insert(profile).select('id,nombre,barrio').single();
+      const values = { id: session.user.id, nombre: name.trim(), barrio: neighborhood.trim().replace(/\s+/g, ' ') };
+      if (values.nombre.length < 2 || values.barrio.length < 2) throw new Error('Completa tu nombre y barrio con al menos dos caracteres.');
+      let result = profile
+        ? await client.from('perfiles').update({ barrio: values.barrio }).eq('id', session.user.id).select('id,nombre,barrio').single()
+        : await client.from('perfiles').insert(values).select('id,nombre,barrio').single();
       if (result.error?.code === '23505') {
         result = await client.from('perfiles').select('id,nombre,barrio').eq('id', session.user.id).single();
       }
@@ -119,17 +122,18 @@ function ChooseNeighborhood({ client, session, onSaved, onSignOut }) {
     } finally { setPending(false); }
   }
 
-  return <AuthLayout><div className="auth-symbol"><MapPin size={34} /></div><h1>Elige tu barrio</h1>
+  return <AuthLayout><div className="auth-symbol"><MapPin size={34} /></div><h1>{profile ? 'Cambiar barrio' : 'Elige tu barrio'}</h1>
     <p className="muted">¿En qué comunidad quieres participar?</p>
     <form className="panel auth-form" onSubmit={save}><fieldset disabled={pending}>
-      <label>Tu nombre<input required minLength={2} maxLength={80} value={name} onChange={(event) => setName(event.target.value)} autoComplete="given-name" /></label>
-      <label>Barrio o sector<input required minLength={2} maxLength={120} value={neighborhood} onChange={(event) => setNeighborhood(event.target.value)} placeholder="Ej.: San Miguel · Parque Media Luna" /></label>
-      <p className="ai-hint">Usa una zona de referencia. Evita escribir tu dirección exacta.</p>
+      {!profile && <label>Tu nombre<input required minLength={2} maxLength={80} value={name} onChange={(event) => setName(event.target.value)} autoComplete="given-name" /></label>}
+      <NeighborhoodField client={client} value={neighborhood} onChange={setNeighborhood} />
+      {profile && <p className="ai-hint">Verás las publicaciones del barrio elegido. Tus publicaciones anteriores conservarán su barrio original.</p>}
       {error && <p className="auth-error" role="alert">{error}</p>}
-      <button type="submit" className="button primary wide">{pending ? 'Guardando…' : 'Entrar a mi barrio'}<ArrowRight size={17} /></button>
+      <button type="submit" className="button primary wide">{pending ? 'Guardando…' : profile ? 'Guardar barrio' : 'Entrar a mi barrio'}<ArrowRight size={17} /></button>
     </fieldset></form>
     <div className="privacy"><ShieldCheck size={20} />El barrio es una referencia para encontrar publicaciones cercanas.</div>
-    <button className="text-button" onClick={onSignOut}><LogOut size={16} />Cerrar sesión</button>
+    {onCancel && <button className="button secondary wide" disabled={pending} onClick={onCancel}>Cancelar</button>}
+    <button className="text-button" disabled={pending} onClick={onSignOut}><LogOut size={16} />Cerrar sesión</button>
   </AuthLayout>;
 }
 
@@ -141,6 +145,7 @@ export default function AuthFlow() {
   const [sessionResult, setSessionResult] = useState(null);
   const [profileResult, setProfileResult] = useState(null);
   const [retry, setRetry] = useState(0);
+  const [editingNeighborhood, setEditingNeighborhood] = useState(false);
   const session = sessionResult?.session;
   const userId = session?.user.id;
 
@@ -177,6 +182,7 @@ export default function AuthFlow() {
     const { error } = await client.auth.signOut({ scope: 'local' });
     if (error) { window.alert('No se pudo cerrar la sesión. Intenta nuevamente.'); return; }
     setProfileResult(null);
+    setEditingNeighborhood(false);
   }
 
   if (demo) return <App onExitDemo={() => setDemo(false)} />;
@@ -185,5 +191,6 @@ export default function AuthFlow() {
   if (profileResult?.userId !== userId || profileResult.attempt !== retry) return <AuthLayout><p role="status">Cargando tu perfil…</p></AuthLayout>;
   if (profileResult.error) return <AuthLayout><h1>Tu perfil está pendiente</h1><p role="alert">No pudimos consultar tu perfil. Revisa la conexión y los permisos de Supabase.</p><button className="button primary wide" onClick={() => setRetry(retry + 1)}>Volver a intentar</button><button className="text-button" onClick={signOut}>Cerrar sesión</button></AuthLayout>;
   if (!profileResult.profile) return <ChooseNeighborhood key={userId} client={client} session={session} onSaved={(profile) => setProfileResult({ userId, profile, attempt: retry })} onSignOut={signOut} />;
-  return <App key={userId} account={profileResult.profile} onSignOut={signOut} />;
+  if (editingNeighborhood) return <ChooseNeighborhood key={userId} client={client} session={session} profile={profileResult.profile} onSaved={profile => { setProfileResult({ userId, profile, attempt: retry }); setEditingNeighborhood(false); }} onCancel={() => setEditingNeighborhood(false)} onSignOut={signOut} />;
+  return <App key={`${userId}-${profileResult.profile.barrio}`} account={profileResult.profile} onSignOut={signOut} onChangeNeighborhood={() => setEditingNeighborhood(true)} />;
 }

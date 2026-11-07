@@ -23,7 +23,7 @@ function loadData(storageKey) {
   return structuredClone(initialData);
 }
 
-export default function App({ account, onSignOut, onExitDemo }) {
+export default function App({ account, onSignOut, onExitDemo, onChangeNeighborhood }) {
   const storageKey = account ? `${STORE}-${account.id}` : STORE;
   const neighborhood = account?.barrio || 'Barrio Demo · San Miguel';
   const newDraft = { ...emptyDraft, barrio: account?.barrio || emptyDraft.barrio };
@@ -172,7 +172,7 @@ export default function App({ account, onSignOut, onExitDemo }) {
   const alreadyOffered = offers.some((o) => o.vecino_id === user);
   const own = publication?.autor_id === user;
   const filtered = data.publicaciones.filter((p) => {
-    if (account && p.barrio.trim().toLocaleLowerCase('es') !== account.barrio.trim().toLocaleLowerCase('es')) return false;
+    if (account && view !== 'actividad' && p.barrio.trim().toLocaleLowerCase('es') !== account.barrio.trim().toLocaleLowerCase('es')) return false;
     if (view === 'servicios' && serviceIntent) {
       const normalize = (value) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
       const matchesIntent = serviceIntent.categoria === 'Otros'
@@ -192,7 +192,10 @@ export default function App({ account, onSignOut, onExitDemo }) {
       <button className={`nav-item emergency-link ${view === 'emergencia' ? 'active' : ''}`} onClick={() => navigate('emergencia')}><AlertTriangle size={20} />Apoyo en emergencia</button>
     </aside>
     <div className="workspace">
-      <header className="topbar"><span className="topbar-location"><MapPin size={16} />{neighborhood}</span>{account ? <button className="account-menu" onClick={onSignOut}><span className="avatar">{account.nombre[0]}</span><span>{account.nombre}</span><span>Cerrar sesión</span></button> : <label className="user-switch"><span className="avatar">{people[user][0]}</span><select aria-label="Cambiar usuario de demostración" value={user} onChange={(e) => { setUser(e.target.value); setSelected(null); setMessage(''); setNotice(''); }}><option value="ana">Ana · demo</option><option value="luis">Luis · demo</option></select></label>}</header>
+      <header className="topbar"><div className="topbar-community"><span className="topbar-location"><MapPin size={16} />{neighborhood}</span>{account && <button className="change-neighborhood" disabled={saving} onClick={() => {
+        if ((draft.titulo.trim() || draft.descripcion.trim() || message.trim()) && !window.confirm('Tienes un texto sin publicar. Si cambias de barrio se descartará. ¿Continuar?')) return;
+        onChangeNeighborhood?.();
+      }}>Cambiar barrio</button>}</div>{account ? <button className="account-menu" onClick={onSignOut}><span className="avatar">{account.nombre[0]}</span><span>{account.nombre}</span><span>Cerrar sesión</span></button> : <label className="user-switch"><span className="avatar">{people[user][0]}</span><select aria-label="Cambiar usuario de demostración" value={user} onChange={(e) => { setUser(e.target.value); setSelected(null); setMessage(''); setNotice(''); }}><option value="ana">Ana · demo</option><option value="luis">Luis · demo</option></select></label>}</header>
       <div className="demo-banner"><span><strong>{account ? "Cuenta conectada" : "Demostración"}</strong> {account ? "" : "Datos ilustrativos guardados en este navegador."}</span>{account ? <button disabled={loading || saving} onClick={refreshPublications}><RotateCcw size={13} />{loading ? "Actualizando…" : "Actualizar publicaciones"}</button> : <button onClick={() => { if (window.confirm('¿Restablecer los datos de ejemplo? Se borrarán las publicaciones de esta demo local.')) { setData(structuredClone(initialData)); navigate('inicio'); } }}><RotateCcw size={13} />Reiniciar demo</button>}{!account && <button onClick={onExitDemo}>Volver al acceso</button>}</div>
       {storageError && <p className="notice" role="alert">No se pudo guardar en este navegador. Los cambios durarán mientras mantengas esta página abierta.</p>}
       <main id="contenido">{account && loading && <p role="status">Cargando publicaciones…</p>}{account && loadError && <div className="auth-error" role="alert">{loadError}<button className="text-button" onClick={refreshPublications}>Volver a intentar</button></div>}
