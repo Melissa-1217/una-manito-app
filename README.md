@@ -29,7 +29,7 @@ La interfaz es un **prototipo local**, no una aplicación conectada a Supabase. 
 
 Recorrido: Ana publica una necesidad → cambia el selector a Luis → abre la publicación y responde → cambia a Ana → acepta → marca como resuelta. `Reiniciar demo` restablece los datos iniciales tras confirmación.
 
-Incluye inicio, directorio de servicios de ejemplo, formulario y revisión, detalle, actividad y listado de apoyo en emergencia. Recomendaciones, contacto, mapa, registro, tutorial, IA, notificaciones, fotos y PWA/offline completo están pendientes. localStorage por sí solo no permite abrir la aplicación sin conexión.
+Incluye inicio, directorio de servicios de ejemplo, formulario y revisión, detalle, actividad y listado de apoyo en emergencia. Recomendaciones, contacto, mapa, registro, tutorial, notificaciones, fotos y PWA/offline completo están pendientes. localStorage por sí solo no permite abrir la aplicación sin conexión.
 
 ## Diseño y archivos
 
@@ -62,3 +62,13 @@ Las variables no activan automáticamente el modo conectado. La interfaz sigue u
 ## Vercel
 
 Preset Vite, build `npm run build`, salida `dist`. La base usa navegación por estado sin rutas adicionales. Configura las variables al conectar Supabase.
+
+## Asistente de publicación con Gemini
+
+El formulario incluye un asistente que propone título, descripción y categoría desde un mensaje. El vecino revisa la propuesta y la aplica explícitamente antes de publicar. La propuesta no modifica el barrio ni el indicador de emergencia. El texto se envía a Gemini.
+
+Configura `GEMINI_API_KEY` y, opcionalmente, `GEMINI_MODEL` en `.env.local`. El modelo predeterminado es `gemini-2.5-flash`; puedes cambiarlo por uno compatible con generateContent y salidas estructuradas disponible en tu cuenta. Reinicia `npm run dev` después de cambiar estas variables. En Vercel configura las mismas variables y vuelve a desplegar. No uses el prefijo `VITE_` para estas variables.
+
+`api/prepare-publication.js` es una función Node de Vercel. Vite la sirve localmente mediante middleware. `npm run preview` solo sirve los archivos estáticos y no incluye la función. Las pruebas automatizadas usan respuestas simuladas del proveedor. La conexión real necesita la clave de Gemini y cuota disponible.
+
+El endpoint todavía no usa una sesión Supabase. Antes de abrir el uso de IA a una audiencia amplia, conectar autenticación y límites de solicitudes por usuario para controlar el consumo. El dictado por voz sigue pendiente.

@@ -1,5 +1,22 @@
 import { test, expect } from '@playwright/test';
 
+test('revisa y aplica una propuesta de IA antes de publicar', async ({ page }) => {
+  await page.route('**/api/prepare-publication', async (route) => {
+    expect(route.request().postDataJSON().texto).toContain('caño');
+    await route.fulfill({ json: { propuesta: { titulo: 'Necesito un gasfitero', descripcion: 'Se rompió un caño y necesito un gasfitero cerca.', categoria: 'Gasfitería' } } });
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await page.getByLabel('Escribe con tus propias palabras').fill('Veci se rompió un caño y necesito un gasfitero cerca.');
+  await page.getByRole('button', { name: 'Preparar con IA', exact: true }).click();
+  await expect(page.getByText('Propuesta para revisar', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Título', { exact: true })).toHaveValue('');
+  await page.getByRole('button', { name: 'Usar propuesta en los campos' }).click();
+  await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Necesito un gasfitero');
+  await page.getByRole('button', { name: 'Revisar publicación' }).click();
+  await expect(page.getByRole('button', { name: 'Publicar solicitud' })).toBeVisible();
+});
+
 test('publicar, responder con otro vecino, aceptar y resolver', async ({ page }, testInfo) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
