@@ -21,8 +21,8 @@ export default function AiPublicationAssistant({ type, onApply }) {
 
   async function prepare() {
     resetResult();
-    if (text.trim().length < 10) {
-      setError('Cuéntanos un poco más. Escribe al menos 10 caracteres.');
+    if (text.trim().length < 3) {
+      setError('Escribe qué necesitas u ofreces. Puedes usar una frase corta.');
       return;
     }
     const currentId = requestId.current;
@@ -51,7 +51,7 @@ export default function AiPublicationAssistant({ type, onApply }) {
     <div className="ai-heading"><Sparkles size={22} /><h2 id="assistant-title">Cuéntanos qué necesitas</h2></div>
     <p>La IA te ayuda a preparar tu publicación. Tú revisas y decides qué compartir.</p>
     <label htmlFor="ai-message">Escribe con tus propias palabras</label>
-    <textarea id="ai-message" maxLength={2000} value={text} onChange={(event) => { resetResult(); setText(event.target.value); }} placeholder="Veci, necesito una escalera para esta tarde. La devuelvo hoy mismo." aria-describedby="ai-privacy" />
+    <textarea id="ai-message" maxLength={2000} value={text} onChange={(event) => { resetResult(); setText(event.target.value); }} placeholder="Ej.: gasfitero, ayuda mudanza o presto escalera" aria-describedby="ai-privacy" />
     <p id="ai-privacy" className="ai-hint">El mensaje se envía a Gemini para organizarlo. Evita incluir tu dirección exacta, DNI o teléfono.</p>
     <button className="button primary wide" type="button" disabled={pending} onClick={prepare}>
       {pending ? <LoaderCircle className="loading-icon" size={18} /> : <Sparkles size={18} />}
@@ -61,7 +61,8 @@ export default function AiPublicationAssistant({ type, onApply }) {
     {proposal && <div className="ai-proposal" aria-live="polite">
       <span className="badge">Propuesta para revisar</span>
       <h3>{proposal.titulo}</h3><p>{proposal.descripcion}</p><p>Categoría sugerida · {proposal.categoria}</p>
-      <button className="button secondary wide" type="button" onClick={() => { onApply(proposal); setProposal(null); }}><ArrowDown size={17} />Usar propuesta en los campos</button>
+      {proposal.por_confirmar?.length > 0 && <div className="ai-questions"><strong>Detalles que puedes agregar</strong><ul>{proposal.por_confirmar.map((question) => <li key={question}>{question}</li>)}</ul><p>Puedes completarlos al editar la descripción.</p></div>}
+      <button className="button secondary wide" type="button" onClick={() => { onApply({ titulo: proposal.titulo, descripcion: proposal.descripcion, categoria: proposal.categoria }); setProposal(null); }}><ArrowDown size={17} />Usar propuesta en los campos</button>
     </div>}
     <p className="ai-hint">También puedes completar directamente los campos de abajo.</p>
   </section>;

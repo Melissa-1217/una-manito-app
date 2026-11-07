@@ -67,7 +67,7 @@ Preset Vite, build `npm run build`, salida `dist`. La base usa navegación por e
 
 El formulario incluye un asistente que propone título, descripción y categoría desde un mensaje. El vecino revisa la propuesta y la aplica explícitamente antes de publicar. La propuesta no modifica el barrio ni el indicador de emergencia. El texto se envía a Gemini.
 
-Configura `GEMINI_API_KEY` y, opcionalmente, `GEMINI_MODEL` en `.env.local`. El modelo predeterminado es `gemini-2.5-flash`; puedes cambiarlo por uno compatible con generateContent y salidas estructuradas disponible en tu cuenta. Reinicia `npm run dev` después de cambiar estas variables. En Vercel configura las mismas variables y vuelve a desplegar. No uses el prefijo `VITE_` para estas variables.
+Configura `GEMINI_API_KEY` y, opcionalmente, `GEMINI_MODEL` en `.env.local`. El modelo predeterminado es `gemini-3.5-flash-lite`; puedes cambiarlo por uno compatible con generateContent y salidas estructuradas disponible en tu cuenta. Reinicia `npm run dev` después de cambiar estas variables. En Vercel configura las mismas variables y vuelve a desplegar. No uses el prefijo `VITE_` para estas variables.
 
 `api/prepare-publication.js` es una función Node de Vercel. Vite la sirve localmente mediante middleware. `npm run preview` solo sirve los archivos estáticos y no incluye la función. Las pruebas automatizadas usan respuestas simuladas del proveedor. La conexión real necesita la clave de Gemini y cuota disponible.
 
