@@ -1,7 +1,36 @@
 import { useEffect, useRef, useState } from 'react';
 import { Sparkles, ArrowDown, LoaderCircle } from 'lucide-react';
 
+const modes = {
+  solicitud: {
+    title: 'IA para pedir una manito',
+    description: 'Describe tu necesidad. Organizamos qué ayuda buscas y qué detalles conviene completar.',
+    placeholder: 'Ej.: necesito dos ayudantes para una mudanza',
+    action: 'Preparar mi pedido con IA',
+  },
+  ofrecimiento: {
+    title: 'IA para dar una manito',
+    description: 'Cuéntanos qué puedes prestar, donar o hacer. Preparamos tu ofrecimiento para el barrio.',
+    placeholder: 'Ej.: presto mi escalera los sábados',
+    action: 'Preparar mi ofrecimiento con IA',
+  },
+  servicio: {
+    title: 'IA para publicar mi servicio',
+    description: 'Describe tu oficio y qué trabajos realizas. Te ayudamos a presentar tu servicio.',
+    placeholder: 'Ej.: hago reparaciones de caños',
+    action: 'Preparar mi servicio con IA',
+  },
+  busqueda: {
+    title: 'IA para buscar un servicio',
+    description: 'Cuéntanos qué problema tienes. Identificamos el oficio para buscarlo en el directorio.',
+    placeholder: 'Ej.: sale agua debajo del lavadero',
+    action: 'Interpretar mi búsqueda con IA',
+  },
+};
+
 export default function AiPublicationAssistant({ type, onApply }) {
+  const mode = modes[type];
+  const isSearch = type === 'busqueda';
   const [text, setText] = useState('');
   const [proposal, setProposal] = useState(null);
   const [pending, setPending] = useState(false);
@@ -48,22 +77,22 @@ export default function AiPublicationAssistant({ type, onApply }) {
   }
 
   return <section className="ai-assistant" aria-labelledby="assistant-title">
-    <div className="ai-heading"><Sparkles size={22} /><h2 id="assistant-title">Cuéntanos qué necesitas</h2></div>
-    <p>La IA te ayuda a preparar tu publicación. Tú revisas y decides qué compartir.</p>
+    <div className="ai-heading"><Sparkles size={22} /><h2 id="assistant-title">{mode.title}</h2></div>
+    <p>{mode.description}</p>
     <label htmlFor="ai-message">Escribe con tus propias palabras</label>
-    <textarea id="ai-message" maxLength={2000} value={text} onChange={(event) => { resetResult(); setText(event.target.value); }} placeholder="Ej.: gasfitero, ayuda mudanza o presto escalera" aria-describedby="ai-privacy" />
+    <textarea id="ai-message" maxLength={2000} value={text} onChange={(event) => { resetResult(); setText(event.target.value); }} placeholder={mode.placeholder} aria-describedby="ai-privacy" />
     <p id="ai-privacy" className="ai-hint">El mensaje se envía a Gemini para organizarlo. Evita incluir tu dirección exacta, DNI o teléfono.</p>
     <button className="button primary wide" type="button" disabled={pending} onClick={prepare}>
       {pending ? <LoaderCircle className="loading-icon" size={18} /> : <Sparkles size={18} />}
-      {pending ? 'Preparando tu propuesta…' : 'Preparar con IA'}
+      {pending ? 'Interpretando tu mensaje…' : mode.action}
     </button>
     {error && <p className="ai-error" role="alert">{error}</p>}
     {proposal && <div className="ai-proposal" aria-live="polite">
-      <span className="badge">Propuesta para revisar</span>
-      <h3>{proposal.titulo}</h3><p>{proposal.descripcion}</p><p>Categoría sugerida · {proposal.categoria}</p>
+      <span className="badge">{isSearch ? 'Búsqueda interpretada' : 'Propuesta para revisar'}</span>
+      <h3>{isSearch ? proposal.interpretacion : proposal.titulo}</h3>{!isSearch && <p>{proposal.descripcion}</p>}<p>Categoría sugerida · {proposal.categoria}</p>
       {proposal.por_confirmar?.length > 0 && <div className="ai-questions"><strong>Detalles que puedes agregar</strong><ul>{proposal.por_confirmar.map((question) => <li key={question}>{question}</li>)}</ul><p>Puedes completarlos al editar la descripción.</p></div>}
-      <button className="button secondary wide" type="button" onClick={() => { onApply({ titulo: proposal.titulo, descripcion: proposal.descripcion, categoria: proposal.categoria }); setProposal(null); }}><ArrowDown size={17} />Usar propuesta en los campos</button>
+      <button className="button secondary wide" type="button" onClick={() => { onApply(isSearch ? proposal : { titulo: proposal.titulo, descripcion: proposal.descripcion, categoria: proposal.categoria }); setProposal(null); }}><ArrowDown size={17} />{isSearch ? 'Buscar en los servicios publicados' : 'Usar propuesta en los campos'}</button>
     </div>}
-    <p className="ai-hint">También puedes completar directamente los campos de abajo.</p>
+    <p className="ai-hint">{isSearch ? 'También puedes buscar directamente por nombre u oficio.' : 'También puedes completar directamente los campos de abajo.'}</p>
   </section>;
 }

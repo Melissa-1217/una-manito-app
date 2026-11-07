@@ -1,5 +1,30 @@
 import { test, expect } from '@playwright/test';
 
+test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales', async ({ page }) => {
+  await page.route('**/api/prepare-publication', async (route) => {
+    const body = route.request().postDataJSON();
+    if (body.tipo === 'ofrecimiento') {
+      return route.fulfill({ json: { propuesta: { titulo: 'Presto una escalera', descripcion: 'Ofrezco una escalera en préstamo los sábados.', categoria: 'Herramientas', por_confirmar: [] } } });
+    }
+    expect(body.tipo).toBe('busqueda');
+    return route.fulfill({ json: { propuesta: { interpretacion: 'Buscar un gasfitero para revisar el caño', categoria: 'Gasfitería', terminos: ['gasfitero', 'caño'] } } });
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Ofrece una manito/ }).click();
+  await expect(page.getByRole('heading', { name: 'IA para dar una manito' })).toBeVisible();
+  await page.getByLabel('Escribe con tus propias palabras').fill('Presto escalera los sábados');
+  await page.getByRole('button', { name: 'Preparar mi ofrecimiento con IA' }).click();
+  await page.getByRole('button', { name: 'Usar propuesta en los campos' }).click();
+  await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Presto una escalera');
+  await page.goto('/');
+  await page.getByRole('button', { name: /Busca un servicio/ }).click();
+  await page.getByLabel('Escribe con tus propias palabras').fill('Se rompió un caño');
+  await page.getByRole('button', { name: 'Interpretar mi búsqueda con IA' }).click();
+  await page.getByRole('button', { name: 'Buscar en los servicios publicados' }).click();
+  await expect(page.getByRole('heading', { name: 'Una mano con tus caños' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '¿Me prestas una escalera?' })).toHaveCount(0);
+});
+
 test('revisa y aplica una propuesta de IA antes de publicar', async ({ page }) => {
   await page.route('**/api/prepare-publication', async (route) => {
     expect(route.request().postDataJSON().texto).toContain('caño');
@@ -8,7 +33,7 @@ test('revisa y aplica una propuesta de IA antes de publicar', async ({ page }) =
   await page.goto('/');
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
   await page.getByLabel('Escribe con tus propias palabras').fill('Veci se rompió un caño y necesito un gasfitero cerca.');
-  await page.getByRole('button', { name: 'Preparar con IA', exact: true }).click();
+  await page.getByRole('button', { name: 'Preparar mi pedido con IA', exact: true }).click();
   await expect(page.getByText('Propuesta para revisar', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('');
   await page.getByRole('button', { name: 'Usar propuesta en los campos' }).click();

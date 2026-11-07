@@ -16,6 +16,15 @@ test('acepta una palabra como contexto y conserva preguntas separadas', async ()
 test('informa que falta configuración sin inventar una respuesta', async () => {
   await assert.rejects(preparePublication(input, {}), (error) => error.status === 503);
 });
+test('busca servicios con un esquema diferente al de publicaciones', async () => {
+  const search = { interpretacion: 'Buscar gasfitería', categoria: 'Gasfitería', terminos: ['gasfitero', 'caños'] };
+  const result = await preparePublication({ texto: 'fuga en caño', tipo: 'busqueda' }, { apiKey: 'test', fetchImpl: async (url, options) => {
+    const config = JSON.parse(options.body);
+    assert.deepEqual(config.generationConfig.responseSchema.required, ['interpretacion', 'categoria', 'terminos']);
+    return responseFor(search);
+  } });
+  assert.deepEqual(result, search);
+});
 test('envía clave en header y devuelve únicamente campos validados', async () => {
   const actual = await preparePublication(input, { apiKey: 'test', fetchImpl: async (url, options) => {
     assert.equal(options.headers['x-goog-api-key'], 'test');
