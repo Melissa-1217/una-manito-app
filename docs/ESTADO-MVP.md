@@ -55,8 +55,11 @@ Este documento no certifica el estado de producción ni sustituye pruebas con cu
 
 ## Identidad y guía actualizadas
 
-La mano con corazón es el símbolo de Una Manito; Manolito es el acompañante de ayuda,
-no un sello de verificación. El acceso, la navegación, el favicon y los iconos instalables
-comparten `public/icon.svg`. Para regenerar los PNG, ejecutar `npm run icons:build`.
+El logo original de la mano con ubicación del equipo se conserva en `public/brand-original.png`
+y se presenta en el acceso y la navegación. El icono de instalación y favicon usan el cuy
+con gorra verde entregado por el usuario, conservado en `public/manolito-icon-original.png`.
+Manolito acompaña la ayuda; no es un sello de verificación. Para adaptar el icono a los
+tamaños de instalación, ejecutar `npm run icons:build`. El eslogan se conserva:
+«Entre vecinos, nos damos una manito».
 Se conservaron las ilustraciones originales del equipo y se ajustó su presentación.
 La guía contiene ocho pasos con elección de temas, ejercicios, feedback y lectura opcional.

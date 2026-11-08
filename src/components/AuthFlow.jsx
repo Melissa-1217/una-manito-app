@@ -11,7 +11,7 @@ function AuthLayout({ children }) {
   return <><div className="auth-page">
     <aside className="auth-story">
       <div className="brand"><Brand/></div>
-      <div className="auth-illustration"><img src="/manolito-barrio.png" alt="Manolito te acompaña en tu barrio" width="340" height="200"/><h1>Entre vecinos, nos damos una manito.</h1><p>Encuentra servicios, comparte lo que puedes y conecta con tus vecinos.</p></div>
+      <div className="auth-illustration"><img src="/brand-original.png" alt="Logo original de Una Manito: una mano que conecta al barrio" width="340" height="200"/><h1>Entre vecinos, nos damos una manito.</h1><p>Encuentra servicios, comparte lo que puedes y conecta con tus vecinos.</p></div>
       
     </aside>
     <main id="contenido" tabIndex={-1} className="auth-content"><div className="auth-mobile-brand"><Brand/></div><p className="auth-tagline">Entre vecinos, nos damos una manito.</p>{children}</main>

@@ -3,3 +3,4 @@
 @media(max-width:760px){.tutorial-scene{min-height:110px}.tutorial-scene .tutorial-mascot{height:110px}.tutorial-scene .portrait{width:140px}.tutorial-speech h2{font-size:20px}.tutorial-utilities>.text-button{font-size:11px}.tutorial-speech p{font-size:14px}.brand-symbol{width:40px;height:40px;flex-basis:40px}}
 @media(max-height:650px){.tutorial-scene{min-height:88px}.tutorial-scene .tutorial-mascot{height:88px}.tutorial-topics nav{max-height:120px;overflow:auto}}
 .auth-illustration{margin-block:auto}.tutorial-scene .tutorial-mascot{transform:scale(1.25)}.tutorial-scene-label{z-index:1}
+.brand-original-mark{position:relative;display:block;width:44px;height:44px;flex:0 0 44px;overflow:hidden;border-radius:12px;background:#fff}.brand-original-mark>img{position:absolute;max-width:none;width:144px;height:auto;left:-47px;top:-11px}.brand-wordmark>span{color:#1e4532}.auth-story .brand-wordmark>span{color:#d2e3d6}
