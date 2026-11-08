@@ -5,7 +5,7 @@ export const people = { ana: 'Ana', luis: 'Luis' };
 export const initialData = {
   publicaciones: [
     { id: 'escalera', autor_id: 'ana', tipo: 'solicitud', titulo: '¿Me prestas una escalera?', descripcion: 'Necesito una escalera para esta tarde. La devuelvo hoy mismo y paso a recogerla. ¡Gracias, vecis!', categoria: 'Herramientas', barrio: 'Barrio Demo', estado: 'pendiente', es_emergencia: false },
-    { id: 'gasfitero', autor_id: 'luis', tipo: 'servicio', titulo: 'Una mano con tus caños', descripcion: 'Servicio de gasfitería: reparaciones de caños y revisión de fugas. Publicación de ejemplo; todavía no hay contacto ni recomendaciones reales.', categoria: 'Gasfitería', barrio: 'Barrio Demo', estado: 'pendiente', es_emergencia: false },
+    { id: 'gasfitero', autor_id: 'luis', tipo: 'servicio', titulo: 'Una mano con tus caños', descripcion: 'Servicio de gasfitería: reparaciones de caños y revisión de fugas. Ejemplo para probar una consulta privada; no representa un prestador real.', categoria: 'Gasfitería', barrio: 'Barrio Demo', estado: 'pendiente', es_emergencia: false },
     { id: 'agua', autor_id: 'ana', tipo: 'ofrecimiento', titulo: 'Agua para compartir', descripcion: 'Tengo agua embotellada para compartir. Podemos coordinar el apoyo desde esta publicación de ejemplo.', categoria: 'Agua y alimentos', barrio: 'Barrio Demo', estado: 'pendiente', es_emergencia: true },
   ],
   ofrecimientos: [],

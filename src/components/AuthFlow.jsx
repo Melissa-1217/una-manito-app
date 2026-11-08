@@ -10,10 +10,10 @@ function AuthLayout({ children }) {
   return <><div className="auth-page">
     <aside className="auth-story">
       <div className="brand"><span className="brand-mark"><HandHeart size={28} /></span>Una Manito</div>
-      <div><HandHeart size={90} strokeWidth={1} /><h1>Tu barrio te da una mano.</h1><p>Encuentra servicios, comparte lo que puedes y conecta con tus vecinos.</p></div>
+      <div><HandHeart size={90} strokeWidth={1} /><h1>Entre vecinos, nos damos una manito.</h1><p>Encuentra servicios, comparte lo que puedes y conecta con tus vecinos.</p></div>
       
     </aside>
-    <main id="contenido" tabIndex={-1} className="auth-content"><div className="auth-mobile-brand"><HandHeart size={27} />Una Manito</div>{children}</main>
+    <main id="contenido" tabIndex={-1} className="auth-content"><div className="auth-mobile-brand"><HandHeart size={27} />Una Manito</div><p className="auth-tagline">Entre vecinos, nos damos una manito.</p>{children}</main>
   </div></>;
 }
 

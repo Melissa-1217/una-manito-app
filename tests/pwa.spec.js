@@ -45,7 +45,7 @@ test('copia guardada sin mensajes y borrador persistente, sin publicar ni recone
   await expect(page.getByLabel('Tu mensaje', { exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Volver', exact: true }).click();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
-  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+
   await page.getByLabel('Título', { exact: true }).fill('Borrador sin conexión');
   await page.getByLabel('Cuéntale un poco más al barrio').fill('Lo revisaré cuando tenga conexión otra vez.');
   await page.getByRole('button', { name: 'Revisar publicación' }).click();

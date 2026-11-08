@@ -51,7 +51,7 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
   await page.goto('/');
   await login('ana@example.com');
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
-  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+
   await page.getByLabel('Título', { exact: true }).fill('Necesito un carrito para mudanza');
   await page.getByLabel('Cuéntale un poco más al barrio').fill('Necesito un carrito para trasladar cajas esta tarde.');
   await page.getByRole('button', { name: 'Revisar publicación' }).click();

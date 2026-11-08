@@ -59,7 +59,8 @@ test('dictado se revisa y añade sin enviar; cerrar el chat detiene el micrófon
     await route.fulfill({ json: { propuesta: { titulo: 'Necesito una escalera', descripcion: 'Necesito una escalera mañana.', categoria: 'Herramientas', por_confirmar: [] } } });
   });
   await enterDemo(page);
-  await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await page.getByRole('button', { name: 'Chat con Manolito', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Pedir una manito', exact: true }).click();
   await page.getByLabel('Mensaje para Manolito').fill('Necesito');
   await page.getByRole('button', { name: 'Dictar por voz', exact: true }).click();
   await expect(page.getByLabel('Enviar mensaje')).toBeDisabled();
@@ -83,7 +84,8 @@ test('dictado se revisa y añade sin enviar; cerrar el chat detiene el micrófon
 test('denegar voz mantiene la escritura manual y no borra el mensaje', async ({ page }) => {
   await mockVoice(page);
   await enterDemo(page);
-  await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await page.getByRole('button', { name: 'Chat con Manolito', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Pedir una manito', exact: true }).click();
   await page.getByLabel('Mensaje para Manolito').fill('Mi texto original');
   await page.getByRole('button', { name: 'Dictar por voz', exact: true }).click();
   await page.evaluate(() => window.voiceInstances.at(-1).onerror({ error: 'not-allowed' }));
@@ -95,7 +97,8 @@ test('denegar voz mantiene la escritura manual y no borra el mensaje', async ({ 
 test('un navegador sin servicio de voz permite escribir', async ({ page }) => {
   await page.addInitScript(() => { window.SpeechRecognition = undefined; window.webkitSpeechRecognition = undefined; });
   await enterDemo(page);
-  await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await page.getByRole('button', { name: 'Chat con Manolito', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Pedir una manito', exact: true }).click();
   await expect(page.getByText('Este navegador no admite dictado por voz. Puedes escribir.', { exact: true })).toBeVisible();
   await page.getByLabel('Mensaje para Manolito').fill('Necesito ayuda');
   await expect(page.getByLabel('Enviar mensaje')).toBeEnabled();

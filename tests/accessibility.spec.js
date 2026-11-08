@@ -19,7 +19,7 @@ test('acceso, registro, inicio y formulario ofrecen nombres y contraste accesibl
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await audit(page);
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
-  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+
   await audit(page);
 });
 
@@ -42,7 +42,7 @@ test('vista estrecha y ampliación conservan formularios y controles', async ({ 
   const sizes = await page.locator('.home-actions button').evaluateAll(buttons => buttons.map(button => ({ width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height })));
   expect(sizes.every(size => size.width >= 44 && size.height >= 44)).toBe(true);
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
-  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+
   await page.setViewportSize({ width: 640, height: 900 });
   await page.evaluate(() => { document.body.style.zoom = '2'; });
   await page.getByLabel('Título', { exact: true }).fill('Una prueba con texto ampliado');

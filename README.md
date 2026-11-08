@@ -137,7 +137,7 @@ Configura `GEMINI_API_KEY` y, opcionalmente, `GEMINI_MODEL` en `.env.local`. El 
 
 `api/prepare-publication.js` es una función Node de Vercel. Vite la sirve localmente mediante middleware. `npm run preview` solo sirve los archivos estáticos y no incluye la función. Las pruebas automatizadas usan respuestas simuladas del proveedor. La conexión real necesita la clave de Gemini y cuota disponible.
 
-El endpoint todavía no usa una sesión Supabase. Antes de abrir el uso de IA a una audiencia amplia, conectar autenticación y límites de solicitudes por usuario para controlar el consumo. El dictado por voz sigue pendiente.
+El endpoint todavía no usa una sesión Supabase. Antes de abrir el uso de IA a una audiencia amplia, conectar autenticación y límites de solicitudes por usuario para controlar el consumo. El dictado por voz está disponible con revisión manual; consulta la sección de Manolito.
 
 ## Acceso y perfil
 
@@ -153,4 +153,8 @@ Las pruebas de las pantallas de acceso y selección de barrio usan dobles del SD
 
 `src/lib/publications.js` consulta, crea y cierra publicaciones con la sesión de Supabase y las políticas RLS existentes. El autor procede del perfil autenticado. El formulario conserva sus datos si falla el guardado. La interfaz muestra el nombre del autor mediante la relación con perfiles. Las solicitudes, ofrecimientos, servicios y recursos de emergencia comparten esta tabla.
 
-Las respuestas Yo te ayudo, su aceptación y las recomendaciones siguen disponibles en la demostración. Su conexión remota es la siguiente etapa y todavía no se ofrece en cuentas conectadas. Las pruebas de publicación compartida usan dobles de los servicios; la prueba entre dos dispositivos reales sigue pendiente.
+Las respuestas, su aceptación por RPC, los cupos, los estados y las valoraciones están implementados también para cuentas conectadas mediante las migraciones del repositorio. Las pruebas automatizadas usan dobles de los servicios; la validación del despliegue con cuentas reales se realiza por separado. Cada vecino puede enviar una respuesta inicial por publicación: todavía no hay una conversación privada de ida y vuelta.
+
+## Revisión de experiencia de usuario
+
+El inicio ofrece accesos directos a solicitar, ofrecer y buscar, con Manolito como apoyo opcional. Solicitud, ofrecimiento y servicio tienen títulos y ejemplos propios. Los servicios se filtran por oficio, los estados vacíos orientan al siguiente paso y las tarjetas explican qué se abre. `tests/experience.spec.js` verifica tres botones principales para publicar desde el inicio (acción, revisar, publicar), sin contar escritura ni opciones adicionales. El acceso a Manolito forma parte del contenido para evitar tapar acciones en celular.

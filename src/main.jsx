@@ -9,5 +9,6 @@ import './auth.css';
 import './components/manolito.css';
 import './accessibility.css';
 import './pwa.css';
+import './experience.css';
 
 createRoot(document.getElementById('root')).render(<React.StrictMode><SkipLink/><PwaControls/><AuthFlow /></React.StrictMode>);

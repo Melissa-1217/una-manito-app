@@ -17,7 +17,7 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Ofrece una manito/ }).click();
-  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+
   await page.getByLabel('Cuéntale un poco más al barrio').fill('Presto escalera los sábados');
   await page.getByRole('button', { name: 'Preparar mi ofrecimiento con IA' }).click();
   await page.getByRole('button', { name: 'Usar propuesta en los campos' }).click();
@@ -25,7 +25,7 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Busca un servicio/ }).click();
-  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+
   await page.getByLabel('Buscar publicaciones').fill('Se rompió un caño');
   await page.getByRole('button', { name: 'Interpretar mi búsqueda con IA' }).click();
   await page.getByRole('button', { name: 'Buscar en los servicios publicados' }).click();
@@ -41,7 +41,7 @@ test('revisa y aplica una propuesta de IA antes de publicar', async ({ page }) =
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
-  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+
   await page.getByLabel('Cuéntale un poco más al barrio').fill('Veci se rompió un caño y necesito un gasfitero cerca.');
   await page.getByRole('button', { name: 'Preparar mi pedido con IA', exact: true }).click();
   await expect(page.getByText('Propuesta para revisar', { exact: true })).toBeVisible();
@@ -62,7 +62,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   if (testInfo.project.name === 'mobile') await expect(page.getByRole('button', { name: 'Apoyo en emergencia', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
-  await page.getByRole('button', { name: 'Continuar manualmente' }).click();
+
   await page.getByLabel('Título', { exact: true }).fill('Necesito un taladro por una hora');
   await page.getByLabel('Cuéntale un poco más al barrio').fill('Para colocar una repisa esta tarde. Lo devuelvo al terminar.');
   await page.getByRole('button', { name: 'Revisar publicación' }).click();
@@ -101,7 +101,8 @@ test('Manolito conserva el borrador al corregirlo y publica con confirmación', 
       categoria: 'Herramientas', por_confirmar: [],
     } } });
   });
-  await page.getByRole('button', {name:'Pedir una manito',exact:true}).click();
+  await page.getByRole('button', {name:'Chat con Manolito',exact:true}).click();
+  await page.getByRole('dialog').getByRole('button', {name:'Pedir una manito',exact:true}).click();
   await page.getByLabel('Mensaje para Manolito').fill('Necesito una escalera hoy');
   await page.getByLabel('Enviar mensaje').click();
   await expect(page.getByLabel('Descripción del borrador')).toHaveValue(/hoy/);
@@ -118,7 +119,6 @@ test('ubicación opcional se redondea y permite abrir el mapa', async ({ page, c
   await context.setGeolocation({ latitude: -12.076456, longitude: -77.086456, accuracy: 10 });
   await page.route('https://www.openstreetmap.org/**', route => route.fulfill({ contentType:'text/html',body:'<p>Mapa de prueba</p>' }));
   await page.getByRole('button',{name:'Pedir una manito',exact:true}).click();
-  await page.getByRole('button',{name:'Continuar manualmente'}).click();
   await page.getByLabel('Título',{exact:true}).fill('Prueba de zona aproximada');
   await page.getByLabel('Cuéntale un poco más al barrio').fill('Necesito una herramienta para esta tarde.');
   await page.getByRole('button',{name:'Añadir ubicación aproximada'}).click();
