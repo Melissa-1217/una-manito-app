@@ -1,3 +1,4 @@
+import Brand from './components/Brand.jsx';
 import NeighborhoodAlerts, { AlertBell } from './components/NeighborhoodAlerts.jsx';
 import EmergencyComposer from './components/EmergencyComposer.jsx';
 import ProductsDirectory from './components/ProductsDirectory.jsx';
@@ -261,7 +262,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
 
   return <><div className="app-shell">
     <aside className="sidebar">
-      <a className="brand" href="#" onClick={(e) => { e.preventDefault(); navigate('inicio'); }}><span className="brand-mark"><HandHeart size={28} /></span><span>Una Manito</span></a>
+      <a className="brand" href="#" onClick={(e) => { e.preventDefault(); navigate('inicio'); }}><Brand/></a>
       <nav aria-label="Navegación principal">{menuItems.map(({ id, label, icon: Icon }) => <button key={id} aria-current={activeNav === id ? 'page' : undefined} className={`nav-item ${activeNav === id ? 'active' : ''}`} onClick={() => navigate(id)}><Icon size={20} />{label}{activeNav === id && <span className="nav-dot" />}</button>)}</nav>
       <button className={`nav-item emergency-link ${view === 'emergencia' ? 'active' : ''}`} onClick={() => navigate('emergencia')}><AlertTriangle size={20} />Apoyo en emergencia</button>
     </aside>

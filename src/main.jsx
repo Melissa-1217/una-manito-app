@@ -15,5 +15,6 @@ import './mobile-menu.css';
 import './interface.css';
 import './composer.css';
 import './intents.css';
+import './brand-guide.css';
 
 createRoot(document.getElementById('root')).render(<React.StrictMode><SkipLink/><PwaControls/><AuthFlow /></React.StrictMode>);
