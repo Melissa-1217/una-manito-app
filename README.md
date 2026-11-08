@@ -5,13 +5,18 @@
 
 Ana necesita una escalera por una tarde. Luis vive en su barrio y puede prestársela. Con Una Manito, Ana publica el pedido, acepta el ofrecimiento de Luis y ambos acuerdan la entrega por privado. La misma aplicación permite encontrar un gasfitero recomendado y coordinar recursos cuando el barrio enfrenta una emergencia.
 
-**[Abrir la aplicación](https://una-manito-app.vercel.app/) · [Ver la presentación del MVP](docs/Presentacion-Winners32.pdf) · [Consultar el estado frente al reto](docs/ESTADO-MVP.md)**
+<p align="center"><strong><a href="https://una-manito-app.vercel.app/">Abrir la aplicación</a> · <a href="docs/Presentacion-Winners32.pdf">Ver la presentación del MVP</a> · <a href="docs/ESTADO-MVP.md">Consultar el estado frente al reto</a></strong></p>
 
-| Servicios cercanos | Ayuda entre vecinos | Avisos del barrio |
-|:---:|:---:|:---:|
-| <img src="docs/capturas/08-servicios.png" width="215" alt="Directorio móvil con buscador y categorías de oficios"> | <img src="docs/capturas/15-detalle.png" width="215" alt="Solicitud de préstamo de una escalera en Barrio Demo"> | <img src="docs/capturas/39-aviso-publico.png" width="215" alt="Aviso de simulación publicado tras revisión humana"> |
+<table align="center">
+  <thead>
+    <tr><th align="center">Servicios cercanos</th><th align="center">Ayuda entre vecinos</th><th align="center">Avisos del barrio</th></tr>
+  </thead>
+  <tbody>
+    <tr><td align="center"><img src="docs/capturas/08-servicios.png" width="215" alt="Directorio móvil con buscador y categorías de oficios"></td><td align="center"><img src="docs/capturas/15-detalle.png" width="215" alt="Solicitud de préstamo de una escalera en Barrio Demo"></td><td align="center"><img src="docs/capturas/39-aviso-publico.png" width="215" alt="Aviso de simulación publicado tras revisión humana"></td></tr>
+  </tbody>
+</table>
 
-*Capturas de la aplicación con datos de demostración.*
+<p align="center"><em>Capturas de la aplicación con datos de demostración.</em></p>
 
 ## Recorrido para el jurado
 
@@ -34,9 +39,14 @@ En la pantalla de acceso, pulsa **Explorar demostración** para probar el recorr
 <details>
 <summary><strong>Ver el perfil vecinal, el asistente y el tutorial en el celular</strong></summary>
 
-| Experiencias de vecinos | Borrador de Manolito | Guía interactiva |
-|:---:|:---:|:---:|
-| <img src="docs/capturas/18-perfil-vecino.png" width="215" alt="Perfil con estrellas, comentarios y Visto Bueno Vecinal"> | <img src="docs/capturas/26-ia-pedido.png" width="215" alt="Pedido editable preparado en el chat de Manolito"> | <img src="docs/capturas/29-tutorial.png" width="215" alt="Tutorial móvil guiado por Manolito"> |
+<table align="center">
+  <thead>
+    <tr><th align="center">Experiencias de vecinos</th><th align="center">Borrador de Manolito</th><th align="center">Guía interactiva</th></tr>
+  </thead>
+  <tbody>
+    <tr><td align="center"><img src="docs/capturas/18-perfil-vecino.png" width="215" alt="Perfil con estrellas, comentarios y Visto Bueno Vecinal"></td><td align="center"><img src="docs/capturas/26-ia-pedido.png" width="215" alt="Pedido editable preparado en el chat de Manolito"></td><td align="center"><img src="docs/capturas/29-tutorial.png" width="215" alt="Tutorial móvil guiado por Manolito"></td></tr>
+  </tbody>
+</table>
 
 </details>
 
@@ -87,14 +97,19 @@ La revisión local documentada el **8 de noviembre de 2026** registró **92 ejec
 
 El siguiente paso es validar el MVP con una comunidad piloto, incorporar grupos locales autorizados y medir tareas completadas, tiempos y ayudas resueltas. La revisión humana de avisos y las valoraciones vecinales aportan contexto para decidir. La verificación de residencia, las notificaciones push y la evaluación integral de accesibilidad siguen pendientes. [Fundamentación, referencias ISO y límites de la evaluación](docs/FUNDAMENTACION-Y-DEFENSA.md).
 
-## Equipo Winners32
+<h2 align="center">Equipo Winners32</h2>
 
-| Integrante | Rol |
-|---|---|
-| Sergio Rodrigo Veliz Carrasco | Coordinación técnica e integración |
-| Mireya Melissa Montes Acero | Producto y comunicación |
-| Wiliam Siesquen Fortunato | Fundamentación técnica y defensa |
-| Hans Felipe Cabala Pinto | Experiencia de usuario y demostración |
-| Geordan Jesus Justo Apaza | Validación funcional y demostración |
+<table align="center">
+  <thead>
+    <tr><th align="center">Integrante</th><th align="center">Rol</th></tr>
+  </thead>
+  <tbody>
+    <tr><td align="center">Sergio Rodrigo Veliz Carrasco</td><td align="center">Coordinación técnica e integración</td></tr>
+    <tr><td align="center">Mireya Melissa Montes Acero</td><td align="center">Producto y comunicación</td></tr>
+    <tr><td align="center">Wiliam Siesquen Fortunato</td><td align="center">Fundamentación técnica y defensa</td></tr>
+    <tr><td align="center">Hans Felipe Cabala Pinto</td><td align="center">Experiencia de usuario y demostración</td></tr>
+    <tr><td align="center">Geordan Jesus Justo Apaza</td><td align="center">Validación funcional y demostración</td></tr>
+  </tbody>
+</table>
 
 <p align="center"><img src="docs/evento/utp-el-comercio.png" width="345" alt="UTP y El Comercio"></p>
