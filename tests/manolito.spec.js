@@ -15,9 +15,9 @@ test('tutorial interactivo se puede omitir, completar y volver a abrir desde el 
   await page.getByRole('button', { name: 'Omitir tutorial' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await openTutorial(page);
-  await expect(page.getByText('Paso 1 de 5')).toBeVisible();
+  await expect(page.getByText('Paso 1 de 8')).toBeVisible();
   await page.getByRole('button', { name: 'Siguiente' }).click();
-  await page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Dar una manito', exact: true }).click();
+  await page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Ofrecer una manito', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Siguiente' })).toBeDisabled();
   await expect(page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('status')).toContainText('Probemos otra opción');
   await page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Pedir una manito', exact: true }).click();
@@ -26,15 +26,22 @@ test('tutorial interactivo se puede omitir, completar y volver a abrir desde el 
   await page.getByRole('button', { name: 'Anterior' }).click();
   await expect(page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Pedir una manito', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Siguiente' }).click();
-  await page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Dar una manito', exact: true }).click();
+  await page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Ofrecer una manito', exact: true }).click();
   await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.getByRole('button', { name: 'Gasfitería', exact: true }).click();
   await page.getByRole('button', { name: 'Siguiente' }).click();
+  await expect(page.getByRole('heading', { name: 'Comparte lo que tienes' })).toBeVisible();
+  await page.getByRole('button', {name:'Préstamo',exact:true}).click();
+  await page.getByRole('button', {name:'Siguiente',exact:true}).click();
+  await page.getByRole('button', {name:'Cuando un revisor lo aprueba',exact:true}).click();
+  await page.getByRole('button', {name:'Siguiente',exact:true}).click();
+  await page.getByRole('button', {name:'Valorar tu experiencia con estrellas y comentario',exact:true}).click();
+  await page.getByRole('button', {name:'Siguiente',exact:true}).click();
   await expect(page.getByRole('heading', { name: 'Tú tienes la última palabra' })).toBeVisible();
   await page.getByRole('button', { name: 'Terminar tutorial' }).click();
   await page.getByRole('button', { name: 'Chat con Manolito', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Cómo usar la app', exact: true }).click();
-  await expect(page.getByText('Paso 1 de 5')).toBeVisible();
+  await expect(page.getByText('Paso 1 de 8')).toBeVisible();
   expect(aiCalls).toBe(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
@@ -50,6 +57,36 @@ async function mockVoice(page) {
     };
   });
 }
+
+test('guía por temas: emergencia, lectura cancelable y práctica sin publicar',async({page},info)=>{
+ await page.addInitScript(()=>{
+  window.guideReadings=[];window.guideStops=0;
+  Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{speak(utterance){window.guideReadings.push(utterance.text);},cancel(){window.guideStops++;}}});
+ });
+ await enterDemo(page);
+ const before=await page.evaluate(()=>localStorage.getItem('una-manito-demo-v1'));
+ await openTutorial(page);
+ await page.getByText('Elegir un tema',{exact:true}).click();
+ await page.getByRole('navigation',{name:'Temas de la guía'}).getByRole('button',{name:'Emergencias',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Apoyo y avisos son diferentes'})).toBeFocused();
+ await expect(page.getByText('Paso 6 de 8',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Escuchar este paso',exact:true}).click();
+ expect(await page.evaluate(()=>window.guideReadings[0])).toContain('revisión humana');
+ await expect(page.getByRole('button',{name:'Detener lectura'})).toBeVisible();
+ await page.getByRole('button',{name:'Cuando la IA lo clasifica',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Siguiente',exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'Cuando un revisor lo aprueba',exact:true}).click();
+ await expect(page.getByRole('status')).toContainText('La IA orienta');
+ await page.screenshot({path:`../una-manito-guia-emergencias-${info.project.name}.png`,fullPage:true});
+ await page.getByRole('button',{name:'Siguiente',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Escuchar este paso'})).toBeVisible();
+ expect(await page.evaluate(()=>window.guideStops)).toBeGreaterThan(0);
+ await page.getByRole('button',{name:'Escuchar este paso',exact:true}).click();
+ const stops=await page.evaluate(()=>window.guideStops);
+ await page.getByRole('button',{name:'Cerrar chat',exact:true}).click();
+ expect(await page.evaluate(()=>window.guideStops)).toBeGreaterThan(stops);
+ expect(await page.evaluate(()=>localStorage.getItem('una-manito-demo-v1'))).toBe(before);
+});
 
 test('dictado se revisa y añade sin enviar; cerrar el chat detiene el micrófono', async ({ page }) => {
   await mockVoice(page);

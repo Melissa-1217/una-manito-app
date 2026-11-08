@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "test:ui": "playwright test",
     "test:pwa": "playwright test --config playwright.pwa.config.js",
-    "test:db": "node --test tests/database/*.test.js"
+    "test:db": "node --test tests/database/*.test.js",
+    "icons:build": "node scripts/generate-icons.js"
   },
   "repository": {
     "type": "git",

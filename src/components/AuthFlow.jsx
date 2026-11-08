@@ -1,3 +1,4 @@
+import Brand from './Brand.jsx';
 import useOnline from '../lib/useOnline.js';
 import { readOfflineProfile, saveOfflineProfile, clearOfflineAccount } from '../lib/offline.js';
 import { useEffect, useMemo, useState } from 'react';
@@ -9,11 +10,11 @@ import NeighborhoodField from './NeighborhoodField.jsx';
 function AuthLayout({ children }) {
   return <><div className="auth-page">
     <aside className="auth-story">
-      <div className="brand"><span className="brand-mark"><HandHeart size={28} /></span>Una Manito</div>
-      <div><HandHeart size={90} strokeWidth={1} /><h1>Entre vecinos, nos damos una manito.</h1><p>Encuentra servicios, comparte lo que puedes y conecta con tus vecinos.</p></div>
+      <div className="brand"><Brand/></div>
+      <div className="auth-illustration"><img src="/brand-original.png" alt="Logo original de Una Manito: una mano que conecta al barrio" width="340" height="200"/><h1>Entre vecinos, nos damos una manito.</h1><p>Encuentra servicios, comparte lo que puedes y conecta con tus vecinos.</p></div>
       
     </aside>
-    <main id="contenido" tabIndex={-1} className="auth-content"><div className="auth-mobile-brand"><HandHeart size={27} />Una Manito</div><p className="auth-tagline">Entre vecinos, nos damos una manito.</p>{children}</main>
+    <main id="contenido" tabIndex={-1} className="auth-content"><div className="auth-mobile-brand"><Brand/></div><p className="auth-tagline">Entre vecinos, nos damos una manito.</p>{children}</main>
   </div></>;
 }
 
