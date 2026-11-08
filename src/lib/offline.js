@@ -15,7 +15,7 @@ export function readSnapshot(account) {
   return snapshot && Array.isArray(snapshot.publicaciones) && typeof snapshot.savedAt === 'string' ? snapshot : null;
 }
 export function saveSnapshot(account, publications) {
-  const fields = ['id','autor_id','tipo','titulo','descripcion','categoria','barrio','latitud','longitud','es_emergencia','estado','cupos','creado_en','vence_en','primera_respuesta_en','cerrado_en','motivo_cancelacion'];
+  const fields = ['id','autor_id','tipo','producto_modalidad','titulo','descripcion','categoria','barrio','latitud','longitud','es_emergencia','estado','cupos','creado_en','vence_en','primera_respuesta_en','cerrado_en','motivo_cancelacion'];
   const saved = publications.filter(post => post.barrio === account.barrio || post.autor_id === account.id || post.participantes?.some(p => p.vecino_id === account.id)).slice(0, 200).map(post => ({
     ...Object.fromEntries(fields.filter(field => post[field] !== undefined).map(field => [field, post[field]])),
     perfiles: { nombre: post.perfiles?.nombre || 'Vecino' },
@@ -31,7 +31,7 @@ export function readDraft(account) {
 }
 export function saveDraft(account, draft) {
   if (!draft.titulo.trim() && !draft.descripcion.trim()) { localStorage.removeItem(key('draft', account)); return; }
-  const fields = ['tipo','titulo','descripcion','categoria','barrio','cupos','es_emergencia','latitud','longitud'];
+  const fields = ['tipo','producto_modalidad','titulo','descripcion','categoria','barrio','cupos','es_emergencia','latitud','longitud'];
   localStorage.setItem(key('draft', account), JSON.stringify(Object.fromEntries(fields.filter(f => draft[f] !== undefined).map(f => [f, draft[f]]))));
 }
 export function clearOfflineAccount(account) {
