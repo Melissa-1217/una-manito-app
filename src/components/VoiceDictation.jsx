@@ -10,7 +10,7 @@ const failures = {
   'language-not-supported': 'El servicio no admite el idioma seleccionado. Puedes escribir.',
 };
 
-export default function VoiceDictation({ onTranscript, onListeningChange, disabled = false, maxLength = 2000 }) {
+export default function VoiceDictation({ onTranscript, onListeningChange, disabled = false, maxLength = 2000, compact = false }) {
   const recognition = useRef(null);
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -71,13 +71,13 @@ export default function VoiceDictation({ onTranscript, onListeningChange, disabl
     setTranscript(''); setError('');
   }
 
-  if (!Recognition) return <small className="voice-unavailable">Este navegador no admite dictado por voz. Puedes escribir.</small>;
+  if (!Recognition) return compact ? null : <small className="voice-unavailable">Este navegador no admite dictado por voz. Puedes escribir.</small>;
   return <section className="voice-dictation" aria-label="Dictado por voz">
     <button className="text-button" type="button" disabled={disabled} aria-pressed={listening} onClick={() => {
       if (!listening) start();
       else { try { recognition.current?.stop(); } catch { discard(); } }
     }}>{listening ? <Square size={17}/> : <Mic size={17}/>} {listening ? 'Detener dictado' : 'Dictar por voz'}</button>
-    <small>El navegador puede enviar el audio a su servicio de voz. Tú revisas el texto antes de usarlo.</small>
+    <small>{compact ? 'El navegador puede procesar tu voz en línea. Revisa el texto.' : 'El navegador puede enviar el audio a su servicio de voz. Tú revisas el texto antes de usarlo.'}</small>
     {listening && <p role="status">Escuchando… Habla con calma y pulsa detener al terminar.</p>}
     {transcript && <div className="voice-review">
       <label>Revisa el dictado<textarea disabled={listening || disabled} value={transcript} onChange={event => setTranscript(event.target.value)} /></label>

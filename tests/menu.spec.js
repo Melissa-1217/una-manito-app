@@ -36,6 +36,7 @@ test('menú móvil conserva el borrador y permite cerrar tocando fuera', async (
   await page.goto('/');
   await page.getByRole('button', { name:'Explorar demostración' }).click();
   await page.getByRole('button', { name:'Pedir una manito', exact:true }).click();
+  if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
   await page.getByLabel('Título', { exact:true }).fill('Borrador conservado en el menú');
   await page.getByRole('button', { name:'Abrir menú', exact:true }).click();
   await page.mouse.click(5,200);

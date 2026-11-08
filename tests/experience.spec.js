@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { test, expect } from '@playwright/test';
 
 for (const flow of [
@@ -5,7 +6,7 @@ for (const flow of [
   { action: 'Ofrece una manito', heading: 'Ofrecer una manito', publish: 'Publicar ofrecimiento' },
   { action: 'Publicar mi servicio', heading: 'Publicar un servicio', publish: 'Publicar servicio' },
 ]) {
-  test(`${flow.action}: publica en tres pulsaciones desde el inicio, sin pasar por el chat`, async ({ page }) => {
+  test(`${flow.action}: publica en tres pulsaciones desde el inicio, sin pasar por el chat`, async ({ page }, testInfo) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Explorar demostración' }).click();
     await page.evaluate(() => {
@@ -15,9 +16,15 @@ for (const flow of [
     await page.getByRole('button', { name: flow.action, exact: true }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByRole('heading', { name: flow.heading, exact: true })).toBeVisible();
-    await page.getByLabel('Título', { exact: true }).fill('Una publicación para mi barrio');
-    await page.getByLabel('Cuéntale un poco más al barrio').fill('Estoy describiendo lo que necesito u ofrezco para mañana.');
+    await expect(page.getByLabel('Título', { exact:true })).toBeHidden();
+    await expect(page.getByRole('textbox')).toHaveCount(1);
+    const screen = flow.publish.split(' ')[1];
+    await page.screenshot({ path:`../una-manito-formulario-${screen}-${testInfo.project.name}.png`, fullPage:false });
+    await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Una publicación para mi barrio. Estoy describiendo lo que necesito u ofrezco para mañana.');
     await page.getByRole('button', { name: 'Revisar publicación', exact: true }).click();
+    await expect(page.getByLabel('Título', { exact:true })).toHaveValue('Una publicación para mi barrio');
+    if (flow.publish === 'Publicar solicitud') expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+    await page.screenshot({ path:`../una-manito-revision-${screen}-${testInfo.project.name}.png`, fullPage:false });
     await page.getByRole('button', { name: flow.publish, exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Una publicación para mi barrio', exact: true })).toBeVisible();
     expect(await page.evaluate(() => window.journeyClicks)).toBe(3);
@@ -36,4 +43,20 @@ test('buscar por oficio y limpiar filtros permite recuperar servicios existentes
   await page.getByRole('button', { name: 'Limpiar filtros', exact: true }).click();
   await expect(categories.getByRole('button', { name: 'Todos', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('heading', { name: 'Una mano con tus caños', exact: true })).toBeVisible();
+});
+
+test('la revisión permite corregir el título y el mensaje y volver sin perderlos', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name:'Explorar demostración' }).click();
+  await page.getByRole('button', { name:'Pedir una manito', exact:true }).click();
+  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Necesito dos vecinos para mover una mesa.');
+  await page.getByRole('button', { name:'Revisar publicación', exact:true }).click();
+  await page.getByLabel('Título', { exact:true }).fill('Apoyo para mover mi mesa');
+  await page.getByRole('textbox', { name:'Descripción', exact:true }).fill('Necesito dos vecinos para mover una mesa al patio mañana.');
+  await page.getByRole('button', { name:'Volver a editar', exact:true }).click();
+  await expect(page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/)).toHaveValue('Necesito dos vecinos para mover una mesa al patio mañana.');
+  await page.getByRole('button', { name:'Revisar publicación', exact:true }).click();
+  await expect(page.getByLabel('Título', { exact:true })).toHaveValue('Apoyo para mover mi mesa');
+  await page.getByRole('button', { name:'Publicar solicitud', exact:true }).click();
+  await expect(page.getByRole('heading', { name:'Apoyo para mover mi mesa', exact:true })).toBeVisible();
 });

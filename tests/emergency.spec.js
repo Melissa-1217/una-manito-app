@@ -11,8 +11,9 @@ test('emergencia: separar recursos, pedidos y contactos sin mezclar sus acciones
   await expect(tabs.getByRole('button', { name: 'Necesidades', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Tengo recursos', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Ofrecer una manito', exact: true })).toBeVisible();
+  if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
   await page.getByLabel('Título', { exact: true }).fill('Agua para compartir en emergencia');
-  await page.getByLabel('Cuéntale un poco más al barrio').fill('Tengo botellas de agua para compartir con mis vecinos.');
+  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Tengo botellas de agua para compartir con mis vecinos.');
   await page.getByRole('button', { name: 'Revisar publicación', exact: true }).click();
   await page.getByRole('button', { name: 'Publicar ofrecimiento', exact: true }).click();
   await emergency();

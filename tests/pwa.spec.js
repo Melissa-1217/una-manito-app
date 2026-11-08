@@ -53,8 +53,10 @@ test('copia guardada sin mensajes y borrador persistente, sin publicar ni recone
   await page.getByRole('button', { name: 'Volver', exact: true }).click();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
 
+  if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
+
   await page.getByLabel('Título', { exact: true }).fill('Borrador sin conexión');
-  await page.getByLabel('Cuéntale un poco más al barrio').fill('Lo revisaré cuando tenga conexión otra vez.');
+  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Lo revisaré cuando tenga conexión otra vez.');
   await page.getByRole('button', { name: 'Revisar publicación' }).click();
   await expect(page.getByRole('button', { name: 'Publicar solicitud', exact: true })).toBeDisabled();
   await page.reload();
@@ -87,6 +89,7 @@ test('una actualización espera confirmación y conserva el borrador manual', as
   await installWorker(page);
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await navigateTo(page, 'Publicar');
+  if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
   await page.getByLabel('Título', { exact: true }).fill('Borrador antes de actualizar');
   const original = await readFile('dist/sw.js', 'utf8');
   try {

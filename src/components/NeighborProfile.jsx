@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { loadNeighbor, recommendNeighbor, summarizeRatings } from '../lib/recommendations.js';
 
-function RatingHistory({ reviews }) {
+export function RatingHistory({ reviews }) {
   const summary = summarizeRatings(reviews);
   return <>
     <h3>Experiencias de vecinos</h3>

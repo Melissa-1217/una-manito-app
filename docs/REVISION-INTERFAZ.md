@@ -27,3 +27,11 @@ Estos cambios requieren publicar el nuevo código. En una PWA instalada hay que 
 Las pruebas cubren reapertura de bienvenida, migración desde la marca anterior, teclado y foco, conservación de borradores, navegación, publicación, perfiles y valoraciones, mensajes, estados y copia sin conexión. Se comprobaron anchos de 320, 390, 800 y 1024 píxeles, escritorio y ampliación del texto.
 
 La revisión es local con pruebas automatizadas y capturas; no equivale a verificar la versión que esté publicada en Vercel ni a una certificación de accesibilidad.
+
+## Formularios progresivos y perfil
+
+Pedir ayuda, ofrecer ayuda y publicar un servicio comienzan con un solo campo. El título inicial se toma del primer enunciado del mensaje, con un máximo de 120 caracteres; no se inventan detalles ni se hace una llamada de IA automática. Se puede cambiar en la revisión. Dictado y preparación con IA son opcionales.
+
+«Añadir detalles» conserva tipo, título manual, categoría, barrio, cupos, ubicación y marca de emergencia. El último paso permite editar título y descripción antes de confirmar. Los borradores se siguen guardando localmente y no se publican sin conexión.
+
+«Mi perfil» reúne nombre y barrio, cantidad de publicaciones, acceso a Mi actividad y valoraciones recibidas. Usa las tablas existentes. No incluye edición de datos, subida de fotos ni una insignia de identidad verificada. Las fichas vecinales y sus valoraciones siguen accesibles desde las publicaciones.
