@@ -197,7 +197,7 @@ export default function AuthFlow() {
   }
 
   if (demo) return <App onExitDemo={() => setDemo(false)} />;
-  if (!online && offlineProfile) return <App key={`offline-${offlineProfile.id}-${offlineProfile.barrio}`} account={offlineProfile} offlineSession onSignOut={() => { try { clearOfflineAccount(offlineProfile); } catch { /* Storage may be unavailable. */ } setOfflineProfile(null); }} />;
+  if (!online && offlineProfile && !(session && profileResult?.profile && profileResult.userId === userId)) return <App key={`offline-${offlineProfile.id}-${offlineProfile.barrio}`} account={offlineProfile} offlineSession onSignOut={() => { try { clearOfflineAccount(offlineProfile); } catch { /* Storage may be unavailable. */ } setOfflineProfile(null); }} />;
   if (client && !sessionResult) return <AuthLayout><p role="status">Recuperando tu sesión…</p></AuthLayout>;
   if (!session) return <Credentials client={client} onDemo={() => setDemo(true)} />;
   if (profileResult?.userId !== userId || profileResult.attempt !== retry) return <AuthLayout><p role="status">Cargando tu perfil…</p></AuthLayout>;

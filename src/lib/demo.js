@@ -29,6 +29,7 @@ export function acceptOffer(data, offerId, userId) {
   if (!isActive({ estado: publicationState(publication) }) || offer.estado !== 'pendiente') throw new Error('El ofrecimiento ya no está pendiente.');
   if (availableSlots(publication, data.ofrecimientos) === 0) throw new Error('Los cupos ya están completos.');
   return {
+    ...data,
     publicaciones: data.publicaciones.map((p) => p.id === publication.id ? { ...p, estado: 'en_coordinacion' } : p),
     ofrecimientos: data.ofrecimientos.map((o) => o.id === offerId ? { ...o, estado: 'aceptado' } : o),
   };

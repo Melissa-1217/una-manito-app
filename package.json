@@ -4,13 +4,14 @@
   "description": "App vecinal para encontrar servicios recomendados, intercambiar ayuda y coordinar apoyo en emergencias.",
   "main": "index.js",
   "scripts": {
-    "test": "node --test tests/demo.test.js tests/ai.test.js tests/lifecycle.test.js tests/offline.test.js",
+    "test": "node --test tests/demo.test.js tests/ai.test.js tests/lifecycle.test.js tests/offline.test.js tests/conversations.test.js",
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "lint": "eslint .",
     "test:ui": "playwright test",
-    "test:pwa": "playwright test --config playwright.pwa.config.js"
+    "test:pwa": "playwright test --config playwright.pwa.config.js",
+    "test:db": "node --test tests/database/private-messages.test.js"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@electric-sql/pglite": "^0.5.15",
     "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.65.0",
     "@vitejs/plugin-react": "^6.2.1",

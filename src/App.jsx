@@ -1,3 +1,5 @@
+import PrivateConversation from './components/PrivateConversation.jsx';
+import { canConverse, sendDemoMessage } from './lib/conversations.js';
 import HomeActions from './components/HomeActions.jsx';
 import DetailGuidance from './components/DetailGuidance.jsx';
 import useOnline from './lib/useOnline.js';
@@ -50,6 +52,8 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
   const [data, setStoredData] = useState(() => account ? { publicaciones: initialSnapshot?.publicaciones || [], ofrecimientos: [] } : loadData(storageKey));
   const [user, setUser] = useState(account?.id || 'ana');
   const [chat, setChat] = useState(null);
+  const [conversationId, setConversationId] = useState(null);
+  const [privateDrafts, setPrivateDrafts] = useState({});
   const [view, setView] = useState('inicio');
   const [activityTab, setActivityTab] = useState('activas');
   const [now, setNow] = useState(Date.now);
@@ -121,8 +125,8 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
     setStoredData(next);
   }
 
-  function navigate(next) { setView(next); setSelected(null); setReview(false); setMessage(''); setQuery(''); setServiceIntent(null); setServiceCategory('Todos'); setNotice(''); }
-  function open(id) { setSelected(id); setMessage(''); setNotice(''); }
+  function navigate(next) { setConversationId(null); setView(next); setSelected(null); setReview(false); setMessage(''); setQuery(''); setServiceIntent(null); setServiceCategory('Todos'); setNotice(''); }
+  function open(id) { setConversationId(null); setSelected(id); setMessage(''); setNotice(''); }
   function perform(action, success) {
     try { setData(action(data)); setNotice(success); }
     catch (error) { setNotice(error.message); }
@@ -217,6 +221,8 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
   const alreadyOffered = offers.some((o) => o.vecino_id === user);
   const own = publication?.autor_id === user;
   const remainingSlots = publication ? availableSlots(publication, offers) : null;
+  const conversationResponse = data.ofrecimientos.find(response => response.id === conversationId);
+  const conversationPost = publications.find(post => post.id === conversationResponse?.publicacion_id);
   const filtered = publications.filter((p) => {
     if (view === 'actividad' ? (activityTab === 'activas') !== isActive(p) : !isActive(p)) return false;
     if (account && view !== 'actividad' && p.barrio.trim().toLocaleLowerCase('es') !== account.barrio.trim().toLocaleLowerCase('es')) return false;
@@ -258,6 +264,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
             {(own || alreadyOffered) && <div className="panel"><h2>{own ? 'Mensajes privados recibidos' : 'Tu mensaje privado'}</h2>{offers.filter((o) => own || o.vecino_id === user).length === 0 ? <p className="muted">Todavía no hay respuestas para mostrar.</p> : offers.filter((o) => own || o.vecino_id === user).map((o) => {
               const history = helperHistory(data, o.vecino_id);
               return <div className="offer" key={o.id}><div><strong>{people[o.vecino_id]}</strong>{account && <NeighborProfile id={o.vecino_id} name={people[o.vecino_id]}/>}<p>{o.mensaje}</p><span className="badge">{o.estado === 'aceptado' ? 'Aceptado' : o.estado === 'rechazado' ? 'Rechazado' : 'Por confirmar'}</span>
+                <button className="button secondary conversation-action" disabled={Boolean(account) && readOnly} aria-label={`Conversar con ${people[own ? o.vecino_id : publication.autor_id] || 'tu vecino'}`} onClick={() => setConversationId(o.id)}>Conversar</button>
                 {own && !account && <section className="helper-history">
                   <strong>Referencias del barrio</strong>
                   <p>{history.total ? `Ayudas aceptadas en solicitudes cerradas: ${history.total}.` : 'Todavía no hay ayudas anteriores registradas.'}</p>
@@ -283,6 +290,10 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
           <section className="feed">{view === 'actividad' && <div className="activity-tabs" role="group" aria-label="Filtrar mi actividad">{[['activas', 'Activas'], ['historial', 'Historial']].map(([id, label]) => <button key={id} className="button secondary" aria-pressed={activityTab === id} onClick={() => setActivityTab(id)}>{label}</button>)}</div>}{view === 'servicios' && <>{serviceIntent && <div className="notice"><span>{serviceIntent.interpretacion} · Resultados de publicaciones existentes.</span><button onClick={() => setServiceIntent(null)} aria-label="Quitar filtro de IA"><X size={16} /></button></div>}</>}<div className="section-heading"><div>{view === 'inicio' && <h2>Publicaciones del barrio</h2>}</div><span className="result-count">{filtered.length} {filtered.length === 1 ? 'publicación' : 'publicaciones'}</span></div><label className="search-box"><Search size={19} /><input aria-label="Buscar publicaciones" placeholder={view === 'servicios' ? 'Ej.: gasfitero, electricidad, clases…' : 'Busca una necesidad o algo que puedas compartir…'} value={query} onChange={(e) => setQuery(e.target.value)} /></label>{view === 'servicios' && <div className="service-categories" role="group" aria-label="Filtrar servicios por oficio">{['Todos','Gasfitería','Electricidad','Clases','Compras y traslados','Otros'].map(category => <button key={category} aria-pressed={serviceCategory === category} onClick={() => { setServiceCategory(category); setServiceIntent(null); }}>{category}</button>)}</div>}{view === 'servicios' && <AiPublicationAssistant key={query} text={query} type="busqueda" onApply={(intent) => { setServiceIntent(intent); setServiceCategory('Todos'); setQuery(''); }} />}<LocationControl value={origin} onChange={setOrigin}/><div className="publication-grid" aria-busy={loading}>{filtered.map((p) => <PublicationCard key={p.id} publication={p} onOpen={open} distance={origin ? formatDistance(distanceKm(origin,p)) : null} />)}</div>{!loading && !loadError && filtered.length === 0 && <div className="empty"><HandHeart size={32} aria-hidden="true"/><h3>{readOnly ? 'No hay publicaciones guardadas que coincidan' : view === 'servicios' ? 'No encontramos servicios para esta búsqueda' : view === 'actividad' ? activityTab === 'historial' ? 'Tu historial aparecerá aquí' : 'Todavía no tienes actividad' : 'Tu barrio empieza con una manito'}</h3><p>{readOnly ? 'Vuelve a conectarte para actualizar. Mientras tanto, puedes preparar un borrador.' : view === 'actividad' ? 'Aquí verás lo que publiques y las ayudas en las que participes. Las resueltas, canceladas y vencidas se conservan en Historial.' : view === 'servicios' ? 'Prueba otro oficio o quita los filtros. Solo mostramos servicios publicados por vecinos.' : 'Pide ayuda o comparte algo que pueda servirle a un vecino.'}</p>{query || serviceIntent || serviceCategory !== 'Todos' ? <button className="button secondary" onClick={() => { setQuery(''); setServiceIntent(null); setServiceCategory('Todos'); }}>Limpiar filtros</button> : view === 'actividad' ? <button className="button secondary" onClick={() => navigate('inicio')}>Volver a Mi barrio</button> : <button className="button secondary" onClick={() => startPublication(view === 'servicios' ? 'servicio' : 'solicitud')}>{readOnly ? 'Preparar borrador' : view === 'servicios' ? 'Publicar un servicio' : 'Publicar un pedido'}</button>}</div>}</section>
         </>}
       </main>
+      {conversationResponse && conversationPost && canConverse(conversationPost, conversationResponse, user) && <PrivateConversation key={user + '-' + conversationResponse.id} publication={conversationPost} response={conversationResponse} userId={user} people={people} remote={Boolean(account)} readOnly={readOnly} demoMessages={data.mensajes || []} initialDraft={privateDrafts[user + ":" + conversationResponse.id] || ''} onDraftChange={text => setPrivateDrafts(current => ({ ...current, [user + ":" + conversationResponse.id]: text }))} onSendDemo={(text, id) => {
+        const result = sendDemoMessage(data, conversationResponse.id, user, text, id);
+        setData(result.data); return result.message;
+      }} onClose={() => setConversationId(null)}/>}
       {chat && <ManitoChat initialMode={chat.mode} name={people[user]} barrio={account?.barrio || emptyDraft.barrio}
         posts={publications} readOnly={readOnly} saving={saving} loading={loading} onClose={() => setChat(null)} onPublish={publish}
         onOpen={id => { setChat(null); navigate('servicios'); open(id); }}

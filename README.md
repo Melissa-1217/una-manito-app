@@ -81,6 +81,22 @@ Validación local: pruebas de interfaz en móvil/escritorio, reglas de la demo y
 
 ## Vercel
 
+### Conversaciones privadas entre vecinos
+
+Antes de desplegar esta versión, ejecuta `supabase/migrations/20261109_mensajes_privados.sql` en SQL Editor, después de las migraciones de cupos y ciclo de publicaciones. Crea `mensajes_privados` y la RPC `enviar_mensaje_privado`. No cambies claves ni desactives RLS. El SQL nuevo se ha probado en PostgreSQL embebido con roles y un esquema aislado; las políticas del proyecto remoto se comprueban después de aplicarlo.
+
+Cada respuesta/consulta tiene su propia conversación entre el autor de la publicación y el vecino que respondió. **Conversar** aparece en los mensajes privados de esa publicación, también accesibles desde Mi actividad. El mensaje inicial ya existente abre el historial; no se copia de nuevo como mensaje enviado. Se puede aclarar un pedido antes de aceptarlo: conversar no reserva un cupo ni un horario.
+
+Solo esas dos cuentas pueden leer sus mensajes mediante RLS. Los envíos pasan por una función que comprueba participantes, usa la identidad de la sesión, bloquea la publicación y rechaza mensajes nuevos si la respuesta está rechazada o la publicación está resuelta/cancelada/vencida. Las escrituras directas, cambios de autor, edición y borrado de mensajes no están permitidos al cliente. Resolver/cancelar conserva el historial en modo lectura. Un identificador UUID por envío permite reintentar la misma operación sin duplicarla, incluso si la confirmación se perdió antes del cierre.
+
+La conversación carga los últimos 50 mensajes, permite consultar páginas anteriores y consulta novedades cada 10 segundos mientras está abierta, visible y online. **Actualizar mensajes** permite pedirlas de inmediato. No se implementan notificaciones push/correo, confirmación de lectura ni archivos adjuntos. El mensaje «enviado» significa que el servidor confirmó su guardado, no que el destinatario lo leyó.
+
+Los mensajes reales no se envían a Gemini ni se guardan en la copia offline de la PWA. Un borrador privado puede conservarse en memoria al cerrar y volver a abrir la conversación durante la misma sesión; no se escribe al almacenamiento local y se pierde al recargar/cerrar sesión. Si la conexión se pierde con una sesión abierta, se conserva el texto en memoria y se desactiva el envío; no se reenvía automáticamente al volver. En la **demostración**, los mensajes ficticios se guardan junto a sus datos de ejemplo en el navegador.
+
+`npm run test:db` usa PGlite con `tests/fixtures/conversation-schema.sql`, aplica las migraciones y comprueba lectura entre participantes, rechazo de terceros (incluido otro participante del mismo pedido), identidad del remitente, escrituras directas denegadas, reintentos, cierre e historial. No necesita credenciales ni modifica Supabase. `tests/conversations.spec.js` prueba la interfaz en móvil/escritorio, la demo de ida y vuelta, accesibilidad, paginación, actualización y reintento tras una respuesta perdida. [RLS y permisos de Supabase](https://supabase.com/docs/guides/database/postgres/row-level-security).
+
+Después del despliegue, prueba con Ana/Luis y una tercera cuenta real: enviar en ambos sentidos, actualizar desde el otro dispositivo, comprobar que el tercero no ve esos mensajes ni puede acceder por API y resolver la publicación para verificar que el historial permanece y ya no acepta envíos nuevos.
+
 ### PWA: instalación y uso sin conexión
 
 La compilación incluye `manifest.webmanifest`, iconos de 192/512 px y un service worker generado por `pwa-build.js`, sin dependencias adicionales. El icono reutiliza la mano de la identidad visual de la app. Se mantiene el despliegue Vite en Vercel; no requiere SQL ni claves nuevas. La instalación utiliza HTTPS (o localhost para pruebas).
@@ -153,7 +169,7 @@ Las pruebas de las pantallas de acceso y selección de barrio usan dobles del SD
 
 `src/lib/publications.js` consulta, crea y cierra publicaciones con la sesión de Supabase y las políticas RLS existentes. El autor procede del perfil autenticado. El formulario conserva sus datos si falla el guardado. La interfaz muestra el nombre del autor mediante la relación con perfiles. Las solicitudes, ofrecimientos, servicios y recursos de emergencia comparten esta tabla.
 
-Las respuestas, su aceptación por RPC, los cupos, los estados y las valoraciones están implementados también para cuentas conectadas mediante las migraciones del repositorio. Las pruebas automatizadas usan dobles de los servicios; la validación del despliegue con cuentas reales se realiza por separado. Cada vecino puede enviar una respuesta inicial por publicación: todavía no hay una conversación privada de ida y vuelta.
+Las respuestas, conversaciones privadas de ida y vuelta, aceptación por RPC, cupos, estados y valoraciones están implementados también para cuentas conectadas mediante las migraciones del repositorio. Las pruebas de interfaz usan dobles de los servicios y las de SQL utilizan una base aislada; la validación del despliegue con cuentas reales se realiza por separado. Cada vecino crea una respuesta inicial por publicación y continúa desde Conversar.
 
 ## Revisión de experiencia de usuario
 
