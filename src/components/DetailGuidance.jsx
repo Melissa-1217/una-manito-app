@@ -1,6 +1,10 @@
 export default function DetailGuidance({ publication, own, response }) {
   if (['resuelta','cancelada','vencida'].includes(publication.estado)) return null;
   const service = publication.tipo === 'servicio';
+  if (publication.producto_modalidad) {
+    const text = own ? 'Revisa las solicitudes y coordina la entrega por privado.' : response?.estado === 'aceptado' ? publication.producto_modalidad === 'prestamo' ? 'Solicitud aceptada. Acuerda la entrega y la devolución por privado.' : 'Solicitud aceptada. Acuerda la entrega por privado.' : response?.estado === 'rechazado' ? 'Tu solicitud no fue aceptada. Puedes buscar otro producto.' : response ? 'Solicitud enviada. La entrega se confirma cuando el autor te acepta.' : 'Envía tu solicitud y coordina por privado. La entrega requiere aceptación.';
+    return <p className="detail-guidance">{text}</p>;
+  }
   let text;
   if (response) text = response.estado === 'aceptado'
     ? 'Ayuda aceptada. Abre Conversar para coordinar.'

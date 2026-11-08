@@ -32,6 +32,6 @@ La revisión es local con pruebas automatizadas y capturas; no equivale a verifi
 
 Pedir ayuda, ofrecer ayuda y publicar un servicio comienzan con un solo campo. El título inicial se toma del primer enunciado del mensaje, con un máximo de 120 caracteres; no se inventan detalles ni se hace una llamada de IA automática. Se puede cambiar en la revisión. Dictado y preparación con IA son opcionales.
 
-«Añadir detalles» conserva tipo, título manual, categoría, barrio, cupos, ubicación y marca de emergencia. El último paso permite editar título y descripción antes de confirmar. Los borradores se siguen guardando localmente y no se publican sin conexión.
+«Añadir detalles» conserva título manual, categoría, barrio, cupos y ubicación. Cada acceso mantiene su intención; las emergencias tienen formularios propios. El último paso permite editar título y descripción antes de confirmar. Los borradores se siguen guardando localmente y no se publican sin conexión.
 
 **Perfil → Mi perfil** reúne nombre y barrio, cantidad de publicaciones, acceso a Mi actividad y valoraciones recibidas. Usa las tablas existentes. Las fichas vecinales y sus valoraciones siguen accesibles desde las publicaciones.

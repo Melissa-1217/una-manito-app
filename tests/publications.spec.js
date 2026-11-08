@@ -56,7 +56,7 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
   if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
 
   await page.getByLabel('Título', { exact: true }).fill('Necesito un carrito para mudanza');
-  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Necesito un carrito para trasladar cajas esta tarde.');
+  await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Necesito un carrito para trasladar cajas esta tarde.');
   await page.getByRole('button', { name: 'Revisar publicación' }).click();
   await page.getByRole('button', { name: 'Publicar solicitud', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Necesito un carrito para mudanza', exact: true })).toBeVisible();

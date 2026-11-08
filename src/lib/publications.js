@@ -1,13 +1,19 @@
+import { validateProduct } from './products.js';
 import { getSupabaseClient } from './supabase.js';
 import { approximateLocation, hasCoordinates } from './location.js';
 import { validateCapacity } from './participation.js';
 
 const fields = 'id,autor_id,tipo,titulo,descripcion,categoria,barrio,latitud,longitud,es_emergencia,estado,cupos,creado_en,vence_en,primera_respuesta_en,cerrado_en,motivo_cancelacion,perfiles(nombre)';
 
+const productFields = fields + ',producto_modalidad';
+const missingProductColumn = error => ['42703','PGRST204'].includes(error?.code) && /producto_modalidad/.test(error.message || '');
+
 export async function listPublications() {
   const sweep = await getSupabaseClient().rpc('vencer_publicaciones');
   if (sweep.error) throw sweep.error;
-  const { data, error } = await getSupabaseClient().from('publicaciones').select(fields + ',ofrecimientos(id,publicacion_id,vecino_id,mensaje,estado,perfiles(nombre))').order('creado_en', { ascending: false });
+  const nested = ',ofrecimientos(id,publicacion_id,vecino_id,mensaje,estado,perfiles(nombre))';
+  let { data, error } = await getSupabaseClient().from('publicaciones').select(productFields + nested).order('creado_en', { ascending:false });
+  if (missingProductColumn(error)) ({ data,error } = await getSupabaseClient().from('publicaciones').select(fields + nested).order('creado_en', { ascending:false }));
   if (error) throw error;
   const result = await getSupabaseClient().rpc('participantes_confirmados');
   if (result.error) throw result.error;
@@ -21,6 +27,7 @@ export async function listPublications() {
 }
 
 export async function createPublication(draft, authorId) {
+  const product = validateProduct(draft);
   const { data, error } = await getSupabaseClient().from('publicaciones').insert({
     autor_id: authorId,
     tipo: draft.tipo,
@@ -30,8 +37,10 @@ export async function createPublication(draft, authorId) {
     barrio: draft.barrio.trim(),
     es_emergencia: draft.es_emergencia,
     cupos: validateCapacity(draft),
+    ...(product ? { producto_modalidad:product } : {}),
     ...(hasCoordinates(draft) ? approximateLocation(draft.latitud, draft.longitud) : {}),
-  }).select(fields).single();
+  }).select(product ? productFields : fields).single();
+  if (product && missingProductColumn(error)) throw new Error('PRODUCTS_SETUP_REQUIRED');
   if (error) throw error;
   return data;
 }

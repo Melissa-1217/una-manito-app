@@ -56,7 +56,7 @@ test('vista estrecha y ampliación conservan formularios y controles', async ({ 
   await page.evaluate(() => { document.body.style.zoom = '2'; });
   if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
   await page.getByLabel('Título', { exact: true }).fill('Una prueba con texto ampliado');
-  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Puedo completar la publicación con el texto ampliado.');
+  await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Puedo completar la publicación con el texto ampliado.');
   await page.getByRole('button', { name: 'Revisar publicación' }).press('Enter');
   await expect(page.getByRole('button', { name: 'Publicar solicitud', exact: true })).toBeVisible();
   await page.evaluate(() => { document.body.style.zoom = '1'; });

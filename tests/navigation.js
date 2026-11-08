@@ -1,4 +1,11 @@
 export async function navigateTo(page, label) {
+  if (label === 'Productos') {
+    if (!await page.getByRole('button', { name: 'Productos', exact: true }).isVisible()) {
+      await navigateTo(page, 'Publicaciones recientes');
+    }
+    await page.getByRole('button', { name: 'Productos', exact: true }).click();
+    return;
+  }
   const profileActions = ['Mi perfil', 'Mi actividad', 'Cambiar barrio', 'Ver bienvenida', 'Cerrar sesión'];
   const inProfile = profileActions.includes(label);
   await page.getByRole('button', { name: inProfile ? 'Abrir perfil' : 'Abrir menú', exact: true }).click();

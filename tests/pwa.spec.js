@@ -56,11 +56,11 @@ test('copia guardada sin mensajes y borrador persistente, sin publicar ni recone
   if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
 
   await page.getByLabel('Título', { exact: true }).fill('Borrador sin conexión');
-  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Lo revisaré cuando tenga conexión otra vez.');
+  await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Lo revisaré cuando tenga conexión otra vez.');
   await page.getByRole('button', { name: 'Revisar publicación' }).click();
   await expect(page.getByRole('button', { name: 'Publicar solicitud', exact: true })).toBeDisabled();
   await page.reload();
-  await navigateTo(page, 'Pedir una manito');
+  await navigateTo(page, 'Continuar borrador');
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Borrador sin conexión');
   let writes = 0;
   page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/rest/v1/publicaciones')) writes++; });
@@ -100,7 +100,7 @@ test('una actualización espera confirmación y conserva el borrador manual', as
     await page.getByRole('button', { name: 'Actualizar app', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Entra a tu barrio', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Explorar demostración' }).click();
-    await navigateTo(page, 'Pedir una manito');
+    await navigateTo(page, 'Continuar borrador');
     await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Borrador antes de actualizar');
   } finally { await writeFile('dist/sw.js', original); }
 });

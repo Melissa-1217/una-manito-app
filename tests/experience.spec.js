@@ -26,7 +26,7 @@ for (const flow of [
     await expect(page.getByRole('textbox')).toHaveCount(1);
     const screen = flow.publish.split(' ')[1];
     await page.screenshot({ path:`../una-manito-formulario-${screen}-${testInfo.project.name}.png`, fullPage:false });
-    await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Una publicación para mi barrio. Estoy describiendo lo que necesito u ofrezco para mañana.');
+    await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Una publicación para mi barrio. Estoy describiendo lo que necesito u ofrezco para mañana.');
     await page.getByRole('button', { name: 'Revisar publicación', exact: true }).click();
     await expect(page.getByLabel('Título', { exact:true })).toHaveValue('Una publicación para mi barrio');
     if (flow.publish === 'Publicar solicitud') expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
@@ -78,7 +78,7 @@ test('la revisión permite corregir el título y el mensaje y volver sin perderl
   await page.getByLabel('Título', { exact:true }).fill('Apoyo para mover mi mesa');
   await page.getByRole('textbox', { name:'Descripción', exact:true }).fill('Necesito dos vecinos para mover una mesa al patio mañana.');
   await page.getByRole('button', { name:'Volver a editar', exact:true }).click();
-  await expect(page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/)).toHaveValue('Necesito dos vecinos para mover una mesa al patio mañana.');
+  await expect(page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/)).toHaveValue('Necesito dos vecinos para mover una mesa al patio mañana.');
   await page.getByRole('button', { name:'Revisar publicación', exact:true }).click();
   await expect(page.getByLabel('Título', { exact:true })).toHaveValue('Apoyo para mover mi mesa');
   await page.getByRole('button', { name:'Publicar solicitud', exact:true }).click();
