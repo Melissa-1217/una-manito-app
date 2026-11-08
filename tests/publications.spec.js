@@ -1,7 +1,7 @@
 import { navigateTo } from './navigation.js';
 import { test, expect } from '@playwright/test';
 
-test('publica con la cuenta real, otro vecino la consulta y solo el autor la cierra', async ({ page }) => {
+test('publica con la cuenta real, otro vecino la consulta y solo el autor la cierra', async ({ page }, testInfo) => {
   await page.route('**/src/lib/supabase.js', (route) => route.fulfill({ contentType: 'text/javascript', body: `
     let listener;
     let user;
@@ -72,7 +72,7 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
   await page.getByRole('button', {name:'Aceptar ayuda'}).click();
   await expect(page.getByText('Aceptado',{exact:true})).toBeVisible();
   await page.getByRole('button', { name: 'Marcar como resuelta', exact: true }).click();
-  await expect(page.getByText('Esta publicación ya está cerrada.')).toBeVisible();
+  await expect(page.getByText('Publicación resuelta.', { exact:true })).toBeVisible();
   await page.getByRole('button',{name:'Valorar la experiencia'}).click();
   await page.getByLabel('4 estrellas', {exact:true}).check();
   await page.getByLabel('¿Cómo fue la ayuda?').fill('Luis fue puntual y prestó el carrito.');
@@ -81,4 +81,7 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
   await page.getByRole('button',{name:'Ver perfil de Luis',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Perfil vecinal'})).toBeVisible();
   await expect(page.getByText('Luis fue puntual y prestó el carrito.',{exact:true})).toBeVisible();
+  await page.screenshot({ path: `../una-manito-perfil-${testInfo.project.name}.png`, fullPage:false });
+  await page.getByRole('button', { name:'Cerrar perfil', exact:true }).click();
+  await expect(page.getByRole('button', { name:'Ver perfil de Luis', exact:true })).toBeFocused();
 });

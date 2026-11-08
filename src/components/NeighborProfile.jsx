@@ -6,14 +6,14 @@ function RatingHistory({ reviews }) {
   const summary = summarizeRatings(reviews);
   return <>
     <h3>Experiencias de vecinos</h3>
-    <p>{summary.count ? `${summary.average.toFixed(1)} / 5 · ${summary.count} valoraciones` : 'Aún no hay calificaciones con estrellas.'}</p>
-    <p><strong>Visto Bueno Vecinal</strong> · {summary.endorsements} vecinos lo recomiendan según su última valoración.</p>
+    <p>{summary.count ? `${summary.average.toFixed(1)} / 5 · ${summary.count} ${summary.count === 1 ? 'valoración' : 'valoraciones'}` : 'Aún no hay calificaciones con estrellas.'}</p>
+    <p><strong>Visto Bueno Vecinal</strong> · {summary.endorsements} {summary.endorsements === 1 ? 'vecino lo recomienda' : 'vecinos lo recomiendan'}. Cuenta su última valoración.</p>
     {reviews.map(item => <blockquote key={item.id}>
       <strong>{item.estrellas == null ? 'Recomendación anterior sin estrellas' : `${'★'.repeat(item.estrellas)}${'☆'.repeat(5-item.estrellas)} · ${item.estrellas}/5`}</strong>
       {item.estrellas >= 4 && <span className="badge">Visto Bueno Vecinal</span>}
       <p>{item.comentario}</p><small>{item.autor?.nombre || 'Vecino'} · {new Date(item.creado_en).toLocaleDateString('es-PE')}</small>
     </blockquote>)}
-    <small>4 o 5 estrellas expresan el Visto Bueno Vecinal. Cada vecino cuenta una vez, con su opinión más reciente.</small>
+    <details className="ui-explanation"><summary>¿Cómo funciona el Visto Bueno?</summary><p>4 o 5 estrellas expresan el Visto Bueno Vecinal. Cada vecino cuenta una vez, con su opinión más reciente.</p></details>
   </>;
 }
 
@@ -23,12 +23,13 @@ function ProfileDialog({ id, onClose }) {
   const [error, setError] = useState('');
   useEffect(() => {
     const node = dialog.current;
+    const previous = document.activeElement;
     node.showModal();
     let active = true;
     loadNeighbor(id).then(data => { if (active) setResult(data); }).catch(() => {
       if (active) setError('No pudimos consultar las referencias. Intenta más tarde.');
     });
-    return () => { active = false; node.close(); };
+    return () => { active = false; node.close(); if (previous instanceof HTMLElement && previous.isConnected) previous.focus(); };
   }, [id]);
   return <dialog className="neighbor-dialog" ref={dialog} onCancel={event => { event.preventDefault(); onClose(); }} aria-label="Perfil vecinal">
     <button className="neighbor-close" aria-label="Cerrar perfil" onClick={onClose}><X size={22}/></button>

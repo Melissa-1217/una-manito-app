@@ -61,7 +61,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   await expect(page.getByRole('heading', { name: 'Publicaciones del barrio' })).toBeVisible();
   await page.screenshot({ path: `../una-manito-${testInfo.project.name}.png`, fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  if (testInfo.project.name === 'mobile') await expect(page.getByRole('button', { name: 'Apoyo en emergencia', exact: true })).toBeVisible();
+  if (testInfo.project.name === 'mobile') await expect(page.getByRole('button', { name: 'Abrir menú', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
 
   await page.getByLabel('Título', { exact: true }).fill('Necesito un taladro por una hora');
@@ -74,7 +74,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   await page.getByRole('button').filter({ has: page.getByRole('heading', { name: 'Necesito un taladro por una hora' }) }).click();
   await page.getByLabel('Tu mensaje').fill('Tengo uno. Te lo presto esta tarde.');
   await page.getByRole('button', { name: 'Yo te ayudo', exact: true }).click();
-  await expect(page.getByText('Ya enviaste una respuesta.', { exact: false })).toBeVisible();
+  await expect(page.getByText('Respuesta enviada. Continúa en Mi actividad.', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Marcar como resuelta' })).toHaveCount(0);
   await page.getByLabel('Cambiar usuario de demostración').selectOption('ana');
   await navigateTo(page, 'Mi actividad');
@@ -82,7 +82,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   await page.getByRole('button', { name: 'Aceptar ayuda' }).click();
   await expect(page.getByText('En coordinación', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Marcar como resuelta' }).click();
-  await expect(page.getByText('Esta publicación ya está cerrada.')).toBeVisible();
+  await expect(page.getByText('Publicación resuelta.', { exact:true })).toBeVisible();
   await page.reload();
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await navigateTo(page, 'Mi actividad');

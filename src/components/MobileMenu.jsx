@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { AlertTriangle, CircleHelp, MessageCircle, X, MapPin, ChevronRight, LogOut } from 'lucide-react';
+import { AlertTriangle, CircleHelp, MessageCircle, X, MapPin, ChevronRight, LogOut, HandHeart } from 'lucide-react';
 
-export default function MobileMenu({ items, view, name, neighborhood, onNavigate, onClose, onTutorial, onChat, onExit, exitLabel }) {
+export default function MobileMenu({ items, view, name, neighborhood, onNavigate, onClose, onTutorial, onChat, onExit, exitLabel, onWelcome }) {
   const dialog = useRef(null);
   const close = useRef(null);
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function MobileMenu({ items, view, name, neighborhood, onNavigate
     <nav aria-label="Navegación móvil">{items.map(({ id, label, icon: Icon }) => <button key={id} aria-current={view === id ? 'page' : undefined} onClick={() => onNavigate(id)}><span className="menu-icon"><Icon size={23} aria-hidden="true"/></span><strong>{label}</strong><ChevronRight size={18} aria-hidden="true"/></button>)}
       <button className="menu-emergency" aria-current={view === 'emergencia' ? 'page' : undefined} onClick={() => onNavigate('emergencia')}><span className="menu-icon"><AlertTriangle size={23} aria-hidden="true"/></span><strong>Apoyo en emergencia</strong><ChevronRight size={18} aria-hidden="true"/></button>
     </nav>
-    <section className="menu-help" aria-label="Ayuda para usar Una Manito"><h3>Te damos una manito</h3><button onClick={onChat}><MessageCircle size={20} aria-hidden="true"/>Chat con Manolito<ChevronRight size={17} aria-hidden="true"/></button><button onClick={onTutorial}><CircleHelp size={20} aria-hidden="true"/>Cómo usar la app<ChevronRight size={17} aria-hidden="true"/></button></section>
+    <section className="menu-help" aria-label="Ayuda para usar Una Manito"><h3>Te damos una manito</h3><button onClick={onWelcome}><HandHeart size={20} aria-hidden="true"/>Ver bienvenida<ChevronRight size={17} aria-hidden="true"/></button><button onClick={onChat}><MessageCircle size={20} aria-hidden="true"/>Chat con Manolito<ChevronRight size={17} aria-hidden="true"/></button><button onClick={onTutorial}><CircleHelp size={20} aria-hidden="true"/>Cómo usar la app<ChevronRight size={17} aria-hidden="true"/></button></section>
     <button className="menu-exit" onClick={onExit}><LogOut size={19} aria-hidden="true"/>{exitLabel}</button>
   </dialog>;
 }

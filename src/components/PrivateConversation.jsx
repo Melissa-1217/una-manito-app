@@ -90,13 +90,13 @@ export default function PrivateConversation({ publication, response, userId, peo
       setStatus('Mensaje enviado.'); setScroll(value => value + 1);
     } catch (failure) {
       if (failure.message?.includes('CONVERSATION_CLOSED')) setServerClosed(true);
-      setError(failure.message?.includes('CONVERSATION_CLOSED') ? 'La publicación ya está cerrada o la respuesta no admite más mensajes. Conservamos tu texto.' : 'No se confirmó el envío. Conservamos tu texto. Si lo reintentas sin editarlo, comprobaremos el mismo mensaje para evitar duplicados.');
+      setError(failure.message?.includes('CONVERSATION_CLOSED') ? 'La publicación ya está cerrada o la respuesta no admite más mensajes. Conservamos tu texto.' : 'No se confirmó el envío. Conservamos tu texto. Reintenta sin editarlo para evitar duplicados.');
     } finally { sending.current = false; setPending(false); }
   }
 
   return <dialog ref={dialog} className="private-dialog" aria-labelledby="private-title" onCancel={event => { event.preventDefault(); if (!sending.current) onClose(); }}>
     <header><span className="private-symbol"><MessageCircle size={23} aria-hidden="true"/></span><div><h2 id="private-title">Conversación con {otherName}</h2><p>{publication.titulo}</p></div><button aria-label="Cerrar conversación" autoFocus disabled={pending} onClick={onClose}><X size={22}/></button></header>
-    <p className="private-scope">Esta conversación es privada entre {otherName} y tú. {remote ? 'Los mensajes no se envían a Manolito ni se guardan en la copia offline.' : 'Esta es una demostración: los mensajes de ejemplo se guardan en este navegador.'}</p>
+    <p className="private-scope">Solo {otherName} y tú pueden ver estos mensajes. {remote ? 'Sin acceso para Manolito ni copia sin conexión.' : 'Demo: mensajes guardados en este navegador.'}</p>
     <div className="private-toolbar">{remote && <button className="text-button" disabled={!online || fetching} onClick={() => setRefresh(value => value + 1)}><RotateCcw size={15} aria-hidden="true"/>{fetching ? 'Actualizando mensajes…' : 'Actualizar mensajes'}</button>}<span role="status">{status}</span></div>
     <div className="private-scroll">
       {hasEarlier && <button className="button secondary" disabled={fetching || !online} onClick={older}>Ver mensajes anteriores</button>}
@@ -107,7 +107,7 @@ export default function PrivateConversation({ publication, response, userId, peo
       {error && <p className="auth-error" role="alert">{error}</p>}
       <div ref={bottom}/>
     </div>
-    <footer>{!writable && <p>{!online && remote ? 'Sin conexión: conservamos el texto mientras esta conversación siga abierta. Necesitas internet para enviar y actualizar.' : remote && readOnly ? 'Espera a tener conexión y publicaciones actualizadas para enviar.' : 'La conversación está cerrada. Puedes consultar su historial.'}</p>}
+    <footer>{!writable && <p>{!online && remote ? 'Sin conexión. Tu texto se conserva en esta sesión; necesitas internet para enviarlo.' : remote && readOnly ? 'Espera a tener conexión y publicaciones actualizadas para enviar.' : 'La conversación está cerrada. Puedes consultar su historial.'}</p>}
       <form onSubmit={send}><label htmlFor="private-message-text">Mensaje privado</label><textarea id="private-message-text" required maxLength={1000} value={text} readOnly={!activeConversation} disabled={pending || !ready} onChange={event => { retry.current = null; setText(event.target.value); onDraftChange?.(event.target.value); }}/><button className="button primary" disabled={!writable || pending || !text.trim() || !ready}><Send size={17} aria-hidden="true"/>{pending ? 'Enviando…' : 'Enviar mensaje privado'}</button></form>
     </footer>
   </dialog>;

@@ -6,8 +6,8 @@ export default function LifecycleActions({ publication, own, busy, onAction }) {
   const [reason, setReason] = useState('');
   const state = publication.estado;
   return <section className="lifecycle-actions" aria-label="Estado de la publicación">
-    {state === 'resuelta' && <p className="resolved">Esta publicación ya está cerrada.</p>}
-    {state === 'cancelada' && <><p className="privacy">Esta publicación fue cancelada.</p><p>Motivo: {publication.motivo_cancelacion}</p></>}
+    {state === 'resuelta' && <p className="resolved">Publicación resuelta.</p>}
+    {state === 'cancelada' && <><p className="privacy">Publicación cancelada.</p><p>Motivo: {publication.motivo_cancelacion}</p></>}
     {state === 'vencida' && <p className="privacy">Venció después de 7 días sin respuestas. Su historial se conserva.{own && ' Puedes renovarla por otros 7 días.'}</p>}
     {own && isActive(publication) && <button className="button primary" disabled={busy} onClick={() => onAction('resolver')}>Marcar como resuelta</button>}
     {own && state === 'vencida' && <button className="button primary" disabled={busy} onClick={() => onAction('renovar')}>Renovar por 7 días</button>}
@@ -22,6 +22,6 @@ export default function LifecycleActions({ publication, own, busy, onAction }) {
           <div className="lifecycle-buttons"><button className="button secondary" disabled={busy}>Confirmar cancelación</button><button type="button" className="text-button" disabled={busy} onClick={() => setCancelling(false)}>Volver sin cancelar</button></div>
         </form>}
     </>}
-    {!isActive(publication) && <p className="ai-hint">Conservamos participantes y valoraciones en Mi actividad → Historial.</p>}
+    {!isActive(publication) && <p className="ai-hint">Consulta participantes y valoraciones en Mi actividad → Historial.</p>}
   </section>;
 }

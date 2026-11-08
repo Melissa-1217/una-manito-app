@@ -71,7 +71,7 @@ function Credentials({ client, onDemo }) {
   if (confirmation) return <AuthLayout>
     <div className="auth-symbol"><MailCheck size={36} /></div><h1>Revisa tu correo</h1>
     <p>Si el registro procede, recibirás un enlace en <strong>{email}</strong> para confirmar tu cuenta.</p>
-    <p className="muted">Abre el enlace y vuelve para elegir tu barrio. Revisa también la carpeta de spam.</p>
+    <p className="muted">Confirma tu cuenta desde el enlace. Si no llega, revisa spam.</p>
     <button className="button primary wide" onClick={() => switchScreen('login')}>Ir a iniciar sesión<ArrowRight size={17} /></button>
   </AuthLayout>;
 
@@ -79,7 +79,7 @@ function Credentials({ client, onDemo }) {
     {screen === 'register' && <button className="text-button" onClick={() => switchScreen('login')}><ArrowLeft size={17} />Volver</button>}
     
     <h1>{screen === 'register' ? 'Únete a tu comunidad' : 'Entra a tu barrio'}</h1>
-    <p className="muted">{screen === 'register' ? 'Crea tu cuenta. Después podrás elegir el barrio donde quieres participar.' : 'Servicios, favores y apoyo cerca de casa.'}</p>
+    <p className="muted">{screen === 'register' ? 'Crea tu cuenta y elige tu barrio.' : 'Servicios, favores y apoyo cerca de casa.'}</p>
     {!client && <div className="auth-configuration" role="status">La conexión con Supabase está pendiente. Puedes explorar las pantallas en la demostración.</div>}
     <form className="panel auth-form" onSubmit={submit}>
       <fieldset disabled={pending}>
@@ -120,7 +120,7 @@ function ChooseNeighborhood({ client, session, profile, onSaved, onSignOut, onCa
       if (result.error) throw result.error;
       onSaved(result.data);
     } catch (failure) {
-      setError(failure.code ? 'No pudimos guardar tu perfil. Comprueba los permisos de la tabla perfiles y vuelve a intentar.' : failure.message);
+      setError(failure.code ? 'No pudimos guardar tu perfil. Revisa la conexión e inténtalo de nuevo.' : failure.message);
     } finally { setPending(false); }
   }
 
@@ -129,11 +129,11 @@ function ChooseNeighborhood({ client, session, profile, onSaved, onSignOut, onCa
     <form className="panel auth-form" onSubmit={save}><fieldset disabled={pending}>
       {!profile && <label>Tu nombre<input required minLength={2} maxLength={80} value={name} onChange={(event) => setName(event.target.value)} autoComplete="given-name" /></label>}
       <NeighborhoodField client={client} value={neighborhood} onChange={setNeighborhood} />
-      {profile && <p className="ai-hint">Verás las publicaciones del barrio elegido. Tus publicaciones anteriores conservarán su barrio original.</p>}
+      {profile && <p className="ai-hint">Verás este barrio. Tus publicaciones anteriores conservan su ubicación.</p>}
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button type="submit" className="button primary wide">{pending ? 'Guardando…' : profile ? 'Guardar barrio' : 'Entrar a mi barrio'}<ArrowRight size={17} /></button>
     </fieldset></form>
-    <div className="privacy"><ShieldCheck size={20} />El barrio es una referencia para encontrar publicaciones cercanas.</div>
+    <div className="privacy"><ShieldCheck size={20} />Usamos el barrio para mostrar publicaciones cercanas.</div>
     {onCancel && <button className="button secondary wide" disabled={pending} onClick={onCancel}>Cancelar</button>}
     <button className="text-button" disabled={pending} onClick={onSignOut}><LogOut size={16} />Cerrar sesión</button>
   </AuthLayout>;

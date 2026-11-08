@@ -1,9 +1,10 @@
+import { navigateTo } from './navigation.js';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 test('primera entrada: bienvenida accesible, se cierra y no reaparece al recargar', async ({ page }, testInfo) => {
   await page.goto('/');
-  await page.evaluate(() => localStorage.removeItem('una-manito-welcome-v1'));
+  await page.evaluate(() => { localStorage.setItem('una-manito-welcome-v1','seen'); localStorage.removeItem('una-manito-welcome-v2'); });
   await page.getByRole('button', { name:'Explorar demostración' }).click();
   const dialog = page.getByRole('dialog', { name:'¡Hola, Ana!' });
   await expect(dialog).toBeVisible();
@@ -16,6 +17,10 @@ test('primera entrada: bienvenida accesible, se cierra y no reaparece al recarga
   await page.getByRole('button', { name:'Explorar demostración' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('heading', { name:'Publicaciones del barrio', exact:true })).toBeVisible();
+  await navigateTo(page, 'Ver bienvenida');
+  await expect(page.getByRole('dialog', { name:'¡Hola, Ana!' })).toBeVisible();
+  await page.getByRole('button', { name:'Cerrar bienvenida', exact:true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 test('inicio compacto: publicaciones visibles sin desplazarse y filtros independientes de servicios', async ({ page }, testInfo) => {
@@ -67,7 +72,7 @@ test('carga real: muestra progreso, avisa después de cinco segundos y retira el
 
 test('primera entrada permite abrir directamente el tutorial de Manolito', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => localStorage.removeItem('una-manito-welcome-v1'));
+  await page.evaluate(() => localStorage.removeItem('una-manito-welcome-v2'));
   await page.getByRole('button', { name:'Explorar demostración' }).click();
   await page.getByRole('button', { name:'Ver tutorial', exact:true }).click();
   await expect(page.getByRole('heading', { name:'Hola, soy Manolito', exact:true })).toBeVisible();

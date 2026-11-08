@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 
 const steps = [
-  { title: 'Hola, soy Manolito', image: '/manolito-barrio.png', text: 'Te acompaño a pedir ayuda, compartir lo que puedes y encontrar servicios del barrio. Practiquemos sin publicar nada.' },
+  { title: 'Hola, soy Manolito', image: '/manolito-barrio.png', text: 'Pide ayuda, comparte y encuentra servicios. Practiquemos sin publicar nada.' },
   { title: 'Pide una manito', image: '/manolito-ayuda.png', text: 'Cuenta qué necesitas y para cuándo. Revisa el borrador y los cupos antes de confirmar.', question: 'Necesitas una escalera prestada. ¿Qué eliges?', options: ['Pedir una manito', 'Ofrecer ayuda', 'Buscar un servicio'], answer: 0, feedback: '¡Eso es! Pides ayuda. Después decides qué respuesta aceptar.' },
   { title: 'Comparte lo que puedes', image: '/manolito-ayuda.png', text: 'Puedes prestar una herramienta, compartir recursos o regalar un poco de tu tiempo.', question: 'Tienes una escalera para prestar. ¿Qué eliges?', options: ['Pedir una manito', 'Ofrecer ayuda', 'Buscar un servicio'], answer: 1, feedback: '¡Bien! Explica qué ofreces y cuándo estás disponible.' },
   { title: 'Encuentra un servicio', image: '/manolito-barrio.png', text: 'Describe el problema. Te ayudo a buscar en las publicaciones existentes; tú revisas las valoraciones y coordinas con el prestador.', question: 'Sale agua debajo del lavadero. ¿Qué oficio buscarías?', options: ['Gasfitería', 'Clases', 'Electricidad'], answer: 0, feedback: '¡Correcto! Consulta al gasfitero. Enviar un mensaje no reserva un horario.' },
-  { title: 'Tú tienes la última palabra', image: '/manolito-avatar.png', text: 'Revisa antes de publicar. Tu mensaje de respuesta es privado; si te aceptan en una ayuda, tu nombre aparece entre los participantes. Consulta Mi actividad para coordinar y ver tu historial.', note: 'Evita publicar tu dirección exacta o documentos. En Apoyo en emergencia puedes coordinar recursos vecinales; no sustituye a los servicios de emergencia.' },
+  { title: 'Tú tienes la última palabra', image: '/manolito-avatar.png', text: 'Revisa antes de publicar. Los mensajes son privados; los participantes aceptados aparecen por nombre. Coordina desde Mi actividad.', note: 'Evita publicar tu dirección exacta o documentos. En Apoyo en emergencia puedes coordinar recursos vecinales; no sustituye a los servicios de emergencia.' },
 ];
 
 export default function ManolitoTutorial({ name, onClose }) {

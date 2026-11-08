@@ -40,6 +40,6 @@ export default function NeighborhoodField({ client, value, onChange }) {
     {loading && <p className="ai-hint" role="status">Cargando barrios…</p>}
     {error && <p className="ai-hint" role="status">No pudimos cargar todos los barrios. Puedes escribir el tuyo.</p>}
     {custom && <label>Nombre de tu barrio<input required minLength={2} maxLength={120} value={value} onChange={event => onChange(event.target.value)} placeholder="Ej.: San Miguel · Parque Media Luna" /></label>}
-    <p className="ai-hint">Elige el mismo nombre que tus vecinos. No incluyas tu dirección exacta.</p>
+    <p className="ai-hint">Usa el mismo barrio que tus vecinos, sin dirección exacta.</p>
   </>;
 }

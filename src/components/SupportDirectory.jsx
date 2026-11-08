@@ -21,7 +21,7 @@ export default function SupportDirectory({ account, online, offlineSession }) {
   const cached = state.cached || !online || offlineSession;
   return <section className="support-directory" aria-label="Directorio de apoyo" aria-busy={state.loading}>
     <h2>Contactos de apoyo</h2>
-    <p>Consulta el contacto y su fuente. El directorio no confirma disponibilidad ni tiempos de respuesta.</p>
+    <p>Contactos revisados, sin confirmación de disponibilidad ni tiempo de respuesta.</p>
     {state.loading && <p role="status">Actualizando contactos…</p>}
     {state.error && <div role="status"><p>{state.error}</p>{online && !offlineSession && <button className="button secondary" onClick={() => setRetry(value => value + 1)}>Reintentar directorio</button>}</div>}
     {cached && <p className="emergency-note">Copia guardada{state.savedAt ? ` el ${new Date(state.savedAt).toLocaleString('es-PE')}` : ': no hay contactos guardados'}. Conéctate para comprobar cambios.</p>}
@@ -35,6 +35,6 @@ export default function SupportDirectory({ account, online, offlineSession }) {
         <small>Contacto revisado: {contact.revisado_en}. {source && <a href={source} target="_blank" rel="noopener noreferrer">Ver fuente</a>}</small>
       </article>;
     })}</div>
-    {!state.loading && !contacts.some(contact => contact.ambito === 'barrio') && <p>No hay grupos locales revisados para tu barrio todavía. Los recursos que comparten los vecinos aparecen en «Recursos».</p>}
+    {!state.loading && !contacts.some(contact => contact.ambito === 'barrio') && <p>Aún no hay grupos locales revisados. Encuentra apoyo vecinal en «Recursos».</p>}
   </section>;
 }

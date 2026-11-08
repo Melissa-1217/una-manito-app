@@ -39,7 +39,12 @@ test('vista estrecha y ampliación conservan formularios y controles', async ({ 
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const sizes = await page.locator('.home-actions button').evaluateAll(buttons => buttons.map(button => ({ width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height })));
+  for (const width of [390, 800, 1024]) {
+    await page.setViewportSize({ width, height:900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+  await page.setViewportSize({ width:320, height:800 });
+  const sizes = await page.locator('.quick-actions button').evaluateAll(buttons => buttons.map(button => ({ width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height })));
   expect(sizes.every(size => size.width >= 44 && size.height >= 44)).toBe(true);
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
 

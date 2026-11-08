@@ -5,11 +5,7 @@ import AxeBuilder from '@axe-core/playwright';
 test('emergencia: separar recursos, pedidos y contactos sin mezclar sus acciones', async ({ page }, testInfo) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  const emergency = async () => {
-    const button = page.getByRole('button', { name: 'Apoyo en emergencia', exact: true }).filter({ visible: true }).first();
-    if (!await button.count()) await navigateTo(page, 'Mi barrio');
-    await button.click();
-  };
+  const emergency = () => navigateTo(page, 'Apoyo en emergencia');
   await emergency();
   const tabs = page.getByRole('group', { name: 'Explorar apoyo en emergencia' });
   await expect(tabs.getByRole('button', { name: 'Necesidades', exact: true })).toHaveAttribute('aria-pressed', 'true');

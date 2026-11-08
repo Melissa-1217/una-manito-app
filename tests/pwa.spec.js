@@ -42,7 +42,7 @@ test('copia guardada sin mensajes y borrador persistente, sin publicar ni recone
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByText('Copia de consulta', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name:'Apoyo en emergencia', exact:true }).filter({ visible:true }).first().click();
+  await navigateTo(page, 'Apoyo en emergencia');
   await page.getByRole('group', { name:'Explorar apoyo en emergencia' }).getByRole('button', { name:'Directorio de apoyo', exact:true }).click();
   await expect(page.getByRole('heading', { name:'Policía Nacional guardada' })).toBeVisible();
   await expect(page.getByRole('region', { name:'Directorio de apoyo', exact:true }).getByText(/Copia guardada el/)).toBeVisible();
