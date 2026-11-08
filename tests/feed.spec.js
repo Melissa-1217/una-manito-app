@@ -16,11 +16,12 @@ test('primera entrada: bienvenida accesible, se cierra y no reaparece al recarga
   await page.reload();
   await page.getByRole('button', { name:'Explorar demostración' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.getByRole('heading', { name:'Publicaciones del barrio', exact:true })).toBeVisible();
+  await expect(page.getByRole('heading', { name:'Publicaciones recientes', exact:true })).toBeVisible();
   await navigateTo(page, 'Ver bienvenida');
   await expect(page.getByRole('dialog', { name:'¡Hola, Ana!' })).toBeVisible();
   await page.getByRole('button', { name:'Cerrar bienvenida', exact:true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('button', { name:'Abrir perfil', exact:true })).toBeFocused();
 });
 
 test('inicio compacto: publicaciones visibles sin desplazarse y filtros independientes de servicios', async ({ page }, testInfo) => {
@@ -38,7 +39,7 @@ test('inicio compacto: publicaciones visibles sin desplazarse y filtros independ
   await expect(page.getByRole('heading', { name:'Una mano con tus caños', exact:true })).toHaveCount(0);
   await filters.getByRole('button', { name:'Ofrecen ayuda', exact:true }).click();
   await expect(page.getByRole('heading', { name:'¿Me prestas una escalera?', exact:true })).toHaveCount(0);
-  await page.getByRole('button', { name:'Busca un servicio', exact:true }).click();
+  await navigateTo(page, 'Buscar un servicio');
   await expect(page.getByRole('heading', { name:'Una mano con tus caños', exact:true })).toBeVisible();
   await expect(page.locator('.service-list .card-art')).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

@@ -18,7 +18,7 @@ La versión anterior guardaba `una-manito-welcome-v1` como vista. Esa era una po
 
 Esta actualización utiliza `una-manito-welcome-v2`: se abre una vez al entrar al barrio con esta versión y, al cerrarla o abrir el tutorial, queda registrada como vista en ese navegador. No necesita borrar publicaciones, cuentas ni borradores.
 
-Se puede recuperar en cualquier momento desde **Menú → Ver bienvenida** en celular, o **Bienvenida** en la cabecera del escritorio. **Cómo usar la app** sigue abriendo directamente el tutorial.
+Se puede recuperar en cualquier momento desde **Perfil → Ver bienvenida** en celular y escritorio. **Cómo usar la app** está disponible en el chat de Manolito.
 
 Estos cambios requieren publicar el nuevo código. En una PWA instalada hay que aceptar **Actualizar app** cuando se ofrezca; mientras se conserve la versión anterior, continuará su comportamiento anterior. No se requieren SQL ni variables de entorno nuevas.
 
@@ -34,4 +34,4 @@ Pedir ayuda, ofrecer ayuda y publicar un servicio comienzan con un solo campo. E
 
 «Añadir detalles» conserva tipo, título manual, categoría, barrio, cupos, ubicación y marca de emergencia. El último paso permite editar título y descripción antes de confirmar. Los borradores se siguen guardando localmente y no se publican sin conexión.
 
-«Mi perfil» reúne nombre y barrio, cantidad de publicaciones, acceso a Mi actividad y valoraciones recibidas. Usa las tablas existentes. No incluye edición de datos, subida de fotos ni una insignia de identidad verificada. Las fichas vecinales y sus valoraciones siguen accesibles desde las publicaciones.
+**Perfil → Mi perfil** reúne nombre y barrio, cantidad de publicaciones, acceso a Mi actividad y valoraciones recibidas. Usa las tablas existentes. Las fichas vecinales y sus valoraciones siguen accesibles desde las publicaciones.

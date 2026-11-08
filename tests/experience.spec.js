@@ -1,19 +1,25 @@
 import AxeBuilder from '@axe-core/playwright';
+import { navigateTo } from './navigation.js';
 import { test, expect } from '@playwright/test';
 
 for (const flow of [
   { action: 'Pedir una manito', heading: 'Pedir una manito', publish: 'Publicar solicitud' },
-  { action: 'Ofrece una manito', heading: 'Ofrecer una manito', publish: 'Publicar ofrecimiento' },
-  { action: 'Publicar mi servicio', heading: 'Publicar un servicio', publish: 'Publicar servicio' },
+  { action: 'Ofrecer una manito', heading: 'Ofrecer una manito', publish: 'Publicar ofrecimiento' },
+  { action: 'Publicar un servicio', fromServices: true, heading: 'Publicar un servicio', publish: 'Publicar servicio' },
 ]) {
-  test(`${flow.action}: publica en tres pulsaciones desde el inicio, sin pasar por el chat`, async ({ page }, testInfo) => {
+  test(`${flow.action}: publica con el formulario progresivo desde el menú`, async ({ page }, testInfo) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Explorar demostración' }).click();
     await page.evaluate(() => {
       window.journeyClicks = 0;
       document.addEventListener('click', event => { if (event.target.closest('button')) window.journeyClicks++; }, true);
     });
-    await page.getByRole('button', { name: flow.action, exact: true }).click();
+    if (flow.fromServices) {
+      await navigateTo(page, 'Buscar un servicio');
+      await page.getByRole('button', { name: flow.action, exact: true }).click();
+    } else {
+      await navigateTo(page, flow.action);
+    }
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByRole('heading', { name: flow.heading, exact: true })).toBeVisible();
     await expect(page.getByLabel('Título', { exact:true })).toBeHidden();
@@ -27,15 +33,33 @@ for (const flow of [
     await page.screenshot({ path:`../una-manito-revision-${screen}-${testInfo.project.name}.png`, fullPage:false });
     await page.getByRole('button', { name: flow.publish, exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Una publicación para mi barrio', exact: true })).toBeVisible();
-    expect(await page.evaluate(() => window.journeyClicks)).toBe(3);
+    expect(await page.evaluate(() => window.journeyClicks)).toBe(flow.fromServices ? 5 : 4);
   });
 }
+
+test('la revisión abre los detalles si contienen un título inválido', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Explorar demostración' }).click();
+  await navigateTo(page, 'Pedir una manito');
+  await page.getByLabel('¿Qué necesitas?', { exact: true }).fill('Necesito una escalera para trabajar mañana.');
+  const details = page.getByText('Añadir detalles', { exact: true });
+  await details.click();
+  const title = page.getByLabel('Título', { exact: true });
+  await title.pressSequentially('abc');
+  await details.click();
+  await expect(title).toBeHidden();
+  await page.getByRole('button', { name: 'Revisar publicación', exact: true }).click();
+  await expect(title).toBeFocused();
+  await title.fill('Necesito una escalera');
+  await page.getByRole('button', { name: 'Revisar publicación', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Revisa tu publicación', exact: true })).toBeVisible();
+});
 
 test('buscar por oficio y limpiar filtros permite recuperar servicios existentes', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await expect(page.getByRole('heading', { name: 'Publicaciones del barrio', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Busca un servicio', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Publicaciones recientes', exact: true })).toBeVisible();
+  await navigateTo(page, 'Buscar un servicio');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   const categories = page.getByRole('group', { name: 'Filtrar servicios por oficio' });
   await categories.getByRole('button', { name: 'Electricidad', exact: true }).click();
@@ -48,7 +72,7 @@ test('buscar por oficio y limpiar filtros permite recuperar servicios existentes
 test('la revisión permite corregir el título y el mensaje y volver sin perderlos', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name:'Explorar demostración' }).click();
-  await page.getByRole('button', { name:'Pedir una manito', exact:true }).click();
+  await navigateTo(page, 'Pedir una manito');
   await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Necesito dos vecinos para mover una mesa.');
   await page.getByRole('button', { name:'Revisar publicación', exact:true }).click();
   await page.getByLabel('Título', { exact:true }).fill('Apoyo para mover mi mesa');

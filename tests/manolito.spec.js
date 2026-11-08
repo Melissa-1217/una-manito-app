@@ -1,3 +1,4 @@
+import { openTutorial } from './navigation.js';
 import { test, expect } from '@playwright/test';
 
 async function enterDemo(page) {
@@ -9,11 +10,11 @@ test('tutorial interactivo se puede omitir, completar y volver a abrir desde el 
   let aiCalls = 0;
   page.on('request', request => { if (request.url().includes('/api/prepare-publication')) aiCalls++; });
   await enterDemo(page);
-  await page.getByRole('button', { name: 'Cómo usar la app', exact: true }).click();
+  await openTutorial(page);
   await expect(page.getByRole('heading', { name: 'Hola, soy Manolito' })).toBeVisible();
   await page.getByRole('button', { name: 'Omitir tutorial' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Cómo usar la app', exact: true }).click();
+  await openTutorial(page);
   await expect(page.getByText('Paso 1 de 5')).toBeVisible();
   await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.getByRole('button', { name: 'Ofrecer ayuda', exact: true }).click();

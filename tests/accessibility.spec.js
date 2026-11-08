@@ -1,3 +1,4 @@
+import { navigateTo, openTutorial } from './navigation.js';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -18,7 +19,7 @@ test('acceso, registro, inicio y formulario ofrecen nombres y contraste accesibl
   await audit(page);
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await audit(page);
-  await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await navigateTo(page, 'Pedir una manito');
 
   await audit(page);
 });
@@ -26,12 +27,12 @@ test('acceso, registro, inicio y formulario ofrecen nombres y contraste accesibl
 test('tutorial se maneja por teclado y devuelve el foco al cerrarse', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await page.getByRole('button', { name: 'Cómo usar la app', exact: true }).click();
+  await openTutorial(page);
   await audit(page);
   await expect(page.getByRole('button', { name: 'Cerrar chat' })).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Cómo usar la app', exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Chat con Manolito', exact: true })).toBeFocused();
 });
 
 test('vista estrecha y ampliación conservan formularios y controles', async ({ page }, testInfo) => {
@@ -44,9 +45,12 @@ test('vista estrecha y ampliación conservan formularios y controles', async ({ 
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
   await page.setViewportSize({ width:320, height:800 });
-  const sizes = await page.locator('.quick-actions button').evaluateAll(buttons => buttons.map(button => ({ width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height })));
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  const options = page.getByRole('navigation', { name: 'Navegación principal' }).getByRole('button');
+  const sizes = await options.evaluateAll(buttons => buttons.map(button => ({ width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height })));
+  expect(sizes).toHaveLength(5);
   expect(sizes.every(size => size.width >= 44 && size.height >= 44)).toBe(true);
-  await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await options.getByText('Pedir una manito', { exact: true }).click();
 
   await page.setViewportSize({ width: 640, height: 900 });
   await page.evaluate(() => { document.body.style.zoom = '2'; });

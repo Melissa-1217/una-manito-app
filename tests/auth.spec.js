@@ -62,7 +62,7 @@ test('cuenta sin perfil elige barrio, persiste y cierra sesión', async ({ page 
   await expect(page.getByRole('heading', { name: 'Escalera en mi barrio anterior' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Ayuda del barrio elegido' })).toHaveCount(0);
   expect(await page.evaluate(() => window.savedTestProfile)).toEqual({ id: 'test-uid', nombre: 'María', barrio: 'San Miguel · Media Luna' });
-  await page.getByRole('button', { name: 'Cambiar barrio', exact: true }).click();
+  await navigateTo(page, 'Cambiar barrio');
   await expect(page.getByLabel('Barrio o sector')).toHaveValue('San Miguel · Media Luna');
   await page.getByLabel('Barrio o sector').selectOption('Barrio Demo');
   await page.evaluate(() => { window.failNeighborhoodSave = true; });
@@ -78,7 +78,7 @@ test('cuenta sin perfil elige barrio, persiste y cierra sesión', async ({ page 
   await expect(page.getByRole('heading', { name: 'Escalera en mi barrio anterior' })).toHaveCount(0);
   await navigateTo(page, 'Mi actividad');
   await expect(page.getByRole('heading', { name: 'Escalera en mi barrio anterior' })).toBeVisible();
-  await page.getByRole('button', { name: 'Cambiar barrio', exact: true }).click();
+  await navigateTo(page, 'Cambiar barrio');
   await expect(page.getByLabel('Barrio o sector')).toHaveValue('Barrio Demo');
   await page.getByLabel('Barrio o sector').selectOption('__other');
   await page.getByLabel('Nombre de tu barrio').fill('Otro sector');

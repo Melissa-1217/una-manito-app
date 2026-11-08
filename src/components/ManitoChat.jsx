@@ -20,6 +20,7 @@ const normalize = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLo
 
 export default function ManitoChat({ initialMode, name, barrio, posts, onClose, onOpen, onPublish, onManual, saving, loading, readOnly = false }) {
   const dialog = useRef(null);
+  const closeButton = useRef(null);
   const online = useOnline();
   const bottom = useRef(null);
   const request = useRef(null);
@@ -45,6 +46,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
   useEffect(() => { bottom.current?.scrollIntoView({ block: 'nearest' }); }, [turns, busy]);
 
   function choose(next) {
+    if (next === 'guia') closeButton.current?.focus();
     request.current?.abort();
     setBusy(false); setMode(next); setTurns([]); setDraft(null); setSearch(null); setMessage(''); setError(''); setLocation(null);
     setCapacity(1);
@@ -81,7 +83,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
 
   return <dialog className="manito-dialog" ref={dialog} aria-labelledby="manito-title" onCancel={e => { e.preventDefault(); if (!saving) onClose(); }}>
     <header><img src="/manolito-avatar.png" alt="" /><div><strong id="manito-title">{mode === 'guia' ? 'Aprende con Manolito' : 'Chat con Manolito'}</strong><small>{mode === 'guia' ? 'Tutorial sin publicaciones' : `Asistente de IA · ${barrio}`}</small></div>
-      <button autoFocus disabled={saving} aria-label="Cerrar chat" onClick={onClose}><X /></button></header>
+      <button ref={closeButton} autoFocus disabled={saving} aria-label="Cerrar chat" onClick={onClose}><X /></button></header>
     <div className="chat-scroll">{mode === 'guia' ? <ManolitoTutorial name={name} onClose={onClose}/> : <>
       {!mode && <h2>Hola, {name}</h2>}
       {!mode ? <><p>¿En qué te doy una manito hoy?</p><div className="chat-choices">{Object.entries(modes).map(([id, [label]]) => <button key={id} onClick={() => choose(id)}>{label}</button>)}</div></> :

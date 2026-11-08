@@ -1,12 +1,11 @@
 import MyProfile from './components/MyProfile.jsx';
 import PublicationComposer from './components/PublicationComposer.jsx';
-import MobileMenu from './components/MobileMenu.jsx';
+import SidePanel from './components/SidePanel.jsx';
 import WelcomeDialog from './components/WelcomeDialog.jsx';
 import PublicationLoading from './components/PublicationLoading.jsx';
 import SupportDirectory from './components/SupportDirectory.jsx';
 import PrivateConversation from './components/PrivateConversation.jsx';
 import { canConverse, sendDemoMessage } from './lib/conversations.js';
-import HomeActions from './components/HomeActions.jsx';
 import DetailGuidance from './components/DetailGuidance.jsx';
 import useOnline from './lib/useOnline.js';
 import { readSnapshot, saveSnapshot, readDraft, saveDraft } from './lib/offline.js';
@@ -21,7 +20,7 @@ import { distanceKm, formatDistance } from './lib/location.js';
 import { sendResponse, acceptResponse } from './lib/responses.js';
 import ManitoChat from './components/ManitoChat.jsx';
 import { useEffect, useRef, useState } from 'react';
-import { UserRound, Menu, CircleHelp, House, Wrench, Plus, ClipboardList, HandHeart, MapPin, ArrowRight, ArrowLeft, Search, ShieldCheck, AlertTriangle, Check, RotateCcw, X } from 'lucide-react';
+import { UserRound, Menu, MessageCircle, House, Gift, Wrench, Plus, ClipboardList, LogOut, HandHeart, MapPin, ArrowRight, ArrowLeft, Search, ShieldCheck, AlertTriangle, Check, RotateCcw, X } from 'lucide-react';
 import PublicationCard, { statusLabels } from './components/PublicationCard.jsx';
 import AiPublicationAssistant from './components/AiPublicationAssistant.jsx';
 import { listPublications, createPublication, closePublication, changePublicationLifecycle } from './lib/publications.js';
@@ -29,7 +28,13 @@ import { people as demoPeople, initialData, offerHelp, acceptOffer, recommendHel
 
 const STORE = 'una-manito-demo-v1';
 const emptyDraft = { tipo: 'solicitud', titulo: '', descripcion: '', categoria: 'Otros', cupos: 1, barrio: 'Barrio Demo', es_emergencia: false };
-const navItems = [{ id: 'inicio', label: 'Mi barrio', icon: House }, { id: 'servicios', label: 'Servicios', icon: Wrench }, { id: 'publicar', label: 'Publicar', icon: Plus }, { id: 'actividad', label: 'Mi actividad', icon: ClipboardList }, { id:'perfil', label:'Mi perfil', icon:UserRound }];
+const navItems = [
+  { id: 'inicio', label: 'Publicaciones recientes', icon: House },
+  { id: 'solicitud', label: 'Pedir una manito', icon: HandHeart },
+  { id: 'ofrecimiento', label: 'Ofrecer una manito', icon: Gift },
+  { id: 'servicios', label: 'Buscar un servicio', icon: Wrench },
+  { id: 'emergencia', label: 'Apoyo en emergencia', icon: AlertTriangle },
+];
 
 function loadData(storageKey) {
   try {
@@ -59,7 +64,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
   const [conversationId, setConversationId] = useState(null);
   const [privateDrafts, setPrivateDrafts] = useState({});
   const [view, setView] = useState('inicio');
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [openPanel, setOpenPanel] = useState(null);
   const [homeFilter, setHomeFilter] = useState('todas');
   const [welcome, setWelcome] = useState(() => { try { return !localStorage.getItem('una-manito-welcome-v2'); } catch { return true; } });
   function closeWelcome() { setWelcome(false); try { localStorage.setItem('una-manito-welcome-v2', 'seen'); } catch { /* Se puede continuar sin almacenamiento. */ } }
@@ -134,7 +139,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
     setStoredData(next);
   }
 
-  function navigate(next) { setMenuOpen(false); setConversationId(null); setView(next); setSelected(null); setReview(false); setMessage(''); setQuery(''); setServiceIntent(null); setServiceCategory('Todos'); setNotice(''); }
+  function navigate(next) { setOpenPanel(null); setConversationId(null); setView(next); setSelected(null); setReview(false); setMessage(''); setQuery(''); setServiceIntent(null); setServiceCategory('Todos'); setNotice(''); }
   function open(id) { setConversationId(null); setSelected(id); setMessage(''); setNotice(''); }
   function perform(action, success) {
     try { setData(action(data)); setNotice(success); }
@@ -250,16 +255,31 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
   if (origin) filtered.sort((a,b) => distanceKm(origin,a) - distanceKm(origin,b));
 
   return <><div className="app-shell">
-    <aside className="sidebar">
-      <a className="brand" href="#" onClick={(e) => { e.preventDefault(); navigate('inicio'); }}><span className="brand-mark"><HandHeart size={28} /></span><span>Una Manito</span></a>
-      <nav aria-label="Navegación principal">{navItems.map(({ id, label, icon: Icon }) => <button key={id} aria-current={view === id ? 'page' : undefined} className={`nav-item ${view === id ? 'active' : ''}`} onClick={() => navigate(id)}><Icon size={20} />{label}{view === id && <span className="nav-dot" />}</button>)}</nav>
-      <button className={`nav-item emergency-link ${view === 'emergencia' ? 'active' : ''}`} onClick={() => navigate('emergencia')}><AlertTriangle size={20} />Apoyo en emergencia</button>
-    </aside>
-    <div className="workspace">{welcome && <WelcomeDialog name={people[user]} onClose={closeWelcome} onTutorial={() => { closeWelcome(); setChat({ mode: 'guia' }); }}/> }
-      <header className="topbar"><div className="topbar-community"><span className="topbar-location"><MapPin size={16} />{neighborhood}</span>{account && <button className="change-neighborhood" disabled={saving || readOnly} onClick={() => {
-        if ((draft.titulo.trim() || draft.descripcion.trim() || message.trim()) && !window.confirm('Tienes un texto sin publicar. Si cambias de barrio se descartará. ¿Continuar?')) return;
-        onChangeNeighborhood?.();
-      }}>Cambiar barrio</button>}</div><div className="topbar-actions"><button className="welcome-entry" aria-label="Ver bienvenida" onClick={() => setWelcome(true)}><HandHeart size={20} aria-hidden="true"/><span>Bienvenida</span></button><button className="tutorial-entry" aria-label="Cómo usar la app" title="Cómo usar la app" onClick={() => setChat({ mode: 'guia' })}><CircleHelp size={20}/><span>Cómo usar la app</span></button>{account ? <><button className="mobile-profile-toggle" aria-label="Abrir perfil y menú" onClick={() => setMenuOpen(true)}><span className="avatar">{account.nombre[0]}</span></button><button className="account-menu" aria-label={offlineSession ? 'Cerrar copia' : 'Cerrar sesión'} onClick={onSignOut}><span className="avatar">{account.nombre[0]}</span><span>{account.nombre}</span><span>{offlineSession ? 'Cerrar copia' : 'Cerrar sesión'}</span></button></> : <label className="user-switch"><span className="avatar">{people[user][0]}</span><select aria-label="Cambiar usuario de demostración" value={user} onChange={(e) => { setUser(e.target.value); setSelected(null); setMessage(''); setNotice(''); }}><option value="ana">Ana · demo</option><option value="luis">Luis · demo</option></select></label>}<button className="mobile-menu-toggle" aria-label="Abrir menú" aria-expanded={menuOpen} aria-haspopup="dialog" aria-controls={menuOpen ? "mobile-menu" : undefined} onClick={() => setMenuOpen(true)}><Menu size={22} aria-hidden="true"/><span>Menú</span></button></div></header>
+    <div className="workspace">
+      {welcome && <WelcomeDialog name={people[user]} onClose={closeWelcome} onTutorial={() => { closeWelcome(); setChat({ mode: 'guia' }); }}/>}
+      <header className="topbar">
+        <div className="topbar-community">
+          <span className="topbar-brand">Una Manito</span>
+          <span className="topbar-location"><MapPin size={16} aria-hidden="true"/>{neighborhood}</span>
+        </div>
+        <div className="topbar-actions">
+          {!account && <label className="user-switch">
+            <select aria-label="Cambiar usuario de demostración" value={user} onChange={(e) => { setUser(e.target.value); setSelected(null); setMessage(''); setNotice(''); }}>
+              <option value="ana">Ana · demo</option>
+              <option value="luis">Luis · demo</option>
+            </select>
+          </label>}
+          <button className="topbar-control" aria-label="Chat con Manolito" title="Chat con Manolito" aria-haspopup="dialog" onClick={() => setChat({ mode: null })}>
+            <MessageCircle size={21} aria-hidden="true"/>
+          </button>
+          <button className="topbar-control profile-toggle" aria-label="Abrir perfil" aria-expanded={openPanel === 'perfil'} aria-haspopup="dialog" aria-controls={openPanel === 'perfil' ? 'profile-panel' : undefined} onClick={() => setOpenPanel('perfil')}>
+            <span className="avatar" aria-hidden="true">{people[user][0]}</span>
+          </button>
+          <button className="topbar-control menu-toggle" aria-label="Abrir menú" aria-expanded={openPanel === 'menu'} aria-haspopup="dialog" aria-controls={openPanel === 'menu' ? 'navigation-panel' : undefined} onClick={() => setOpenPanel('menu')}>
+            <Menu size={22} aria-hidden="true"/><span>Menú</span>
+          </button>
+        </div>
+      </header>
       <div className="demo-banner"><span><strong>{account ? readOnly ? 'Copia de consulta' : 'Cuenta conectada' : 'Demostración'}</strong>{!account && <span className="demo-description"> · Datos de ejemplo</span>}</span>{account ? <button disabled={loading || saving || !online || offlineSession} onClick={refreshPublications} aria-label={loading ? 'Actualizando publicaciones' : 'Actualizar publicaciones'}><RotateCcw size={16}/><span className="refresh-caption">{loading ? 'Actualizando…' : 'Actualizar'}</span></button> : <details className="demo-options"><summary>Opciones demo</summary><div><button onClick={() => { if (window.confirm('¿Restablecer los datos de ejemplo? Se borrarán las publicaciones de esta demo local.')) { setData(initializeDemoDates(structuredClone(initialData))); navigate('inicio'); } }}>Reiniciar demo</button><button onClick={onExitDemo}>Volver al acceso</button></div></details>}</div>
       {account && snapshotDate && readOnly && <p className="snapshot-note" role="status">Publicaciones guardadas en este dispositivo el {new Date(snapshotDate).toLocaleString('es-PE')}. Pueden haber cambiado. No incluye mensajes privados.</p>}
       {storageError && <p className="notice" role="alert">No se pudo guardar en este navegador. Los cambios durarán mientras mantengas esta página abierta.</p>}
@@ -290,9 +310,9 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
           </>
 <LifecycleActions key={publication.id} publication={publication} own={own} busy={saving || loading || readOnly} onAction={changeLifecycle}/>
         </section> : view === 'perfil' ? <MyProfile key={user} profile={{ id:user, nombre:people[user], barrio:account?.barrio || emptyDraft.barrio }} remote={Boolean(account)} readOnly={readOnly} publications={publications.filter(post => post.autor_id === user).length} demoHistory={helperHistory(data,user)} onActivity={() => navigate('actividad')}/> : view === 'publicar' ? <PublicationComposer draft={draft} onChange={setDraft} review={review} onReview={next => { setDraft(next); setReview(true); }} onEdit={() => setReview(false)} onBack={() => navigate('inicio')} onPublish={publish} onError={setNotice} busy={saving || loading} readOnly={readOnly} account={account}/> : <>
-          {view === 'inicio' ? <><HomeActions onRequest={() => startPublication('solicitud')} onOffer={() => startPublication('ofrecimiento')} onServices={() => navigate('servicios')} onPublishService={() => startPublication('servicio')} onChat={() => setChat({ mode: null })}/></> : <section className="page-heading"><h1>{view === 'servicios' ? 'Servicios del barrio' : view === 'emergencia' ? 'Nos apoyamos en emergencia' : 'Mi actividad'}</h1><p className="page-purpose">{view === 'servicios' ? 'Busca un oficio, revisa el perfil y envía una consulta privada.' : view === 'emergencia' ? 'Encuentra pedidos, recursos y contactos de apoyo.' : 'Tus publicaciones y las ayudas en las que participas.'}</p>{view === 'emergencia' && <><div className="emergency-note"><AlertTriangle size={19} />Apoyo vecinal. No reemplaza a los servicios de emergencia.</div><div className="emergency-actions"><button className="button primary" onClick={() => startPublication('solicitud', true)}>Necesito apoyo<Plus size={17}/></button><button className="button secondary" onClick={() => startPublication('ofrecimiento', true)}>Tengo recursos<HandHeart size={17}/></button></div></>}</section>}
+          {view === 'inicio' ? <h1 className="feed-title">Publicaciones recientes</h1> : <section className="page-heading"><h1>{view === 'servicios' ? 'Servicios del barrio' : view === 'emergencia' ? 'Nos apoyamos en emergencia' : 'Mi actividad'}</h1><p className="page-purpose">{view === 'servicios' ? 'Busca un oficio, revisa el perfil y envía una consulta privada.' : view === 'emergencia' ? 'Encuentra pedidos, recursos y contactos de apoyo.' : 'Tus publicaciones y las ayudas en las que participas.'}</p>{view === 'servicios' && <button className="button secondary" onClick={() => startPublication('servicio')}><Plus size={17} aria-hidden="true"/>Publicar un servicio</button>}{view === 'emergencia' && <><div className="emergency-note"><AlertTriangle size={19} />Apoyo vecinal. No reemplaza a los servicios de emergencia.</div><div className="emergency-actions"><button className="button primary" onClick={() => startPublication('solicitud', true)}>Necesito apoyo<Plus size={17}/></button><button className="button secondary" onClick={() => startPublication('ofrecimiento', true)}>Tengo recursos<HandHeart size={17}/></button></div></>}</section>}
           {view === 'emergencia' && <><div className="emergency-tabs" role="group" aria-label="Explorar apoyo en emergencia">{[['necesidades','Necesidades'],['recursos','Recursos'],['directorio','Directorio de apoyo']].map(([id,label]) => <button className="button secondary" key={id} aria-pressed={emergencyTab === id} onClick={() => { setEmergencyTab(id); setQuery(''); }}>{label}</button>)}</div>{emergencyTab === 'directorio' && <SupportDirectory account={account} online={online} offlineSession={offlineSession}/>}</>}
-          <section className="feed">{view === 'actividad' && <div className="activity-tabs" role="group" aria-label="Filtrar mi actividad">{[['activas', 'Activas'], ['historial', 'Historial']].map(([id, label]) => <button key={id} className="button secondary" aria-pressed={activityTab === id} onClick={() => setActivityTab(id)}>{label}</button>)}</div>}{view === 'servicios' && <>{serviceIntent && <div className="notice"><span>{serviceIntent.interpretacion} · Resultados de publicaciones existentes.</span><button onClick={() => setServiceIntent(null)} aria-label="Quitar filtro de IA"><X size={16} /></button></div>}</>}<div className="section-heading"><div>{view === 'emergencia' && <h2>{emergencyTab === 'necesidades' ? 'Vecinos que necesitan apoyo' : emergencyTab === 'recursos' ? 'Recursos que comparten los vecinos' : 'Servicios vecinales para emergencias'}</h2>}{view === 'inicio' && <div className="feed-filters" role="group" aria-label="Filtrar publicaciones del barrio">{[['todas','Todas'],['solicitud','Necesitan ayuda'],['ofrecimiento','Ofrecen ayuda']].map(([id,label]) => <button key={id} aria-pressed={homeFilter === id} onClick={() => setHomeFilter(id)}>{label}</button>)}</div>}</div><span className="result-count">{filtered.length} {filtered.length === 1 ? 'publicación' : 'publicaciones'}</span></div><label className="search-box"><Search size={19} /><input aria-label="Buscar publicaciones" placeholder={view === 'servicios' ? 'Ej.: gasfitero, electricidad, clases…' : 'Busca una necesidad o algo que puedas compartir…'} value={query} onChange={(e) => setQuery(e.target.value)} /></label>{view === 'servicios' && <div className="service-categories" role="group" aria-label="Filtrar servicios por oficio">{['Todos','Gasfitería','Electricidad','Clases','Compras y traslados','Otros'].map(category => <button key={category} aria-pressed={serviceCategory === category} onClick={() => { setServiceCategory(category); setServiceIntent(null); }}>{category}</button>)}</div>}{view === 'servicios' && <AiPublicationAssistant key={query} text={query} type="busqueda" onApply={(intent) => { setServiceIntent(intent); setServiceCategory('Todos'); setQuery(''); }} />}<details className="feed-location"><summary>Ordenar por cercanía</summary><LocationControl value={origin} onChange={setOrigin}/></details><div className={`publication-grid publication-list ${view === 'servicios' ? 'service-list' : ''}`} aria-busy={loading}>{loading && <PublicationLoading/>}{filtered.map((p) => <PublicationCard key={p.id} publication={p} compact authorName={people[p.autor_id]} onOpen={open} distance={origin ? formatDistance(distanceKm(origin,p)) : null} />)}</div>{!loading && !loadError && filtered.length === 0 && <div className="empty"><HandHeart size={32} aria-hidden="true"/><h3>{readOnly ? 'No hay publicaciones guardadas que coincidan' : view === 'servicios' ? 'No encontramos servicios para esta búsqueda' : view === 'actividad' ? activityTab === 'historial' ? 'Tu historial aparecerá aquí' : 'Todavía no tienes actividad' : view === 'emergencia' ? emergencyTab === 'necesidades' ? 'No hay pedidos de emergencia activos' : emergencyTab === 'recursos' ? 'Todavía no hay recursos publicados' : 'No hay servicios vecinales publicados para emergencias' : 'Tu barrio empieza con una manito'}</h3><p>{readOnly ? 'Vuelve a conectarte para actualizar. Mientras tanto, puedes preparar un borrador.' : view === 'actividad' ? 'Aquí verás lo que publiques y las ayudas en las que participes. Las resueltas, canceladas y vencidas se conservan en Historial.' : view === 'servicios' ? 'Prueba otro oficio o quita los filtros. Solo mostramos servicios publicados por vecinos.' : view === 'emergencia' ? emergencyTab === 'directorio' ? 'Los oficios que los vecinos publiquen para emergencias aparecerán aquí. Son publicaciones vecinales, separadas del directorio de contactos revisados.' : emergencyTab === 'recursos' ? 'Comparte agua, alimentos, herramientas u otro apoyo e indica cómo coordinarlo.' : 'Publica qué apoyo necesitas y coordina por privado con quienes respondan.' : 'Pide ayuda o comparte algo que pueda servirle a un vecino.'}</p>{query || serviceIntent || serviceCategory !== 'Todos' || (view === 'inicio' && homeFilter !== 'todas') ? <button className="button secondary" onClick={() => { setQuery(''); setServiceIntent(null); setServiceCategory('Todos'); setHomeFilter('todas'); }}>Limpiar filtros</button> : view === 'actividad' ? <button className="button secondary" onClick={() => navigate('inicio')}>Volver a Mi barrio</button> : <button className="button secondary" onClick={() => startPublication(view === 'servicios' || (view === 'emergencia' && emergencyTab === 'directorio') ? 'servicio' : view === 'emergencia' && emergencyTab === 'recursos' ? 'ofrecimiento' : 'solicitud', view === 'emergencia')}>{readOnly ? 'Preparar borrador' : view === 'servicios' || (view === 'emergencia' && emergencyTab === 'directorio') ? 'Publicar un servicio' : view === 'emergencia' && emergencyTab === 'recursos' ? 'Compartir un recurso' : 'Publicar un pedido'}</button>}</div>}</section>
+          <section className="feed">{view === 'actividad' && <div className="activity-tabs" role="group" aria-label="Filtrar mi actividad">{[['activas', 'Activas'], ['historial', 'Historial']].map(([id, label]) => <button key={id} className="button secondary" aria-pressed={activityTab === id} onClick={() => setActivityTab(id)}>{label}</button>)}</div>}{view === 'servicios' && <>{serviceIntent && <div className="notice"><span>{serviceIntent.interpretacion} · Resultados de publicaciones existentes.</span><button onClick={() => setServiceIntent(null)} aria-label="Quitar filtro de IA"><X size={16} /></button></div>}</>}<div className="section-heading"><div>{view === 'emergencia' && <h2>{emergencyTab === 'necesidades' ? 'Vecinos que necesitan apoyo' : emergencyTab === 'recursos' ? 'Recursos que comparten los vecinos' : 'Servicios vecinales para emergencias'}</h2>}{view === 'inicio' && <div className="feed-filters" role="group" aria-label="Filtrar publicaciones del barrio">{[['todas','Todas'],['solicitud','Necesitan ayuda'],['ofrecimiento','Ofrecen ayuda']].map(([id,label]) => <button key={id} aria-pressed={homeFilter === id} onClick={() => setHomeFilter(id)}>{label}</button>)}</div>}</div><span className="result-count">{filtered.length} {filtered.length === 1 ? 'publicación' : 'publicaciones'}</span></div><label className="search-box"><Search size={19} /><input aria-label="Buscar publicaciones" placeholder={view === 'servicios' ? 'Ej.: gasfitero, electricidad, clases…' : 'Buscar en el barrio…'} value={query} onChange={(e) => setQuery(e.target.value)} /></label>{view === 'servicios' && <div className="service-categories" role="group" aria-label="Filtrar servicios por oficio">{['Todos','Gasfitería','Electricidad','Clases','Compras y traslados','Otros'].map(category => <button key={category} aria-pressed={serviceCategory === category} onClick={() => { setServiceCategory(category); setServiceIntent(null); }}>{category}</button>)}</div>}{view === 'servicios' && <AiPublicationAssistant key={query} text={query} type="busqueda" onApply={(intent) => { setServiceIntent(intent); setServiceCategory('Todos'); setQuery(''); }} />}<details className="feed-location"><summary>Ordenar por cercanía</summary><LocationControl value={origin} onChange={setOrigin}/></details><div className={`publication-grid publication-list ${view === 'servicios' ? 'service-list' : ''}`} aria-busy={loading}>{loading && <PublicationLoading/>}{filtered.map((p) => <PublicationCard key={p.id} publication={p} compact authorName={people[p.autor_id]} onOpen={open} distance={origin ? formatDistance(distanceKm(origin,p)) : null} />)}</div>{!loading && !loadError && filtered.length === 0 && <div className="empty"><HandHeart size={32} aria-hidden="true"/><h3>{readOnly ? 'No hay publicaciones guardadas que coincidan' : view === 'servicios' ? 'No encontramos servicios para esta búsqueda' : view === 'actividad' ? activityTab === 'historial' ? 'Tu historial aparecerá aquí' : 'Todavía no tienes actividad' : view === 'emergencia' ? emergencyTab === 'necesidades' ? 'No hay pedidos de emergencia activos' : emergencyTab === 'recursos' ? 'Todavía no hay recursos publicados' : 'No hay servicios vecinales publicados para emergencias' : 'Tu barrio empieza con una manito'}</h3><p>{readOnly ? 'Vuelve a conectarte para actualizar. Mientras tanto, puedes preparar un borrador.' : view === 'actividad' ? 'Aquí verás lo que publiques y las ayudas en las que participes. Las resueltas, canceladas y vencidas se conservan en Historial.' : view === 'servicios' ? 'Prueba otro oficio o quita los filtros. Solo mostramos servicios publicados por vecinos.' : view === 'emergencia' ? emergencyTab === 'directorio' ? 'Los oficios que los vecinos publiquen para emergencias aparecerán aquí. Son publicaciones vecinales, separadas del directorio de contactos revisados.' : emergencyTab === 'recursos' ? 'Comparte agua, alimentos, herramientas u otro apoyo e indica cómo coordinarlo.' : 'Publica qué apoyo necesitas y coordina por privado con quienes respondan.' : 'Pide ayuda o comparte algo que pueda servirle a un vecino.'}</p>{query || serviceIntent || serviceCategory !== 'Todos' || (view === 'inicio' && homeFilter !== 'todas') ? <button className="button secondary" onClick={() => { setQuery(''); setServiceIntent(null); setServiceCategory('Todos'); setHomeFilter('todas'); }}>Limpiar filtros</button> : view === 'actividad' ? <button className="button secondary" onClick={() => navigate('inicio')}>Volver a Mi barrio</button> : view === 'servicios' ? null : <button className="button secondary" onClick={() => startPublication(view === 'emergencia' && emergencyTab === 'directorio' ? 'servicio' : view === 'emergencia' && emergencyTab === 'recursos' ? 'ofrecimiento' : 'solicitud', view === 'emergencia')}>{readOnly ? 'Preparar borrador' : view === 'emergencia' && emergencyTab === 'directorio' ? 'Publicar un servicio' : view === 'emergencia' && emergencyTab === 'recursos' ? 'Compartir un recurso' : 'Publicar un pedido'}</button>}</div>}</section>
         </>}
       </main>
       {conversationResponse && conversationPost && canConverse(conversationPost, conversationResponse, user) && <PrivateConversation key={user + '-' + conversationResponse.id} publication={conversationPost} response={conversationResponse} userId={user} people={people} remote={Boolean(account)} readOnly={readOnly} demoMessages={data.mensajes || []} initialDraft={privateDrafts[user + ":" + conversationResponse.id] || ''} onDraftChange={text => setPrivateDrafts(current => ({ ...current, [user + ":" + conversationResponse.id]: text }))} onSendDemo={(text, id) => {
@@ -305,7 +325,36 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
         onManual={(mode, savedDraft) => { setChat(null); if (mode === 'busqueda') navigate('servicios'); else startPublication(mode, false, savedDraft); }}
       />}
     </div>
-    {menuOpen && <MobileMenu items={navItems} view={selected ? '' : view} name={people[user]} neighborhood={neighborhood} onNavigate={navigate} onClose={() => setMenuOpen(false)} onWelcome={() => { setMenuOpen(false); setWelcome(true); }} onExit={() => { setMenuOpen(false); if (account) onSignOut(); else onExitDemo(); }} exitLabel={account ? offlineSession ? 'Cerrar copia' : 'Cerrar sesión' : 'Salir de demostración'} onTutorial={() => { setMenuOpen(false); setChat({ mode:'guia' }); }} onChat={() => { setMenuOpen(false); setChat({ mode:null }); }}/>}
+    {openPanel === 'menu' && <SidePanel id="navigation-panel" title="Menú" closeLabel="Cerrar menú" onClose={() => setOpenPanel(null)}>
+      <nav aria-label="Navegación principal">{navItems.map(({ id, label, icon: Icon }) => {
+        const isForm = id === 'solicitud' || id === 'ofrecimiento';
+        const current = !selected && (isForm ? view === 'publicar' && draft.tipo === id && !draft.es_emergencia : view === id);
+        return <button key={id} className={id === 'emergencia' ? 'menu-emergency' : undefined} aria-current={current ? 'page' : undefined} onClick={() => isForm ? startPublication(id) : navigate(id)}>
+          <span className="menu-icon"><Icon size={22} aria-hidden="true"/></span><span>{label}</span>
+        </button>;
+      })}</nav>
+    </SidePanel>}
+    {openPanel === 'perfil' && <SidePanel id="profile-panel" title="Perfil" closeLabel="Cerrar perfil" onClose={() => setOpenPanel(null)}>
+      <div className="menu-profile">
+        <span className="avatar" aria-hidden="true">{people[user][0]}</span>
+        <div><strong>{people[user]}</strong><span><MapPin size={14} aria-hidden="true"/>{neighborhood}</span></div>
+      </div>
+      <nav aria-label="Opciones de perfil">
+        <button aria-current={view === 'perfil' && !selected ? 'page' : undefined} onClick={() => navigate('perfil')}><span className="menu-icon"><UserRound size={22} aria-hidden="true"/></span><span>Mi perfil</span></button>
+        <button aria-current={view === 'actividad' && !selected ? 'page' : undefined} onClick={() => navigate('actividad')}><span className="menu-icon"><ClipboardList size={22} aria-hidden="true"/></span><span>Mi actividad</span></button>
+        {account && <button disabled={saving || readOnly} onClick={() => {
+          if ((draft.titulo.trim() || draft.descripcion.trim() || message.trim()) && !window.confirm('Tienes un texto sin publicar. Si cambias de barrio se descartará. ¿Continuar?')) return;
+          setOpenPanel(null);
+          onChangeNeighborhood?.();
+        }}><span className="menu-icon"><MapPin size={22} aria-hidden="true"/></span><span>Cambiar barrio</span></button>}
+        <button onClick={() => { setOpenPanel(null); setWelcome(true); }}><span className="menu-icon"><HandHeart size={22} aria-hidden="true"/></span><span>Ver bienvenida</span></button>
+      </nav>
+      <button className="menu-exit" onClick={() => {
+        setOpenPanel(null);
+        if (account) onSignOut();
+        else onExitDemo();
+      }}><LogOut size={19} aria-hidden="true"/>{account ? offlineSession ? 'Cerrar copia' : 'Cerrar sesión' : 'Salir de demostración'}</button>
+    </SidePanel>}
 
   </div></>;
 }

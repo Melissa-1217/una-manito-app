@@ -5,8 +5,7 @@ import AxeBuilder from '@axe-core/playwright';
 test('emergencia: separar recursos, pedidos y contactos sin mezclar sus acciones', async ({ page }, testInfo) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  const emergency = () => navigateTo(page, 'Apoyo en emergencia');
-  await emergency();
+  await navigateTo(page, 'Apoyo en emergencia');
   const tabs = page.getByRole('group', { name: 'Explorar apoyo en emergencia' });
   await expect(tabs.getByRole('button', { name: 'Necesidades', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Tengo recursos', exact: true }).click();
@@ -16,7 +15,7 @@ test('emergencia: separar recursos, pedidos y contactos sin mezclar sus acciones
   await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Tengo botellas de agua para compartir con mis vecinos.');
   await page.getByRole('button', { name: 'Revisar publicación', exact: true }).click();
   await page.getByRole('button', { name: 'Publicar ofrecimiento', exact: true }).click();
-  await emergency();
+  await navigateTo(page, 'Apoyo en emergencia');
   await expect(page.getByRole('heading', { name: 'Agua para compartir en emergencia', exact: true })).toHaveCount(0);
   await tabs.getByRole('button', { name: 'Recursos', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Agua para compartir en emergencia', exact: true })).toBeVisible();

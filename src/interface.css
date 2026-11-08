@@ -27,10 +27,7 @@
 .ui-explanation p { margin:0 0 12px; }
 .private-dialog header h2 { font-size:20px; line-height:1.35; }
 .private-scope { font-size:12px; line-height:1.6; }
-.welcome-entry { display:flex; align-items:center; gap:7px; min-height:44px; color:var(--primary); font-size:13px; }
-.welcome-entry svg { flex-shrink:0; }
 @media(max-width:760px) {
-  .welcome-entry { display:none; }
   .panel { padding:18px; margin:18px 0; }
   .page-heading h1, .form-page>h1, .detail-page>h1, .auth-content>h1 { font-size:28px; }
   .type-options button { min-height:48px; font-size:13px; }

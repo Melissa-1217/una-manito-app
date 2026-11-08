@@ -1,4 +1,4 @@
-import { navigateTo } from './navigation.js';
+import { navigateTo, openTutorial } from './navigation.js';
 import { test, expect } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 
@@ -23,7 +23,7 @@ test('manifest e iconos válidos, inicio y tutorial disponibles tras recargar si
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Entra a tu barrio', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await page.getByRole('button', { name: 'Cómo usar la app', exact: true }).click();
+  await openTutorial(page);
   await expect(page.getByRole('heading', { name: 'Hola, soy Manolito' })).toBeVisible();
   await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('dialog img')].every(img => img.complete && img.naturalWidth > 0))).toBe(true);
   const keys = await page.evaluate(async () => (await Promise.all((await caches.keys()).map(async name => (await (await caches.open(name)).keys()).map(r => r.url)))).flat());
@@ -46,12 +46,12 @@ test('copia guardada sin mensajes y borrador persistente, sin publicar ni recone
   await page.getByRole('group', { name:'Explorar apoyo en emergencia' }).getByRole('button', { name:'Directorio de apoyo', exact:true }).click();
   await expect(page.getByRole('heading', { name:'Policía Nacional guardada' })).toBeVisible();
   await expect(page.getByRole('region', { name:'Directorio de apoyo', exact:true }).getByText(/Copia guardada el/)).toBeVisible();
-  await navigateTo(page, 'Mi barrio');
+  await navigateTo(page, 'Publicaciones recientes');
   await page.getByRole('button').filter({ has: page.getByRole('heading', { name: 'Escalera de la copia guardada' }) }).click();
   await expect(page.getByRole('button', { name: 'Yo te ayudo', exact: true })).toBeDisabled();
   await expect(page.getByLabel('Tu mensaje', { exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Volver', exact: true }).click();
-  await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await navigateTo(page, 'Pedir una manito');
 
   if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
 
@@ -60,7 +60,7 @@ test('copia guardada sin mensajes y borrador persistente, sin publicar ni recone
   await page.getByRole('button', { name: 'Revisar publicación' }).click();
   await expect(page.getByRole('button', { name: 'Publicar solicitud', exact: true })).toBeDisabled();
   await page.reload();
-  await navigateTo(page, 'Publicar');
+  await navigateTo(page, 'Pedir una manito');
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Borrador sin conexión');
   let writes = 0;
   page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/rest/v1/publicaciones')) writes++; });
@@ -88,8 +88,8 @@ test('la instalación solo se solicita después de pulsar el botón', async ({ p
 test('una actualización espera confirmación y conserva el borrador manual', async ({ page }) => {
   await installWorker(page);
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await navigateTo(page, 'Publicar');
-  if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
+  await navigateTo(page, 'Pedir una manito');
+  await page.getByText('Añadir detalles', { exact:true }).click();
   await page.getByLabel('Título', { exact: true }).fill('Borrador antes de actualizar');
   const original = await readFile('dist/sw.js', 'utf8');
   try {
@@ -100,7 +100,7 @@ test('una actualización espera confirmación y conserva el borrador manual', as
     await page.getByRole('button', { name: 'Actualizar app', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Entra a tu barrio', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Explorar demostración' }).click();
-    await navigateTo(page, 'Publicar');
+    await navigateTo(page, 'Pedir una manito');
     await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Borrador antes de actualizar');
   } finally { await writeFile('dist/sw.js', original); }
 });

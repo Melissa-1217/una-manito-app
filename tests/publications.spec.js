@@ -51,7 +51,7 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
   `}));
   await page.goto('/');
   await login('ana@example.com');
-  await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
+  await navigateTo(page, 'Pedir una manito');
 
   if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
 
