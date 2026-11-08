@@ -1,3 +1,4 @@
+import { navigateTo } from './navigation.js';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -6,7 +7,7 @@ test('emergencia: separar recursos, pedidos y contactos sin mezclar sus acciones
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   const emergency = async () => {
     const button = page.getByRole('button', { name: 'Apoyo en emergencia', exact: true }).filter({ visible: true }).first();
-    if (!await button.count()) await page.getByRole('button', { name: 'Mi barrio', exact: true }).filter({ visible: true }).first().click();
+    if (!await button.count()) await navigateTo(page, 'Mi barrio');
     await button.click();
   };
   await emergency();

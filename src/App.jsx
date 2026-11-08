@@ -1,3 +1,4 @@
+import MobileMenu from './components/MobileMenu.jsx';
 import WelcomeDialog from './components/WelcomeDialog.jsx';
 import PublicationLoading from './components/PublicationLoading.jsx';
 import SupportDirectory from './components/SupportDirectory.jsx';
@@ -20,7 +21,7 @@ import { distanceKm, formatDistance } from './lib/location.js';
 import { sendResponse, acceptResponse } from './lib/responses.js';
 import ManitoChat from './components/ManitoChat.jsx';
 import { useEffect, useRef, useState } from 'react';
-import { CircleHelp, House, Wrench, Plus, ClipboardList, HandHeart, MapPin, ArrowRight, ArrowLeft, Search, ShieldCheck, AlertTriangle, Check, RotateCcw, X } from 'lucide-react';
+import { Menu, CircleHelp, House, Wrench, Plus, ClipboardList, HandHeart, MapPin, ArrowRight, ArrowLeft, Search, ShieldCheck, AlertTriangle, Check, RotateCcw, X } from 'lucide-react';
 import PublicationCard, { statusLabels } from './components/PublicationCard.jsx';
 import AiPublicationAssistant from './components/AiPublicationAssistant.jsx';
 import { listPublications, createPublication, closePublication, changePublicationLifecycle } from './lib/publications.js';
@@ -58,6 +59,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
   const [conversationId, setConversationId] = useState(null);
   const [privateDrafts, setPrivateDrafts] = useState({});
   const [view, setView] = useState('inicio');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [homeFilter, setHomeFilter] = useState('todas');
   const [welcome, setWelcome] = useState(() => { try { return !localStorage.getItem('una-manito-welcome-v1'); } catch { return true; } });
   function closeWelcome() { setWelcome(false); try { localStorage.setItem('una-manito-welcome-v1', 'seen'); } catch { /* Se puede continuar sin almacenamiento. */ } }
@@ -132,7 +134,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
     setStoredData(next);
   }
 
-  function navigate(next) { setConversationId(null); setView(next); setSelected(null); setReview(false); setMessage(''); setQuery(''); setServiceIntent(null); setServiceCategory('Todos'); setNotice(''); }
+  function navigate(next) { setMenuOpen(false); setConversationId(null); setView(next); setSelected(null); setReview(false); setMessage(''); setQuery(''); setServiceIntent(null); setServiceCategory('Todos'); setNotice(''); }
   function open(id) { setConversationId(null); setSelected(id); setMessage(''); setNotice(''); }
   function perform(action, success) {
     try { setData(action(data)); setNotice(success); }
@@ -257,7 +259,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
       <header className="topbar"><div className="topbar-community"><span className="topbar-location"><MapPin size={16} />{neighborhood}</span>{account && <button className="change-neighborhood" disabled={saving || readOnly} onClick={() => {
         if ((draft.titulo.trim() || draft.descripcion.trim() || message.trim()) && !window.confirm('Tienes un texto sin publicar. Si cambias de barrio se descartará. ¿Continuar?')) return;
         onChangeNeighborhood?.();
-      }}>Cambiar barrio</button>}</div><div className="topbar-actions"><button className="tutorial-entry" aria-label="Cómo usar la app" title="Cómo usar la app" onClick={() => setChat({ mode: 'guia' })}><CircleHelp size={20}/><span>Cómo usar la app</span></button>{account ? <button className="account-menu" onClick={onSignOut}><span className="avatar">{account.nombre[0]}</span><span>{account.nombre}</span><span>{offlineSession ? 'Cerrar copia' : 'Cerrar sesión'}</span></button> : <label className="user-switch"><span className="avatar">{people[user][0]}</span><select aria-label="Cambiar usuario de demostración" value={user} onChange={(e) => { setUser(e.target.value); setSelected(null); setMessage(''); setNotice(''); }}><option value="ana">Ana · demo</option><option value="luis">Luis · demo</option></select></label>}</div></header>
+      }}>Cambiar barrio</button>}</div><div className="topbar-actions"><button className="tutorial-entry" aria-label="Cómo usar la app" title="Cómo usar la app" onClick={() => setChat({ mode: 'guia' })}><CircleHelp size={20}/><span>Cómo usar la app</span></button>{account ? <><button className="mobile-profile-toggle" aria-label="Abrir perfil y menú" onClick={() => setMenuOpen(true)}><span className="avatar">{account.nombre[0]}</span></button><button className="account-menu" aria-label={offlineSession ? 'Cerrar copia' : 'Cerrar sesión'} onClick={onSignOut}><span className="avatar">{account.nombre[0]}</span><span>{account.nombre}</span><span>{offlineSession ? 'Cerrar copia' : 'Cerrar sesión'}</span></button></> : <label className="user-switch"><span className="avatar">{people[user][0]}</span><select aria-label="Cambiar usuario de demostración" value={user} onChange={(e) => { setUser(e.target.value); setSelected(null); setMessage(''); setNotice(''); }}><option value="ana">Ana · demo</option><option value="luis">Luis · demo</option></select></label>}<button className="mobile-menu-toggle" aria-label="Abrir menú" aria-expanded={menuOpen} aria-haspopup="dialog" aria-controls={menuOpen ? "mobile-menu" : undefined} onClick={() => setMenuOpen(true)}><Menu size={22} aria-hidden="true"/><span>Menú</span></button></div></header>
       <div className="demo-banner"><span><strong>{account ? readOnly ? 'Copia de consulta' : 'Cuenta conectada' : 'Demostración'}</strong>{!account && <span className="demo-description"> · Datos de ejemplo</span>}</span>{account ? <button disabled={loading || saving || !online || offlineSession} onClick={refreshPublications} aria-label={loading ? 'Actualizando publicaciones' : 'Actualizar publicaciones'}><RotateCcw size={16}/><span className="refresh-caption">{loading ? 'Actualizando…' : 'Actualizar'}</span></button> : <details className="demo-options"><summary>Opciones demo</summary><div><button onClick={() => { if (window.confirm('¿Restablecer los datos de ejemplo? Se borrarán las publicaciones de esta demo local.')) { setData(initializeDemoDates(structuredClone(initialData))); navigate('inicio'); } }}>Reiniciar demo</button><button onClick={onExitDemo}>Volver al acceso</button></div></details>}</div>
       {account && snapshotDate && readOnly && <p className="snapshot-note" role="status">Publicaciones guardadas en este dispositivo el {new Date(snapshotDate).toLocaleString('es-PE')}. Pueden haber cambiado. No incluye mensajes privados.</p>}
       {storageError && <p className="notice" role="alert">No se pudo guardar en este navegador. Los cambios durarán mientras mantengas esta página abierta.</p>}
@@ -309,7 +311,8 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
         onManual={(mode, savedDraft) => { setChat(null); if (mode === 'busqueda') navigate('servicios'); else startPublication(mode, false, savedDraft); }}
       />}
     </div>
-    <nav className="mobile-nav" aria-label="Navegación móvil">{navItems.map(({ id, label, icon: Icon }) => <button key={id} aria-current={view === id ? 'page' : undefined} className={view === id ? 'active' : ''} onClick={() => navigate(id)}><Icon size={21} /><span>{label}</span></button>)}</nav>
+    {menuOpen && <MobileMenu items={navItems} view={selected ? '' : view} name={people[user]} neighborhood={neighborhood} onNavigate={navigate} onClose={() => setMenuOpen(false)} onExit={() => { setMenuOpen(false); if (account) onSignOut(); else onExitDemo(); }} exitLabel={account ? offlineSession ? 'Cerrar copia' : 'Cerrar sesión' : 'Salir de demostración'} onTutorial={() => { setMenuOpen(false); setChat({ mode:'guia' }); }} onChat={() => { setMenuOpen(false); setChat({ mode:null }); }}/>}
+
   </div></>;
 }
 

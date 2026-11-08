@@ -1,3 +1,4 @@
+import { navigateTo } from './navigation.js';
 import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
@@ -69,15 +70,14 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   await page.getByRole('button', { name: 'Publicar solicitud' }).click();
   await expect(page.getByRole('heading', { name: 'Necesito un taladro por una hora', exact: true })).toBeVisible();
   await page.getByLabel('Cambiar usuario de demostración').selectOption('luis');
-  const navigation = page.getByRole('navigation', { name: testInfo.project.name === 'mobile' ? 'Navegación móvil' : 'Navegación principal', exact: true });
-  await navigation.getByRole('button', { name: 'Mi barrio', exact: true }).click();
+  await navigateTo(page, 'Mi barrio');
   await page.getByRole('button').filter({ has: page.getByRole('heading', { name: 'Necesito un taladro por una hora' }) }).click();
   await page.getByLabel('Tu mensaje').fill('Tengo uno. Te lo presto esta tarde.');
   await page.getByRole('button', { name: 'Yo te ayudo', exact: true }).click();
   await expect(page.getByText('Ya enviaste una respuesta.', { exact: false })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Marcar como resuelta' })).toHaveCount(0);
   await page.getByLabel('Cambiar usuario de demostración').selectOption('ana');
-  await navigation.getByRole('button', { name: 'Mi actividad', exact: true }).click();
+  await navigateTo(page, 'Mi actividad');
   await page.getByRole('button').filter({ has: page.getByRole('heading', { name: 'Necesito un taladro por una hora' }) }).click();
   await page.getByRole('button', { name: 'Aceptar ayuda' }).click();
   await expect(page.getByText('En coordinación', { exact: true })).toBeVisible();
@@ -85,7 +85,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   await expect(page.getByText('Esta publicación ya está cerrada.')).toBeVisible();
   await page.reload();
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await navigation.getByRole('button', { name: 'Mi actividad', exact: true }).click();
+  await navigateTo(page, 'Mi actividad');
   await page.getByRole('button', { name: 'Historial', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Necesito un taladro por una hora' })).toBeVisible();
   expect(errors).toEqual([]);

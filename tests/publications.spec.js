@@ -1,3 +1,4 @@
+import { navigateTo } from './navigation.js';
 import { test, expect } from '@playwright/test';
 
 test('publica con la cuenta real, otro vecino la consulta y solo el autor la cierra', async ({ page }) => {
@@ -58,14 +59,14 @@ test('publica con la cuenta real, otro vecino la consulta y solo el autor la cie
   await page.getByRole('button', { name: 'Publicar solicitud', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Necesito un carrito para mudanza', exact: true })).toBeVisible();
   expect(await page.evaluate(() => window.createdPost.autor_id)).toBe('ana-uuid');
-  await page.getByRole('button', { name: /Cerrar sesión/ }).click();
+  await navigateTo(page, 'Cerrar sesión');
   await login('luis@example.com');
   await page.getByRole('button').filter({ has: page.getByRole('heading', { name: 'Necesito un carrito para mudanza' }) }).click();
   await expect(page.getByRole('button', { name: 'Marcar como resuelta' })).toHaveCount(0);
   await page.getByLabel('Tu mensaje').fill('Puedo prestar mi carrito.');
   await page.getByRole('button', {name:'Yo te ayudo',exact:true}).click();
   await expect(page.getByText('Puedo prestar mi carrito.',{exact:true})).toBeVisible();
-  await page.getByRole('button', { name: /Cerrar sesión/ }).click();
+  await navigateTo(page, 'Cerrar sesión');
   await login('ana@example.com');
   await page.getByRole('button').filter({ has: page.getByRole('heading', { name: 'Necesito un carrito para mudanza' }) }).click();
   await page.getByRole('button', {name:'Aceptar ayuda'}).click();

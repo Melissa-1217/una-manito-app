@@ -1,6 +1,7 @@
+import { navigateTo } from './navigation.js';
 import { test, expect } from '@playwright/test';
 
-test('una publicación vence en la pantalla abierta sin necesitar recargar', async ({ page }, testInfo) => {
+test('una publicación vence en la pantalla abierta sin necesitar recargar', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-11-07T12:00:00Z') });
   await page.addInitScript(() => localStorage.setItem('una-manito-demo-v1', JSON.stringify({
     publicaciones: [{ id: 'deadline', autor_id: 'ana', tipo: 'solicitud', titulo: 'Solicitud cerca de su vencimiento', descripcion: 'Necesito ayuda para esta tarea del barrio.', categoria: 'Otros', barrio: 'Barrio Demo', estado: 'pendiente', cupos: 1, creado_en: '2026-10-31T12:00:10Z', vence_en: '2026-11-07T12:00:10Z' }], ofrecimientos: [],
@@ -10,8 +11,7 @@ test('una publicación vence en la pantalla abierta sin necesitar recargar', asy
   await expect(page.getByRole('heading', { name: 'Solicitud cerca de su vencimiento' })).toBeVisible();
   await page.clock.fastForward(31000);
   await expect(page.getByRole('heading', { name: 'Solicitud cerca de su vencimiento' })).toHaveCount(0);
-  const navigation = page.getByRole('navigation', { name: testInfo.project.name === 'mobile' ? 'Navegación móvil' : 'Navegación principal', exact: true });
-  await navigation.getByRole('button', { name: 'Mi actividad', exact: true }).click();
+  await navigateTo(page, 'Mi actividad');
   await page.getByRole('button', { name: 'Historial', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Solicitud cerca de su vencimiento' })).toBeVisible();
   await expect(page.getByText('Vencida', { exact: true })).toBeVisible();
@@ -31,8 +31,7 @@ test('historial permite renovar y cancelar sin perder respuestas ni publicacione
   await expect(page.getByRole('heading', { name: 'Solicitud antigua sin respuestas' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Ayuda resuelta con valoración' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Ayuda que seguimos coordinando' })).toBeVisible();
-  const navigation = page.getByRole('navigation', { name: testInfo.project.name === 'mobile' ? 'Navegación móvil' : 'Navegación principal', exact: true });
-  await navigation.getByRole('button', { name: 'Mi actividad', exact: true }).click();
+  await navigateTo(page, 'Mi actividad');
   await page.getByRole('button', { name: 'Historial', exact: true }).click();
   const open = title => page.getByRole('button').filter({ has: page.getByRole('heading', { name: title, exact: true }) }).click();
   await open('Ayuda resuelta con valoración');

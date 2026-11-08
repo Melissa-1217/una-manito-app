@@ -1,3 +1,4 @@
+import { navigateTo } from './navigation.js';
 import { test, expect } from '@playwright/test';
 
 test('registro y acceso conservan el diseño móvil', async ({ page }, testInfo) => {
@@ -75,7 +76,7 @@ test('cuenta sin perfil elige barrio, persiste y cierra sesión', async ({ page 
   expect(await page.evaluate(() => window.savedTestProfile.barrio)).toBe('Barrio Demo');
   await expect(page.getByRole('heading', { name: 'Ayuda del barrio elegido' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Escalera en mi barrio anterior' })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Mi actividad', exact: true }).filter({ visible: true }).click();
+  await navigateTo(page, 'Mi actividad');
   await expect(page.getByRole('heading', { name: 'Escalera en mi barrio anterior' })).toBeVisible();
   await page.getByRole('button', { name: 'Cambiar barrio', exact: true }).click();
   await expect(page.getByLabel('Barrio o sector')).toHaveValue('Barrio Demo');
@@ -84,7 +85,7 @@ test('cuenta sin perfil elige barrio, persiste y cierra sesión', async ({ page 
   await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
   expect(await page.evaluate(() => window.savedTestProfile.barrio)).toBe('Barrio Demo');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.getByRole('button', { name: /Cerrar sesión/ }).click();
+  await navigateTo(page, 'Cerrar sesión');
   await expect(page.getByRole('heading', { name: 'Entra a tu barrio' })).toBeVisible();
 });
 
