@@ -45,7 +45,7 @@ for(const mode of ['donacion','intercambio'])test(`producto ${mode}: conserva mo
   await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();
   await page.getByRole('button',{name:'Volver a editar',exact:true}).click();
   await expect(page.getByRole('combobox',{name:'Modalidad',exact:true})).toHaveValue(mode);
-  await page.reload();await page.getByRole('button',{name:'Explorar demostración'}).click();await navigateTo(page,'Publicar');
+  await page.reload();await page.getByRole('button',{name:'Explorar demostración'}).click();await navigateTo(page,'Continuar borrador');
   await expect(page.getByRole('combobox',{name:'Modalidad',exact:true})).toHaveValue(mode);
   await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();await page.getByRole('button',{name:'Publicar producto',exact:true}).click();
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('una-manito-demo-v1')).publicaciones[0].producto_modalidad)).toBe(mode);
@@ -64,6 +64,7 @@ test('antes de aplicar SQL: mantiene servicios anteriores y no pierde la modalid
     }}
   `}));
   await page.goto('/');
+  await navigateTo(page,'Buscar servicios');
   await expect(page.getByRole('heading',{name:'Servicio anterior conservado',exact:true})).toBeVisible();
   expect(await page.evaluate(()=>window.selectedFields.some(fields=>fields.includes('producto_modalidad')) && window.selectedFields.some(fields=>!fields.includes('producto_modalidad')))).toBe(true);
   await navigateTo(page,'Productos');await page.getByRole('button',{name:'Compartir producto',exact:true}).click();
@@ -72,7 +73,7 @@ test('antes de aplicar SQL: mantiene servicios anteriores y no pierde la modalid
   await expect(page.getByText('Productos aún no está habilitado. El equipo debe activar esta función. Tu borrador se conserva.',{exact:true})).toBeVisible();
   expect(await page.evaluate(()=>window.productInserts[0].producto_modalidad)).toBe('prestamo');
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('una-manito-offline-v1:draft:ana:Barrio%20Demo')).producto_modalidad)).toBe('prestamo');
-  await navigateTo(page,'Mi barrio');await page.getByRole('button',{name:'Publicar mi servicio',exact:true}).click();
+  await navigateTo(page,'Mi barrio');await page.getByRole('button',{name:'Publicar un servicio',exact:true}).click();
   await page.getByLabel('¿Qué servicio brindas?',{exact:true}).fill('Reparo caños cerca de casa. Consulta para coordinar atención.');
   await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();await page.getByRole('button',{name:'Publicar servicio',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Reparo caños cerca de casa',exact:true})).toBeVisible();

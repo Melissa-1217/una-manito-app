@@ -18,7 +18,7 @@ test('menú móvil: navegación desplegable, teclado, foco y espacio libre para 
   await expect(menu).toHaveCount(0);
   await expect(toggle).toBeFocused();
   await toggle.click();
-  await menu.getByRole('button', { name:'Servicios', exact:true }).click();
+  await menu.getByRole('button', { name:'Buscar servicios', exact:true }).click();
   await expect(menu).toHaveCount(0);
   await expect(page.getByRole('heading', { name:'Servicios del barrio', exact:true })).toBeVisible();
   await toggle.click();

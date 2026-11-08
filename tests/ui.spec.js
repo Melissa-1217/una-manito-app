@@ -17,16 +17,16 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await page.getByRole('button', { name: /Ofrece una manito/ }).click();
+  await page.getByRole('button', { name: /Dar una manito/ }).click();
 
-  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Presto escalera los sábados');
+  await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Presto escalera los sábados');
   await page.getByText('Ayuda con IA', { exact:true }).click();
   await page.getByRole('button', { name: 'Preparar mi ofrecimiento con IA' }).click();
   await page.getByRole('button', { name: 'Usar propuesta en los campos' }).click();
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Presto una escalera');
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await page.getByRole('button', { name: /Busca un servicio/ }).click();
+  await page.getByRole('button', { name: /Buscar un servicio/ }).click();
 
   await page.getByLabel('Buscar publicaciones').fill('Se rompió un caño');
   await page.getByRole('button', { name: 'Interpretar mi búsqueda con IA' }).click();
@@ -44,7 +44,7 @@ test('revisa y aplica una propuesta de IA antes de publicar', async ({ page }) =
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
 
-  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Veci se rompió un caño y necesito un gasfitero cerca.');
+  await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Veci se rompió un caño y necesito un gasfitero cerca.');
   await page.getByText('Ayuda con IA', { exact:true }).click();
   await page.getByRole('button', { name: 'Preparar mi pedido con IA', exact: true }).click();
   await expect(page.getByText('Propuesta para revisar', { exact: true })).toBeVisible();
@@ -69,7 +69,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
 
   await page.getByLabel('Título', { exact: true }).fill('Necesito un taladro por una hora');
-  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Para colocar una repisa esta tarde. Lo devuelvo al terminar.');
+  await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Para colocar una repisa esta tarde. Lo devuelvo al terminar.');
   await page.getByRole('button', { name: 'Revisar publicación' }).click();
   await page.getByRole('button', { name: 'Publicar solicitud' }).click();
   await expect(page.getByRole('heading', { name: 'Necesito un taladro por una hora', exact: true })).toBeVisible();
@@ -125,7 +125,7 @@ test('ubicación opcional se redondea y permite abrir el mapa', async ({ page, c
   await page.getByRole('button',{name:'Pedir una manito',exact:true}).click();
   if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
   await page.getByLabel('Título',{exact:true}).fill('Prueba de zona aproximada');
-  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Necesito una herramienta para esta tarde.');
+  await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Necesito una herramienta para esta tarde.');
   await page.getByRole('button',{name:'Añadir ubicación aproximada'}).click();
   await expect(page.getByText('Ubicación aproximada añadida.',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Revisar publicación'}).click();

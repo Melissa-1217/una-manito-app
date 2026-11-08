@@ -1,0 +1,28 @@
+.quick-actions.intent-actions { grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:18px; }
+.intent-actions button { min-width:0; }
+.intent-actions button>span { overflow-wrap:normal; }
+.manolito-bubble { position:fixed; right:max(20px,env(safe-area-inset-right)); bottom:max(20px,env(safe-area-inset-bottom)); z-index:8; display:grid; justify-items:center; gap:4px; padding:5px; border-radius:24px; color:var(--primary); }
+.manolito-bubble[hidden] { display:none; }
+.manolito-bubble img { display:block; width:58px; height:58px; object-fit:cover; border-radius:50%; border:3px solid #fffdf8; background:#d2e3d6; box-shadow:0 3px 16px #1e453240,0 0 0 2px #1e4532; }
+.manolito-bubble span { font-size:11px; line-height:1.4; font-weight:700; background:var(--surface); padding:2px 7px; border-radius:9px; border:1px solid var(--border); }
+main:has(.home-compact) .feed { padding-bottom:116px; }
+.emergency-composer { max-width:640px; margin:auto; }
+.emergency-composer>h1 { margin-bottom:0; }
+.emergency-composer .emergency-question { font-size:18px; }
+.emergency-composer textarea { font-weight:400; }
+.emergency-context { display:flex; align-items:center; gap:8px; color:#813d25; font-size:13px; line-height:1.6; margin:14px 0 0; }
+.emergency-context svg { flex-shrink:0; }
+.emergency-composer .panel { margin-top:16px; }
+.emergency-composer>h1:focus { outline:none; }
+@media(max-width:760px) {
+  .quick-actions.intent-actions { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .intent-actions button { min-height:66px; flex-direction:row; padding:10px; gap:9px; font-size:13px; }
+  .intent-actions button span { text-align:left; }
+  .manolito-bubble { right:16px; bottom:max(16px,env(safe-area-inset-bottom)); }
+}
+@media(prefers-reduced-motion:no-preference) { .manolito-bubble:hover img { transform:translateY(-2px); } }
+
+.manolito-bubble img { width:54px; height:54px; }
+.manolito-bubble { bottom:max(12px,env(safe-area-inset-bottom)); padding:4px; }
+main:has(.home-compact) .card-footer, main:has(.home-compact) .card-open { padding-right:66px; }
+.emergency-context { order:3; }

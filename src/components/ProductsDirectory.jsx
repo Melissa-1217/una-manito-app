@@ -14,7 +14,7 @@ export default function ProductsDirectory({ publications, barrio, people, onOpen
   if (origin) products.sort((a,b) => distanceKm(origin,a)-distanceKm(origin,b));
   const filtered = modality !== 'todos' || query.trim();
   return <section className="products-directory">
-    <header className="page-heading"><h1>Productos del barrio</h1><p className="page-purpose">Préstamos, donaciones e intercambios entre vecinos.</p><button className="button primary" onClick={onCreate}><Plus size={18} aria-hidden="true"/>{readOnly ? 'Preparar producto' : 'Compartir producto'}</button></header>
+    <header className="page-heading"><h1>Productos del barrio</h1><p className="page-purpose">Para el día a día: préstamos, donaciones e intercambios.</p><button className="button primary" onClick={onCreate}><Plus size={18} aria-hidden="true"/>{readOnly ? 'Preparar producto' : 'Compartir producto'}</button></header>
     <div className="service-categories product-filters" role="group" aria-label="Filtrar productos">{[['todos','Todos'],['prestamo','Préstamos'],['donacion','Donaciones'],['intercambio','Intercambios']].map(([value,label]) => <button key={value} aria-pressed={modality === value} onClick={() => setModality(value)}>{label}</button>)}</div>
     <label className="search-box"><Search size={19} aria-hidden="true"/><input aria-label="Buscar productos" placeholder="Ej.: taladro, libros, ropa…" value={query} onChange={event=>setQuery(event.target.value)}/></label>
     <details className="feed-location"><summary>Ordenar por cercanía</summary><LocationControl value={origin} onChange={setOrigin}/></details>

@@ -10,7 +10,7 @@ import { productModes, validateProduct } from '../lib/products.js';
 const categories = ['Herramientas','Gasfitería','Electricidad','Compras y traslados','Clases','Agua y alimentos','Otros'];
 const modes = {
   solicitud: { title:'Pedir una manito', question:'¿Qué necesitas?', placeholder:'Ej.: necesito una escalera para mañana por la tarde.', publish:'Publicar solicitud' },
-  ofrecimiento: { title:'Ofrecer una manito', question:'¿Qué puedes compartir?', placeholder:'Ej.: presto mi escalera este fin de semana.', publish:'Publicar ofrecimiento' },
+  ofrecimiento: { title:'Dar una manito', question:'¿Cómo puedes ayudar?', placeholder:'Ej.: puedo ayudar con las compras este sábado por la mañana.', publish:'Publicar ofrecimiento' },
   servicio: { title:'Publicar un servicio', question:'¿Qué servicio brindas?', placeholder:'Ej.: reparo caños y atiendo por las tardes en el barrio.', publish:'Publicar servicio' },
 };
 
@@ -35,13 +35,11 @@ export default function PublicationComposer({ draft, onChange, review, onReview,
   }
   const options = <details className="composer-details">
     <summary>Añadir detalles</summary>
-    {!review && <><label>Tipo de publicación<select value={draft.tipo} onChange={event => update({ tipo:event.target.value, producto_modalidad:event.target.value === 'ofrecimiento' ? draft.producto_modalidad : null })}><option value="solicitud">Necesito ayuda</option><option value="ofrecimiento">Ofrezco ayuda</option><option value="servicio">Un servicio</option></select></label><label>Título<input minLength={5} maxLength={120} value={draft.titulo} onChange={event => update({ titulo:event.target.value })} placeholder="Se prepara a partir de tu mensaje"/></label></>}
-    {draft.tipo === 'ofrecimiento' && <label className="checkbox"><input type="checkbox" checked={product} onChange={event=>update({producto_modalidad:event.target.checked ? 'prestamo' : null})}/>Es un producto</label>}
+    {!review && <><label>Título<input minLength={5} maxLength={120} value={draft.titulo} onChange={event => update({ titulo:event.target.value })} placeholder="Se prepara a partir de tu mensaje"/></label></>}
     {review && product && <label>Modalidad<select value={draft.producto_modalidad} onChange={event=>update({producto_modalidad:event.target.value})}>{Object.entries(productModes).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>}
     <div className="form-row"><label>Categoría<select value={draft.categoria} onChange={event => update({ categoria:event.target.value })}>{categories.map(category => <option key={category}>{category}</option>)}</select></label><label>Barrio<input minLength={2} maxLength={120} readOnly={Boolean(account)} value={draft.barrio} onChange={event => update({ barrio:event.target.value })}/></label></div>
     <CapacityField type={draft.tipo} value={draft.cupos} onChange={cupos => update({ cupos })}/>
     <LocationControl forPublication value={draft} onChange={point => update({ latitud:point?.latitud ?? null, longitud:point?.longitud ?? null })}/>
-    <label className="checkbox"><input type="checkbox" checked={draft.es_emergencia} onChange={event => update({ es_emergencia:event.target.checked })}/>Es apoyo en emergencia</label>
   </details>;
   return <section className="form-page simple-composer">
     <button className="text-button composer-back" onClick={review ? onEdit : onBack}><ArrowLeft size={17}/>{review ? 'Volver a editar' : 'Volver'}</button>
@@ -49,7 +47,7 @@ export default function PublicationComposer({ draft, onChange, review, onReview,
     <h1 ref={heading} tabIndex={-1}>{review ? 'Revisa tu publicación' : mode.title}</h1>
     <form className="panel composer-panel" onSubmit={event => {
       event.preventDefault();
-      const next = { ...draft, titulo:draft.titulo.trim() || titleFromDescription(draft.descripcion) };
+      const next = { ...draft, es_emergencia:false, titulo:draft.titulo.trim() || titleFromDescription(draft.descripcion) };
       if (!validate(next)) return;
       onError('');
       if (review) { void onPublish(next); } else { onReview(next); }

@@ -8,7 +8,7 @@ export function validateProduct(publication) {
 }
 const normalize = value => (value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es');
 export function filterProducts(publications, { barrio, modality = 'todos', query = '' } = {}) {
-  return publications.filter(post => post.tipo === 'ofrecimiento' && Object.hasOwn(productModes,post.producto_modalidad || '') && isActive(post)
+  return publications.filter(post => !post.es_emergencia && post.tipo === 'ofrecimiento' && Object.hasOwn(productModes,post.producto_modalidad || '') && isActive(post)
     && (!barrio || normalize(post.barrio) === normalize(barrio))
     && (modality === 'todos' || post.producto_modalidad === modality)
     && normalize(`${post.titulo} ${post.descripcion} ${post.categoria}`).includes(normalize(query)));

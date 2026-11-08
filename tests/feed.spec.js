@@ -38,7 +38,7 @@ test('inicio compacto: publicaciones visibles sin desplazarse y filtros independ
   await expect(page.getByRole('heading', { name:'Una mano con tus caños', exact:true })).toHaveCount(0);
   await filters.getByRole('button', { name:'Ofrecen ayuda', exact:true }).click();
   await expect(page.getByRole('heading', { name:'¿Me prestas una escalera?', exact:true })).toHaveCount(0);
-  await page.getByRole('button', { name:'Busca un servicio', exact:true }).click();
+  await page.getByRole('button', { name:'Buscar un servicio', exact:true }).click();
   await expect(page.getByRole('heading', { name:'Una mano con tus caños', exact:true })).toBeVisible();
   await expect(page.locator('.service-list .card-art')).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

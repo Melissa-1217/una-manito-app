@@ -10,12 +10,11 @@ test('emergencia: separar recursos, pedidos y contactos sin mezclar sus acciones
   const tabs = page.getByRole('group', { name: 'Explorar apoyo en emergencia' });
   await expect(tabs.getByRole('button', { name: 'Necesidades', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Tengo recursos', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Ofrecer una manito', exact: true })).toBeVisible();
-  if (!await page.getByLabel('Título', { exact:true }).isVisible()) await page.getByText('Añadir detalles', { exact:true }).click();
-  await page.getByLabel('Título', { exact: true }).fill('Agua para compartir en emergencia');
-  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Tengo botellas de agua para compartir con mis vecinos.');
-  await page.getByRole('button', { name: 'Revisar publicación', exact: true }).click();
-  await page.getByRole('button', { name: 'Publicar ofrecimiento', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Compartir recursos de emergencia', exact: true })).toBeVisible();
+  await page.getByRole('textbox',{name:'¿Qué recurso o apoyo tienes?',exact:true}).fill('Tengo botellas de agua para compartir con mis vecinos.');
+  await page.getByRole('button', { name: 'Revisar apoyo', exact: true }).click();
+  await page.getByLabel('Título', { exact:true }).fill('Agua para compartir en emergencia');
+  await page.getByRole('button', { name: 'Publicar recurso', exact: true }).click();
   await emergency();
   await expect(page.getByRole('heading', { name: 'Agua para compartir en emergencia', exact: true })).toHaveCount(0);
   await tabs.getByRole('button', { name: 'Recursos', exact: true }).click();
@@ -30,5 +29,5 @@ test('emergencia: separar recursos, pedidos y contactos sin mezclar sus acciones
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: `../una-manito-emergencia-${testInfo.project.name}.png`, fullPage: true });
   await page.getByRole('button', { name: 'Necesito apoyo', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Pedir una manito', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Solicitar apoyo de emergencia', exact: true })).toBeVisible();
 });

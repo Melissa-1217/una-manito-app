@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 
 for (const flow of [
   { action: 'Pedir una manito', heading: 'Pedir una manito', publish: 'Publicar solicitud' },
-  { action: 'Ofrece una manito', heading: 'Ofrecer una manito', publish: 'Publicar ofrecimiento' },
-  { action: 'Publicar mi servicio', heading: 'Publicar un servicio', publish: 'Publicar servicio' },
+  { action: 'Dar una manito', heading: 'Dar una manito', publish: 'Publicar ofrecimiento' },
+  { action: 'Publicar un servicio', heading: 'Publicar un servicio', publish: 'Publicar servicio' },
 ]) {
   test(`${flow.action}: publica en tres pulsaciones desde el inicio, sin pasar por el chat`, async ({ page }, testInfo) => {
     await page.goto('/');
@@ -20,7 +20,7 @@ for (const flow of [
     await expect(page.getByRole('textbox')).toHaveCount(1);
     const screen = flow.publish.split(' ')[1];
     await page.screenshot({ path:`../una-manito-formulario-${screen}-${testInfo.project.name}.png`, fullPage:false });
-    await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Una publicación para mi barrio. Estoy describiendo lo que necesito u ofrezco para mañana.');
+    await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Una publicación para mi barrio. Estoy describiendo lo que necesito u ofrezco para mañana.');
     await page.getByRole('button', { name: 'Revisar publicación', exact: true }).click();
     await expect(page.getByLabel('Título', { exact:true })).toHaveValue('Una publicación para mi barrio');
     if (flow.publish === 'Publicar solicitud') expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
@@ -35,7 +35,7 @@ test('buscar por oficio y limpiar filtros permite recuperar servicios existentes
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await expect(page.getByRole('heading', { name: 'Publicaciones del barrio', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Busca un servicio', exact: true }).click();
+  await page.getByRole('button', { name: 'Buscar un servicio', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   const categories = page.getByRole('group', { name: 'Filtrar servicios por oficio' });
   await categories.getByRole('button', { name: 'Electricidad', exact: true }).click();
@@ -49,12 +49,12 @@ test('la revisión permite corregir el título y el mensaje y volver sin perderl
   await page.goto('/');
   await page.getByRole('button', { name:'Explorar demostración' }).click();
   await page.getByRole('button', { name:'Pedir una manito', exact:true }).click();
-  await page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/).fill('Necesito dos vecinos para mover una mesa.');
+  await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Necesito dos vecinos para mover una mesa.');
   await page.getByRole('button', { name:'Revisar publicación', exact:true }).click();
   await page.getByLabel('Título', { exact:true }).fill('Apoyo para mover mi mesa');
   await page.getByRole('textbox', { name:'Descripción', exact:true }).fill('Necesito dos vecinos para mover una mesa al patio mañana.');
   await page.getByRole('button', { name:'Volver a editar', exact:true }).click();
-  await expect(page.getByLabel(/¿Qué (necesitas|puedes compartir|servicio brindas)\?/)).toHaveValue('Necesito dos vecinos para mover una mesa al patio mañana.');
+  await expect(page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/)).toHaveValue('Necesito dos vecinos para mover una mesa al patio mañana.');
   await page.getByRole('button', { name:'Revisar publicación', exact:true }).click();
   await expect(page.getByLabel('Título', { exact:true })).toHaveValue('Apoyo para mover mi mesa');
   await page.getByRole('button', { name:'Publicar solicitud', exact:true }).click();

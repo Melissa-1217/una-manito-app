@@ -11,14 +11,14 @@ import useOnline from '../lib/useOnline.js';
 
 const modes = {
   solicitud: ['Pedir una manito', '¿Qué ayuda necesitas?'],
-  ofrecimiento: ['Dar una manito', '¿Qué puedes prestar, compartir o hacer?'],
+  ofrecimiento: ['Dar una manito', '¿Con qué tiempo o habilidad puedes ayudar?'],
   busqueda: ['Buscar un servicio', '¿Qué problema quieres resolver?'],
   guia: ['Cómo usar la app'],
 };
 const categories = ['Herramientas', 'Gasfitería', 'Electricidad', 'Compras y traslados', 'Clases', 'Agua y alimentos', 'Otros'];
 const normalize = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-export default function ManitoChat({ initialMode, name, barrio, posts, onClose, onOpen, onPublish, onManual, saving, loading, readOnly = false }) {
+export default function ManitoChat({ initialMode, name, barrio, posts, onClose, onOpen, onPublish, onManual, saving, loading, readOnly = false, returnFocusElement = null }) {
   const dialog = useRef(null);
   const online = useOnline();
   const bottom = useRef(null);
@@ -35,13 +35,13 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
   const [dictating, setDictating] = useState(false);
   useEffect(() => {
     const node = dialog.current;
-    const previousFocus = document.activeElement;
+    const previousFocus = returnFocusElement || document.activeElement;
     node.showModal();
     return () => {
       request.current?.abort(); node.close();
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
     };
-  }, []);
+  }, [returnFocusElement]);
   useEffect(() => { bottom.current?.scrollIntoView({ block: 'nearest' }); }, [turns, busy]);
 
   function choose(next) {
@@ -75,7 +75,7 @@ export default function ManitoChat({ initialMode, name, barrio, posts, onClose, 
     } finally { if (!controller.signal.aborted) setBusy(false); }
   }
 
-  const hits = !search ? [] : posts.filter(p => p.tipo === 'servicio' && isActive(p) &&
+  const hits = !search ? [] : posts.filter(p => p.tipo === 'servicio' && !p.es_emergencia && isActive(p) &&
     normalize(p.barrio.trim()) === normalize(barrio.trim()) &&
     (search.categoria === 'Otros' ? search.terminos.some(t => normalize(p.titulo + ' ' + p.descripcion).includes(normalize(t))) : p.categoria === search.categoria));
 

@@ -16,7 +16,7 @@ test('tutorial interactivo se puede omitir, completar y volver a abrir desde el 
   await page.getByRole('button', { name: 'Cómo usar la app', exact: true }).click();
   await expect(page.getByText('Paso 1 de 5')).toBeVisible();
   await page.getByRole('button', { name: 'Siguiente' }).click();
-  await page.getByRole('button', { name: 'Ofrecer ayuda', exact: true }).click();
+  await page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Dar una manito', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Siguiente' })).toBeDisabled();
   await expect(page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('status')).toContainText('Probemos otra opción');
   await page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Pedir una manito', exact: true }).click();
@@ -25,7 +25,7 @@ test('tutorial interactivo se puede omitir, completar y volver a abrir desde el 
   await page.getByRole('button', { name: 'Anterior' }).click();
   await expect(page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Pedir una manito', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Siguiente' }).click();
-  await page.getByRole('button', { name: 'Ofrecer ayuda', exact: true }).click();
+  await page.getByRole('region', { name: 'Tutorial con Manolito' }).getByRole('button', { name: 'Dar una manito', exact: true }).click();
   await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.getByRole('button', { name: 'Gasfitería', exact: true }).click();
   await page.getByRole('button', { name: 'Siguiente' }).click();

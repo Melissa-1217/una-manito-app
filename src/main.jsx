@@ -14,5 +14,6 @@ import './feed.css';
 import './mobile-menu.css';
 import './interface.css';
 import './composer.css';
+import './intents.css';
 
 createRoot(document.getElementById('root')).render(<React.StrictMode><SkipLink/><PwaControls/><AuthFlow /></React.StrictMode>);
