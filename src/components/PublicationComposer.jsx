@@ -45,7 +45,7 @@ export default function PublicationComposer({ draft, onChange, review, onReview,
     <button className="text-button composer-back" onClick={review ? onEdit : onBack}><ArrowLeft size={17}/>{review ? 'Volver a editar' : 'Volver'}</button>
     <span className="eyebrow">Paso {review ? '2' : '1'} de 2</span>
     <h1 ref={heading} tabIndex={-1}>{review ? 'Revisa tu publicación' : mode.title}</h1>
-    <form className="panel composer-panel" onSubmit={event => {
+    <form className="panel composer-panel" onInvalid={event=>{const details=event.target.closest('details');if(details)details.open=true;}} onSubmit={event => {
       event.preventDefault();
       const next = { ...draft, es_emergencia:false, titulo:draft.titulo.trim() || titleFromDescription(draft.descripcion) };
       if (!validate(next)) return;

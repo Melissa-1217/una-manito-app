@@ -31,7 +31,7 @@ export function readDraft(account) {
 }
 export function saveDraft(account, draft) {
   if (!draft.titulo.trim() && !draft.descripcion.trim()) { localStorage.removeItem(key('draft', account)); return; }
-  const fields = ['tipo','producto_modalidad','titulo','descripcion','categoria','barrio','cupos','es_emergencia','latitud','longitud'];
+  const fields = ['tipo','producto_modalidad','titulo','descripcion','categoria','barrio','cupos','es_emergencia','emergency_intent','latitud','longitud'];
   localStorage.setItem(key('draft', account), JSON.stringify(Object.fromEntries(fields.filter(f => draft[f] !== undefined).map(f => [f, draft[f]]))));
 }
 export function clearOfflineAccount(account) {

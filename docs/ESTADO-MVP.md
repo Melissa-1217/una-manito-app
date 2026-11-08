@@ -56,10 +56,21 @@ Este documento no certifica el estado de producción ni sustituye pruebas con cu
 ## Identidad y guía actualizadas
 
 El logo original de la mano con ubicación del equipo se conserva en `public/brand-original.png`
-y se presenta en el acceso y la navegación. El icono de instalación y favicon usan el cuy
+y se presenta completo en el acceso. La marca de navegación, cabecera, instalación y favicon usan el cuy
 con gorra verde entregado por el usuario, conservado en `public/manolito-icon-original.png`.
 Manolito acompaña la ayuda; no es un sello de verificación. Para adaptar el icono a los
 tamaños de instalación, ejecutar `npm run icons:build`. El eslogan se conserva:
 «Entre vecinos, nos damos una manito».
 Se conservaron las ilustraciones originales del equipo y se ajustó su presentación.
 La guía contiene ocho pasos con elección de temas, ejercicios, feedback y lectura opcional.
+
+## Integración selectiva revisada
+
+Se incorporó el estilo terracota de emergencia y los tipos de incidente de
+`posibles-cambios` como opciones dentro del mismo formulario. Se mantienen los
+accesos directos de Inicio y las tres pulsaciones de los recorridos diarios básicos.
+La bienvenida conserva cierre manual. Ver `INTEGRACION-POSIBLES-CAMBIOS.md`.
+
+Pruebas de la versión integrada: 92 de interfaz aprobadas (dos casos exclusivos de
+móvil se omiten en escritorio), 27 de lógica, cinco de SQL aislado y cuatro de PWA;
+lint y compilación correctos. El build todavía advierte un bundle mayor de 500 kB.
