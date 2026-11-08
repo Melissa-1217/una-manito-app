@@ -1,10 +1,7 @@
+<p align="center"><img src="docs/evento/hackathon.png" width="200" alt="Hackathon"></p>
 <p align="center"><img src="public/icon-192.png" width="92" alt="Manolito, el cuy de Una Manito"></p>
-
-# Una Manito
-
-**Entre vecinos, nos damos una manito.**
-
-Winners32 · Hackathon UTP 2026
+<h1 align="center">Una Manito</h1>
+<p align="center"><strong>Entre vecinos, nos damos una manito.</strong><br>Winners32 · Hackathon UTP 2026</p>
 
 Ana necesita una escalera por una tarde. Luis vive en su barrio y puede prestársela. Con Una Manito, Ana publica el pedido, acepta el ofrecimiento de Luis y ambos acuerdan la entrega por privado. La misma aplicación permite encontrar un gasfitero recomendado y coordinar recursos cuando el barrio enfrenta una emergencia.
 
@@ -99,3 +96,5 @@ El siguiente paso es validar el MVP con una comunidad piloto, incorporar grupos 
 | Wiliam Siesquen Fortunato | Fundamentación técnica y defensa |
 | Hans Felipe Cabala Pinto | Experiencia de usuario y demostración |
 | Geordan Jesus Justo Apaza | Validación funcional y demostración |
+
+<p align="center"><img src="docs/evento/utp-el-comercio.png" width="345" alt="UTP y El Comercio"></p>
