@@ -38,6 +38,17 @@ export function clearOfflineAccount(account) {
   if (readOfflineProfile()?.id === account.id) localStorage.removeItem(OFFLINE_PROFILE);
   for (let index = localStorage.length - 1; index >= 0; index--) {
     const name = localStorage.key(index);
-    if (name?.startsWith(`${prefix}publications:${account.id}:`) || name?.startsWith(`${prefix}draft:${account.id}:`)) localStorage.removeItem(name);
+    if (name?.startsWith(`${prefix}publications:${account.id}:`) || name?.startsWith(`${prefix}draft:${account.id}:`) || name?.startsWith(`${prefix}support:${account.id}:`)) localStorage.removeItem(name);
   }
+}
+
+export function readSupportSnapshot(account) {
+  const snapshot = parse(key('support', account));
+  return snapshot && Array.isArray(snapshot.contacts) && typeof snapshot.savedAt === 'string' ? snapshot : null;
+}
+export function saveSupportSnapshot(account, contacts) {
+  const fields = ['id','nombre','descripcion','ambito','barrio','telefono','url_contacto','fuente_url','revisado_en'];
+  const snapshot = { savedAt: new Date().toISOString(), contacts: contacts.filter(contact => contact.ambito === 'nacional' || contact.barrio === account.barrio).map(contact => Object.fromEntries(fields.filter(field => contact[field] !== undefined).map(field => [field, contact[field]]))) };
+  localStorage.setItem(key('support', account), JSON.stringify(snapshot));
+  return snapshot;
 }

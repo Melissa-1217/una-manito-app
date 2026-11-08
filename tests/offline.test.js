@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { saveSnapshot, readSnapshot, saveOfflineProfile, readOfflineProfile, clearOfflineAccount, saveDraft, readDraft } from '../src/lib/offline.js';
+import { saveSnapshot, readSnapshot, saveOfflineProfile, readOfflineProfile, clearOfflineAccount, saveDraft, readDraft, saveSupportSnapshot, readSupportSnapshot } from '../src/lib/offline.js';
 
 test('la copia offline separa cuentas y barrios y no guarda mensajes privados', () => {
   const store = new Map();
@@ -19,7 +19,17 @@ test('la copia offline separa cuentas y barrios y no guarda mensajes privados', 
   const draft = { tipo: 'solicitud', titulo: 'Borrador', descripcion: 'Sin publicar.', barrio: 'Demo' };
   saveDraft(ana, draft);
   assert.deepEqual(readDraft(ana), draft);
+  saveSupportSnapshot(ana, [
+    { id:'national', ambito:'nacional', nombre:'Nacional', telefono:'105', privado:'NO GUARDAR' },
+    { id:'local', ambito:'barrio', barrio:'Demo', nombre:'Grupo', telefono:'999' },
+    { id:'other', ambito:'barrio', barrio:'Otra zona', nombre:'Otro grupo' },
+  ]);
+  assert.equal(readSupportSnapshot(ana).contacts.length, 2);
+  assert.equal(JSON.stringify(readSupportSnapshot(ana)).includes('NO GUARDAR'), false);
+  assert.equal(readSupportSnapshot({ ...ana, barrio:'Otra zona' }), null);
+  assert.equal(readSupportSnapshot({ ...ana, id:'luis' }), null);
   clearOfflineAccount(ana);
+  assert.equal(readSupportSnapshot(ana), null);
   assert.equal(readOfflineProfile(), null);
   assert.equal(readSnapshot(ana), null);
   assert.equal(readDraft(ana), null);

@@ -35,11 +35,17 @@ test('copia guardada sin mensajes y borrador persistente, sin publicar ni recone
   await page.evaluate(() => {
     const profile = { id: 'offline-user', nombre: 'Ana', barrio: 'Barrio Demo' };
     localStorage.setItem('una-manito-offline-profile-v1', JSON.stringify(profile));
+    localStorage.setItem('una-manito-offline-v1:support:offline-user:Barrio%20Demo', JSON.stringify({ savedAt:'2026-11-07T12:00:00Z', contacts:[{ id:'policia', nombre:'Policía Nacional guardada', descripcion:'Central policial.', ambito:'nacional', telefono:'105', fuente_url:'https://www.gob.pe/pnp', revisado_en:'2026-11-07' }] }));
     localStorage.setItem('una-manito-offline-v1:publications:offline-user:Barrio%20Demo', JSON.stringify({ savedAt: new Date().toISOString(), publicaciones: [{ id: 'p', autor_id: 'otro', tipo: 'solicitud', titulo: 'Escalera de la copia guardada', descripcion: 'Una publicación pública guardada para consulta.', categoria: 'Herramientas', barrio: 'Barrio Demo', estado: 'pendiente', cupos: 1, primera_respuesta_en: new Date().toISOString() }] }));
   });
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByText('Copia de consulta', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name:'Apoyo en emergencia', exact:true }).filter({ visible:true }).first().click();
+  await page.getByRole('group', { name:'Explorar apoyo en emergencia' }).getByRole('button', { name:'Directorio de apoyo', exact:true }).click();
+  await expect(page.getByRole('heading', { name:'Policía Nacional guardada' })).toBeVisible();
+  await expect(page.getByRole('region', { name:'Directorio de apoyo', exact:true }).getByText(/Copia guardada el/)).toBeVisible();
+  await page.getByRole('button', { name:'Mi barrio', exact:true }).filter({ visible:true }).first().click();
   await page.getByRole('button').filter({ has: page.getByRole('heading', { name: 'Escalera de la copia guardada' }) }).click();
   await expect(page.getByRole('button', { name: 'Yo te ayudo', exact: true })).toBeDisabled();
   await expect(page.getByLabel('Tu mensaje', { exact: true })).toBeDisabled();
