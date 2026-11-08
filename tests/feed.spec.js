@@ -30,8 +30,8 @@ test('inicio compacto: publicaciones visibles sin desplazarse y filtros independ
   await expect(first).toBeVisible();
   const firstTitle = first.getByRole('heading');
   const titleBox = await firstTitle.boundingBox();
-  expect(titleBox.y + titleBox.height).toBeLessThan(testInfo.project.use.viewport.height - 90);
   await page.screenshot({ path:`../una-manito-inicio-simple-${testInfo.project.name}.png`, fullPage:true });
+  expect(titleBox.y + titleBox.height).toBeLessThan(testInfo.project.use.viewport.height - 90);
   const filters = page.getByRole('group', { name:'Filtrar publicaciones del barrio' });
   await filters.getByRole('button', { name:'Necesitan ayuda', exact:true }).click();
   await expect(page.getByRole('heading', { name:'¿Me prestas una escalera?', exact:true })).toBeVisible();

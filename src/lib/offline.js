@@ -38,7 +38,7 @@ export function clearOfflineAccount(account) {
   if (readOfflineProfile()?.id === account.id) localStorage.removeItem(OFFLINE_PROFILE);
   for (let index = localStorage.length - 1; index >= 0; index--) {
     const name = localStorage.key(index);
-    if (name?.startsWith(`${prefix}publications:${account.id}:`) || name?.startsWith(`${prefix}draft:${account.id}:`) || name?.startsWith(`${prefix}support:${account.id}:`)) localStorage.removeItem(name);
+    if (name?.startsWith(`${prefix}publications:${account.id}:`) || name?.startsWith(`${prefix}draft:${account.id}:`) || name?.startsWith(`${prefix}support:${account.id}:`) || name?.startsWith(`una-manito-avisos-leidos:${account.id}:`)) localStorage.removeItem(name);
   }
 }
 
