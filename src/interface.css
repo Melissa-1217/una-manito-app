@@ -16,8 +16,8 @@
 .notice, .auth-error, .privacy, .emergency-note { border-radius:var(--ui-radius); font-size:14px; line-height:1.6; overflow-wrap:anywhere; }
 .ai-hint, .draft-note, .inline-manito>small, .voice-dictation>small, .voice-unavailable { font-size:12px; line-height:1.6; }
 .ai-proposal, .voice-review, .tutorial-speech, .chat-result { border-radius:var(--ui-panel-radius); }
-.neighbor-dialog, .welcome-dialog { border-radius:20px; }
-.neighbor-dialog h2, .welcome-dialog h2, .tutorial-speech h2 { font-size:24px; line-height:1.3; }
+.neighbor-dialog { border-radius:20px; }
+.neighbor-dialog h2, .tutorial-speech h2 { font-size:24px; line-height:1.3; }
 .neighbor-dialog { max-height:calc(100dvh - 32px); overflow:auto; }
 .neighbor-dialog blockquote { margin:14px 0; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--ui-radius); }
 .neighbor-dialog blockquote p { margin:10px 0; }

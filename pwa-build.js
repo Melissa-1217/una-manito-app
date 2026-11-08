@@ -6,7 +6,7 @@ export default function pwaBuild() {
   return {
     name: 'una-manito-pwa', enforce: 'post', apply: 'build',
     generateBundle(_options, bundle) {
-      const publicFiles = ['manifest.webmanifest','icon.svg','icon-192.png','icon-512.png','apple-touch-icon.png','manolito-avatar.png','manolito-ayuda.png','manolito-barrio.png'];
+      const publicFiles = ['manifest.webmanifest','icon.svg','icon-192.png','icon-512.png','apple-touch-icon.png','manolito-logo.jpg','manolito-avatar.png','manolito-ayuda.png','manolito-barrio.png'];
       const assets = Object.keys(bundle).filter(name => /\.(js|css|woff2)$/.test(name));
       const files = ['/index.html', ...assets.map(name => `/${name}`), ...publicFiles.map(name => `/${name}`)];
       const hash = createHash('sha256').update(readFileSync('index.html'));

@@ -4,11 +4,14 @@ import AxeBuilder from '@axe-core/playwright';
 
 test('primera entrada: bienvenida accesible, se cierra y no reaparece al recargar', async ({ page }, testInfo) => {
   await page.goto('/');
-  await page.evaluate(() => { localStorage.setItem('una-manito-welcome-v1','seen'); localStorage.removeItem('una-manito-welcome-v2'); });
+  await page.evaluate(() => { localStorage.setItem('una-manito-welcome-v2','seen'); localStorage.removeItem('una-manito-welcome-v3'); });
   await page.getByRole('button', { name:'Explorar demostración' }).click();
   const dialog = page.getByRole('dialog', { name:'¡Hola, Ana!' });
   await expect(dialog).toBeVisible();
+  const viewport = page.viewportSize();
+  expect(await dialog.boundingBox()).toEqual({ x: 0, y: 0, ...viewport });
   await expect(page.getByRole('button', { name:'Ver las manitos' })).toBeFocused();
+  await dialog.getByRole('button', { name: 'Mantener abierta' }).click();
   expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
   await page.screenshot({ path:`../una-manito-bienvenida-${testInfo.project.name}.png`, fullPage:true });
   await page.keyboard.press('Escape');
@@ -22,6 +25,42 @@ test('primera entrada: bienvenida accesible, se cierra y no reaparece al recarga
   await page.getByRole('button', { name:'Cerrar bienvenida', exact:true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('button', { name:'Abrir perfil', exact:true })).toBeFocused();
+});
+
+test('la bienvenida espera para cerrar y permite mantenerla abierta', async ({ page }) => {
+  await page.clock.install();
+  await page.goto('/');
+  await page.evaluate(() => localStorage.removeItem('una-manito-welcome-v3'));
+  await page.getByRole('button', { name: 'Explorar demostración' }).click();
+  const dialog = page.getByRole('dialog', { name: '¡Hola, Ana!' });
+  const pause = dialog.getByRole('button', { name: 'Mantener abierta' });
+  await pause.click();
+  await page.clock.fastForward(20000);
+  await expect(dialog).toBeVisible();
+  await expect(pause).toHaveAttribute('aria-pressed', 'true');
+  await pause.click();
+  await page.clock.fastForward(4000);
+  await expect(dialog).toHaveAttribute('data-closing', 'false');
+  await page.clock.fastForward(800);
+  await expect(dialog).toHaveAttribute('data-closing', 'true');
+  await page.clock.runFor(350);
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Publicaciones recientes' })).toBeVisible();
+});
+
+test('el logo vuelve al inicio y el acceso de emergencia abre las cuatro tarjetas', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Explorar demostración' }).click();
+  const header = page.getByRole('banner');
+  const logo = header.getByRole('button', { name: 'Una Manito, ir al inicio' });
+  await expect.poll(() => logo.locator('img').evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+  await header.getByRole('button', { name: 'Chat con Manolito', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('button', { name: 'Cerrar chat' }).click();
+  await header.getByRole('button', { name: 'Abrir emergencias' }).click();
+  await expect(page.getByRole('group', { name: 'Opciones de emergencia' }).getByRole('button')).toHaveCount(4);
+  await logo.click();
+  await expect(page.getByRole('heading', { name: 'Publicaciones recientes' })).toBeVisible();
 });
 
 test('inicio compacto: publicaciones visibles sin desplazarse y filtros independientes de servicios', async ({ page }, testInfo) => {
@@ -73,7 +112,7 @@ test('carga real: muestra progreso, avisa después de cinco segundos y retira el
 
 test('primera entrada permite abrir directamente el tutorial de Manolito', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => localStorage.removeItem('una-manito-welcome-v2'));
+  await page.evaluate(() => localStorage.removeItem('una-manito-welcome-v3'));
   await page.getByRole('button', { name:'Explorar demostración' }).click();
   await page.getByRole('button', { name:'Ver tutorial', exact:true }).click();
   await expect(page.getByRole('heading', { name:'Hola, soy Manolito', exact:true })).toBeVisible();

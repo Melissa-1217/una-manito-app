@@ -25,8 +25,8 @@ import PublicationMap from './components/PublicationMap.jsx';
 import { distanceKm, formatDistance } from './lib/location.js';
 import { sendResponse, acceptResponse } from './lib/responses.js';
 import ManitoChat from './components/ManitoChat.jsx';
-import { useEffect, useRef, useState } from 'react';
-import { Gift, LogOut, UserRound, Menu, House, Wrench, Plus, ClipboardList, HandHeart, MapPin, ArrowRight, ArrowLeft, Search, ShieldCheck, AlertTriangle, Check, RotateCcw, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Gift, LogOut, UserRound, Menu, MessageCircle, House, Wrench, Plus, ClipboardList, HandHeart, MapPin, ArrowRight, ArrowLeft, Search, ShieldCheck, AlertTriangle, Check, RotateCcw, X } from 'lucide-react';
 import PublicationCard, { statusLabels } from './components/PublicationCard.jsx';
 import AiPublicationAssistant from './components/AiPublicationAssistant.jsx';
 import { listPublications, createPublication, closePublication, changePublicationLifecycle } from './lib/publications.js';
@@ -72,8 +72,11 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
   const [view, setView] = useState('inicio');
   const [openPanel, setOpenPanel] = useState(null);
   const [homeFilter, setHomeFilter] = useState('todas');
-  const [welcome, setWelcome] = useState(() => { try { return !localStorage.getItem('una-manito-welcome-v2'); } catch { return true; } });
-  function closeWelcome() { setWelcome(false); try { localStorage.setItem('una-manito-welcome-v2', 'seen'); } catch { /* Se puede continuar sin almacenamiento. */ } }
+  const [welcome, setWelcome] = useState(() => { try { return localStorage.getItem('una-manito-welcome-v3') ? null : 'auto'; } catch { return 'auto'; } });
+  const closeWelcome = useCallback(() => {
+    setWelcome(null);
+    try { localStorage.setItem('una-manito-welcome-v3', 'seen'); } catch { /* Se puede continuar sin almacenamiento. */ }
+  }, []);
   const [activityTab, setActivityTab] = useState('activas');
   const [emergencyTab, setEmergencyTab] = useState('necesidades');
   const [now, setNow] = useState(Date.now);
@@ -279,11 +282,14 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
 
   return <><div className="app-shell">
     <div className="workspace">
-      {welcome && <WelcomeDialog name={people[user]} onClose={closeWelcome} onTutorial={() => { closeWelcome(); setChat({ mode: 'guia' }); }}/>}
+      {welcome && <WelcomeDialog name={people[user]} autoDismiss={welcome === 'auto'} onClose={closeWelcome} onTutorial={() => { closeWelcome(); setChat({ mode: 'guia' }); }}/>}
       <header className="topbar">
         <div className="topbar-community">
-          <span className="topbar-brand">Una Manito</span>
-          <span className="topbar-location"><MapPin size={16} aria-hidden="true"/>{neighborhood}</span>
+          <button type="button" className="topbar-brand" aria-label="Una Manito, ir al inicio" onClick={() => { navigate('inicio'); window.scrollTo(0, 0); }}>
+            <img src="/manolito-logo.jpg" alt="" width="44" height="44"/>
+            <span>Una Manito</span>
+          </button>
+          <span className="topbar-location"><MapPin size={14} aria-hidden="true"/>{neighborhood}</span>
         </div>
         <div className="topbar-actions">
           {!account && <label className="user-switch">
@@ -292,13 +298,21 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
               <option value="luis">Luis · demo</option>
             </select>
           </label>}
-          <AlertBell account={account} online={online && !offlineSession} onOpen={() => navigate('avisos')}/>
-          <button className="topbar-control profile-toggle" aria-label="Abrir perfil" aria-expanded={openPanel === 'perfil'} aria-haspopup="dialog" aria-controls={openPanel === 'perfil' ? 'profile-panel' : undefined} onClick={() => setOpenPanel('perfil')}>
-            <span className="avatar" aria-hidden="true">{people[user][0]}</span>
-          </button>
-          <button className="topbar-control menu-toggle" aria-label="Abrir menú" aria-expanded={openPanel === 'menu'} aria-haspopup="dialog" aria-controls={openPanel === 'menu' ? 'navigation-panel' : undefined} onClick={() => setOpenPanel('menu')}>
-            <Menu size={22} aria-hidden="true"/><span>Menú</span>
-          </button>
+          <div className="topbar-tools">
+            <button className="topbar-control" aria-label="Chat con Manolito" title="Chat con Manolito" aria-haspopup="dialog" onClick={event => setChat({ mode: null, returnFocus: event.currentTarget })}>
+              <MessageCircle size={21} aria-hidden="true"/>
+            </button>
+            <button className="topbar-control topbar-emergency" aria-label="Abrir emergencias" title="Emergencias" onClick={() => { navigate('emergencia'); window.scrollTo(0, 0); }}>
+              <AlertTriangle size={21} aria-hidden="true"/>
+            </button>
+            <AlertBell account={account} online={online && !offlineSession} onOpen={() => navigate('avisos')}/>
+            <button className="topbar-control profile-toggle" aria-label="Abrir perfil" aria-expanded={openPanel === 'perfil'} aria-haspopup="dialog" aria-controls={openPanel === 'perfil' ? 'profile-panel' : undefined} onClick={() => setOpenPanel('perfil')}>
+              <span className="avatar" aria-hidden="true">{people[user][0]}</span>
+            </button>
+            <button className="topbar-control menu-toggle" aria-label="Abrir menú" aria-expanded={openPanel === 'menu'} aria-haspopup="dialog" aria-controls={openPanel === 'menu' ? 'navigation-panel' : undefined} onClick={() => setOpenPanel('menu')}>
+              <Menu size={22} aria-hidden="true"/><span>Menú</span>
+            </button>
+          </div>
         </div>
       </header>
       <div className="demo-banner"><span><strong>{account ? readOnly ? 'Copia de consulta' : 'Cuenta conectada' : 'Demostración'}</strong>{!account && <span className="demo-description"> · Datos de ejemplo</span>}</span>{account ? <button disabled={loading || saving || !online || offlineSession} onClick={refreshPublications} aria-label={loading ? 'Actualizando publicaciones' : 'Actualizar publicaciones'}><RotateCcw size={16}/><span className="refresh-caption">{loading ? 'Actualizando…' : 'Actualizar'}</span></button> : <details className="demo-options"><summary>Opciones demo</summary><div><button onClick={() => { if (window.confirm('¿Restablecer los datos de ejemplo? Se borrarán las publicaciones de esta demo local.')) { setData(initializeDemoDates(structuredClone(initialData))); navigate('inicio'); } }}>Reiniciar demo</button><button onClick={onExitDemo}>Volver al acceso</button></div></details>}</div>
@@ -356,7 +370,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
         onManual={(mode, savedDraft) => { setChat(null); if (mode === 'busqueda') navigate('servicios'); else startPublication(mode, false, savedDraft); }}
       />}
     </div>
-    {view === 'inicio' && !selected && <button className="manolito-bubble" aria-label="Chat con Manolito" title="Hablar con Manolito" hidden={Boolean(chat || openPanel || welcome || conversationId)} onClick={event => setChat({mode:null,returnFocus:event.currentTarget})}><img src="/manolito-avatar.png" alt=""/></button>}
+    {view === 'inicio' && !selected && <button className="manolito-bubble" aria-label="Hablar con Manolito" title="Hablar con Manolito" hidden={Boolean(chat || openPanel || welcome || conversationId)} onClick={event => setChat({mode:null,returnFocus:event.currentTarget})}><img src="/manolito-avatar.png" alt=""/></button>}
     {openPanel === 'menu' && <SidePanel id="navigation-panel" title="Menú" closeLabel="Cerrar menú" onClose={() => setOpenPanel(null)}>
       <nav aria-label="Navegación principal">{navItems.map(({ id, label, icon: Icon }) => {
         const isForm = id === 'solicitud' || id === 'ofrecimiento';
@@ -382,7 +396,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
           setOpenPanel(null);
           onChangeNeighborhood?.();
         }}><span className="menu-icon"><MapPin size={22} aria-hidden="true"/></span><span>Cambiar barrio</span></button>}
-        <button onClick={() => { setOpenPanel(null); setWelcome(true); }}><span className="menu-icon"><HandHeart size={22} aria-hidden="true"/></span><span>Ver bienvenida</span></button>
+        <button onClick={() => { setOpenPanel(null); setWelcome('manual'); }}><span className="menu-icon"><HandHeart size={22} aria-hidden="true"/></span><span>Ver bienvenida</span></button>
       </nav>
       <button className="menu-exit" onClick={() => {
         setOpenPanel(null);

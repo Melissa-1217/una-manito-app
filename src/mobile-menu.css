@@ -1,5 +1,8 @@
-.topbar-brand { display:block; color:var(--primary); font-weight:800; font-size:20px; margin-bottom:3px; }
+.topbar-brand { display:flex; align-items:center; gap:9px; color:var(--primary); font-weight:800; font-size:20px; text-align:left; margin-bottom:3px; }
+.topbar-brand img { flex:none; border-radius:12px; object-fit:cover; }
+.topbar-tools { display:flex; align-items:center; gap:9px; }
 .topbar-control { display:flex; align-items:center; justify-content:center; gap:6px; min-width:44px; min-height:44px; border:1px solid #c9d5c3; background:#edf2e8; border-radius:12px; padding:8px; color:var(--primary); }
+.topbar-emergency { background:#fae6df; border-color:#deb0a1; color:#8b321e; }
 .topbar-control.menu-toggle { font-size:14px; font-weight:700; }
 .topbar-control.profile-toggle { padding:0; background:transparent; border-color:transparent; }
 .app-menu { position:fixed; inset:0 0 0 auto; margin:0; border:0; border-left:1px solid #d9e1d3; width:min(360px,100vw); height:100dvh; max-height:100dvh; max-width:100vw; padding:20px; padding-bottom:max(24px,env(safe-area-inset-bottom)); background:var(--neutral); color:var(--primary); overflow:auto; box-shadow:-10px 0 50px #142c2426; animation:menu-enter .18s ease-out; }
@@ -34,6 +37,12 @@
   .user-switch select { max-width:95px; font-size:12px; }
 }
 @media(max-width:360px) { .menu-toggle span { display:none; } }
+@media(max-width:580px) {
+  .topbar { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 10px; padding-top:8px; padding-bottom:8px; }
+  .topbar-actions { display:contents; }
+  .topbar-actions .user-switch { grid-column:2; grid-row:1; }
+  .topbar-tools { grid-column:1/-1; justify-content:flex-end; gap:5px; }
+}
 @media(prefers-reduced-motion:reduce) { .app-menu { animation:none; } }
 
 .menu-exit { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; min-height:48px; margin-top:22px; background:#e8ece2; border:1px solid #cbd5c4; border-radius:12px; font-size:14px; }

@@ -5,7 +5,7 @@ import { navigateTo } from './navigation.js';
 test('inicio de publicaciones y burbuja de Manolito con foco restaurado',async({page},testInfo)=>{
   await page.goto('/');await page.getByRole('button',{name:'Explorar demostración'}).click();
   await expect(page.getByRole('heading',{name:'Publicaciones recientes',exact:true})).toBeVisible();
-  const bubble=page.getByRole('button',{name:'Chat con Manolito',exact:true});
+  const bubble=page.getByRole('button',{name:'Hablar con Manolito',exact:true});
   await expect(bubble).toBeVisible();
   expect(await bubble.evaluate(node=>getComputedStyle(node).position)).toBe('fixed');
   await page.screenshot({path:`../una-manito-inicio-intenciones-${testInfo.project.name}.png`,fullPage:false});
@@ -14,7 +14,7 @@ test('inicio de publicaciones y burbuja de Manolito con foco restaurado',async({
   await navigateTo(page,'Ofrecer una manito');
   await expect(page.getByRole('heading',{name:'Ofrecer una manito',exact:true})).toBeVisible();
   await expect(page.getByRole('textbox',{name:'¿Cómo puedes ayudar?',exact:true})).toBeVisible();
-  await expect(page.getByRole('button',{name:'Chat con Manolito',exact:true})).toHaveCount(0);
+  await expect(bubble).toHaveCount(0);
   await navigateTo(page,'Buscar un servicio');
   await page.getByRole('button',{name:'Publicar un servicio',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Publicar un servicio',exact:true})).toBeVisible();
