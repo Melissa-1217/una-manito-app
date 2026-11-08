@@ -12,7 +12,7 @@ test('emergencia: diseño integrado y opciones voluntarias conservan el borrador
  await expect(page.getByRole('textbox',{name:'¿Qué apoyo necesitas?',exact:true})).toHaveValue(text);
  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
  await page.screenshot({path:`../una-manito-emergencia-integrada-${info.project.name}.png`,fullPage:true});
- await page.reload();await page.getByRole('button',{name:'Explorar demostración'}).click();await navigateTo(page,'Continuar borrador');
+ await page.reload();await navigateTo(page,'Continuar borrador');
  await expect(page.getByRole('textbox',{name:'¿Qué apoyo necesitas?',exact:true})).toHaveValue(text);
  await expect(page.locator('.emergency-form-heading strong')).toHaveText('Incendio o siniestro');
  await page.getByRole('button',{name:'Revisar apoyo',exact:true}).click();

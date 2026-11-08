@@ -16,7 +16,6 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
     return route.fulfill({ json: { propuesta: { interpretacion: 'Buscar un gasfitero para revisar el caño', categoria: 'Gasfitería', terminos: ['gasfitero', 'caño'] } } });
   });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Dar una manito/ }).click();
 
   await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Presto escalera los sábados');
@@ -25,7 +24,6 @@ test('distingue ofrecer ayuda de buscar servicios y filtra publicaciones reales'
   await page.getByRole('button', { name: 'Usar propuesta en los campos' }).click();
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Presto una escalera');
   await page.goto('/');
-  await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: /Buscar un servicio/ }).click();
 
   await page.getByLabel('Buscar publicaciones').fill('Se rompió un caño');
@@ -41,7 +39,6 @@ test('revisa y aplica una propuesta de IA antes de publicar', async ({ page }) =
     await route.fulfill({ json: { propuesta: { titulo: 'Necesito un gasfitero', descripcion: 'Se rompió un caño y necesito un gasfitero cerca.', categoria: 'Gasfitería' } } });
   });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await page.getByRole('button', { name: 'Pedir una manito', exact: true }).click();
 
   await page.getByLabel(/(?:¿Qué (?:necesitas|servicio brindas)|¿Cómo puedes ayudar)\?/).fill('Veci se rompió un caño y necesito un gasfitero cerca.');
@@ -59,7 +56,6 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
-  await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await expect(page.getByRole('heading', { name: 'Publicaciones del barrio' })).toBeVisible();
   await page.screenshot({ path: `../una-manito-${testInfo.project.name}.png`, fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -88,7 +84,6 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   await page.getByRole('button', { name: 'Marcar como resuelta' }).click();
   await expect(page.getByText('Publicación resuelta.', { exact:true })).toBeVisible();
   await page.reload();
-  await page.getByRole('button', { name: 'Explorar demostración' }).click();
   await navigateTo(page, 'Mi actividad');
   await page.getByRole('button', { name: 'Historial', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Necesito un taladro por una hora' })).toBeVisible();

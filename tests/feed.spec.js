@@ -13,14 +13,20 @@ test('primera entrada: bienvenida accesible, se cierra y no reaparece al recarga
   await page.screenshot({ path:`../una-manito-bienvenida-${testInfo.project.name}.png`, fullPage:true });
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
+  const selector = page.getByLabel('Cambiar usuario de demostración');
+  await selector.selectOption('luis');
   await page.reload();
-  await page.getByRole('button', { name:'Explorar demostración' }).click();
+  await expect(selector).toHaveValue('luis');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('heading', { name:'Publicaciones del barrio', exact:true })).toBeVisible();
   await navigateTo(page, 'Ver bienvenida');
-  await expect(page.getByRole('dialog', { name:'¡Hola, Ana!' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name:'¡Hola, Luis!' })).toBeVisible();
   await page.getByRole('button', { name:'Cerrar bienvenida', exact:true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByText('Opciones demo', { exact: true }).click();
+  await page.getByRole('button', { name: 'Volver al acceso' }).click();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Entra a tu barrio' })).toBeVisible();
 });
 
 test('inicio compacto: publicaciones visibles sin desplazarse y filtros independientes de servicios', async ({ page }, testInfo) => {

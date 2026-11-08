@@ -45,7 +45,7 @@ for(const mode of ['donacion','intercambio'])test(`producto ${mode}: conserva mo
   await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();
   await page.getByRole('button',{name:'Volver a editar',exact:true}).click();
   await expect(page.getByRole('combobox',{name:'Modalidad',exact:true})).toHaveValue(mode);
-  await page.reload();await page.getByRole('button',{name:'Explorar demostración'}).click();await navigateTo(page,'Continuar borrador');
+  await page.reload();await navigateTo(page,'Continuar borrador');
   await expect(page.getByRole('combobox',{name:'Modalidad',exact:true})).toHaveValue(mode);
   await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();await page.getByRole('button',{name:'Publicar producto',exact:true}).click();
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('una-manito-demo-v1')).publicaciones[0].producto_modalidad)).toBe(mode);

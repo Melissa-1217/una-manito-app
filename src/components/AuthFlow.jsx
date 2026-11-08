@@ -144,7 +144,19 @@ export default function AuthFlow() {
   const client = useMemo(() => {
     try { return getSupabaseClient(); } catch { return null; }
   }, []);
-  const [demo, setDemo] = useState(false);
+  const [demoUser, setDemoUser] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('una-manito-demo-session');
+      return saved === 'ana' || saved === 'luis' ? saved : null;
+    } catch { return null; }
+  });
+  function changeDemoUser(user) {
+    setDemoUser(user);
+    try {
+      if (user) sessionStorage.setItem('una-manito-demo-session', user);
+      else sessionStorage.removeItem('una-manito-demo-session');
+    } catch { /* La demo sigue disponible en memoria. */ }
+  }
   const online = useOnline();
   const [offlineProfile, setOfflineProfile] = useState(readOfflineProfile);
   const [sessionResult, setSessionResult] = useState(null);
@@ -197,10 +209,10 @@ export default function AuthFlow() {
     try { saveOfflineProfile(profile); } catch { /* Offline storage is optional. */ }
   }
 
-  if (demo) return <App onExitDemo={() => setDemo(false)} />;
+  if (demoUser) return <App demoUser={demoUser} onDemoUserChange={changeDemoUser} onExitDemo={() => changeDemoUser(null)} />;
   if (!online && offlineProfile && !(session && profileResult?.profile && profileResult.userId === userId)) return <App key={`offline-${offlineProfile.id}-${offlineProfile.barrio}`} account={offlineProfile} offlineSession onSignOut={() => { try { clearOfflineAccount(offlineProfile); } catch { /* Storage may be unavailable. */ } setOfflineProfile(null); }} />;
   if (client && !sessionResult) return <AuthLayout><p role="status">Recuperando tu sesión…</p></AuthLayout>;
-  if (!session) return <Credentials client={client} onDemo={() => setDemo(true)} />;
+  if (!session) return <Credentials client={client} onDemo={() => changeDemoUser('ana')} />;
   if (profileResult?.userId !== userId || profileResult.attempt !== retry) return <AuthLayout><p role="status">Cargando tu perfil…</p></AuthLayout>;
   if (profileResult.error) return <AuthLayout><h1>Tu perfil está pendiente</h1><p role="alert">No pudimos consultar tu perfil. Revisa la conexión y los permisos de Supabase.</p><button className="button primary wide" onClick={() => setRetry(retry + 1)}>Volver a intentar</button><button className="text-button" onClick={signOut}>Cerrar sesión</button></AuthLayout>;
   if (!profileResult.profile) return <ChooseNeighborhood key={userId} client={client} session={session} onSaved={profileSaved} onSignOut={signOut} />;
