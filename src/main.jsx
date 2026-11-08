@@ -10,5 +10,6 @@ import './components/manolito.css';
 import './accessibility.css';
 import './pwa.css';
 import './experience.css';
+import './feed.css';
 
 createRoot(document.getElementById('root')).render(<React.StrictMode><SkipLink/><PwaControls/><AuthFlow /></React.StrictMode>);

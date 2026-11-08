@@ -27,7 +27,7 @@ for (const flow of [
 test('buscar por oficio y limpiar filtros permite recuperar servicios existentes', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await expect(page.getByText('Entre vecinos, nos damos una manito.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Publicaciones del barrio', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Busca un servicio', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   const categories = page.getByRole('group', { name: 'Filtrar servicios por oficio' });

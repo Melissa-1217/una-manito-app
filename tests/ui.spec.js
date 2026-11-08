@@ -57,7 +57,7 @@ test('publicar, responder con otro vecino, aceptar y resolver', async ({ page },
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
   await page.getByRole('button', { name: 'Explorar demostración' }).click();
-  await expect(page.getByRole('heading', { name: 'Hola, Ana' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Publicaciones del barrio' })).toBeVisible();
   await page.screenshot({ path: `../una-manito-${testInfo.project.name}.png`, fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   if (testInfo.project.name === 'mobile') await expect(page.getByRole('button', { name: 'Apoyo en emergencia', exact: true })).toBeVisible();
