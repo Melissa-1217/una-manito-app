@@ -57,6 +57,11 @@ test('cuenta sin perfil elige barrio, persiste y cierra sesión', async ({ page 
   await page.getByLabel('Barrio o sector').selectOption('San Miguel · Media Luna');
   await page.screenshot({ path: '../una-manito-elegir-barrio.png', fullPage: true });
   await page.getByRole('button', { name: 'Entrar a mi barrio', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '¡Hola, María!' })).toBeVisible();
+  await page.getByRole('button', { name: 'Ver las manitos' }).click();
+  await expect(page.getByRole('region', { name: 'Tutorial con Manolito' })).toBeVisible();
+  await page.getByRole('button', { name: 'Omitir tutorial' }).click();
+  expect(await page.evaluate(() => localStorage.getItem('una-manito-tutorial-v1-test-uid'))).toBe('seen');
   await expect(page.getByText('Cuenta conectada', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Cambiar usuario de demostración')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Escalera en mi barrio anterior' })).toBeVisible();
@@ -107,4 +112,44 @@ test('registro con confirmación pendiente dirige al correo', async ({ page }) =
   expect(await page.evaluate(() => window.registration.options.data)).toEqual({ nombre: 'Rosa' });
   await page.getByRole('button', { name: 'Ir a iniciar sesión' }).click();
   await expect(page.getByLabel('Contraseña', { exact: true })).toHaveValue('');
+});
+
+
+test('bienvenida y guía son propias de cada cuenta y se pueden reabrir', async ({ page }) => {
+  await page.route('**/src/lib/publications.js*', route => route.fulfill({ contentType: 'text/javascript', body: `
+    export async function listPublications(){return []}
+    export async function createPublication(){}
+    export async function changePublicationLifecycle(){}
+    export async function closePublication(){}
+  ` }));
+  await page.route('**/src/lib/supabase.js*', route => route.fulfill({ contentType: 'text/javascript', body: `
+    export function getSupabaseClient(){
+      const id=localStorage.getItem('test-active-account')||'first-account';
+      const profile={id,nombre:id==='first-account'?'Ana':'Luis',barrio:'Barrio Demo'};
+      return {
+        auth:{
+          onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
+          async getSession(){return {data:{session:{user:{id}}}}}
+        },
+        from(){return {select(){return {eq(){return {async maybeSingle(){return {data:profile,error:null}}}}}}}}
+      };
+    }
+  ` }));
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: '¡Hola, Ana!' })).toBeVisible();
+  await page.getByRole('button', { name: 'Cerrar bienvenida', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Tutorial con Manolito' })).toBeVisible();
+  await page.getByRole('button', { name: 'Omitir tutorial' }).click();
+  await page.reload();
+  await expect(page.getByText('Cuenta conectada', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '¡Hola, Ana!' })).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Tutorial con Manolito' })).toHaveCount(0);
+  await navigateTo(page, 'Cómo usar la app');
+  await expect(page.getByRole('region', { name: 'Tutorial con Manolito' })).toBeVisible();
+  await page.getByRole('button', { name: 'Omitir tutorial' }).click();
+  await page.evaluate(() => localStorage.setItem('test-active-account', 'second-account'));
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '¡Hola, Luis!' })).toBeVisible();
+  await page.getByRole('button', { name: 'Ver las manitos' }).click();
+  await expect(page.getByRole('region', { name: 'Tutorial con Manolito' })).toBeVisible();
 });

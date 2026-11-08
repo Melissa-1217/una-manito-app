@@ -66,8 +66,28 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
   const [view, setView] = useState('inicio');
   const [menuOpen, setMenuOpen] = useState(false);
   const [homeFilter, setHomeFilter] = useState('todas');
-  const [welcome, setWelcome] = useState(() => { try { return !localStorage.getItem('una-manito-welcome-v2'); } catch { return true; } });
-  function closeWelcome() { setWelcome(false); try { localStorage.setItem('una-manito-welcome-v2', 'seen'); } catch { /* Se puede continuar sin almacenamiento. */ } }
+  const welcomeKey = account ? `una-manito-welcome-v3-${account.id}` : 'una-manito-welcome-v2';
+  const tutorialKey = account ? `una-manito-tutorial-v1-${account.id}` : null;
+  const [tutorialPending, setTutorialPending] = useState(() => {
+    if (!account || offlineSession) return false;
+    try { return !localStorage.getItem(tutorialKey); } catch { return true; }
+  });
+  const [welcome, setWelcome] = useState(() => {
+    if (offlineSession) return false;
+    try { return tutorialPending || !localStorage.getItem(welcomeKey); } catch { return true; }
+  });
+  function closeWelcome() {
+    setWelcome(false);
+    try { localStorage.setItem(welcomeKey, 'seen'); } catch { /* Continuar en memoria. */ }
+    if (tutorialPending) setChat({ mode: 'guia' });
+  }
+  function closeChat() {
+    if (chat?.mode === 'guia' && tutorialPending) {
+      setTutorialPending(false);
+      try { localStorage.setItem(tutorialKey, 'seen'); } catch { /* Continuar en memoria. */ }
+    }
+    setChat(null);
+  }
   const [activityTab, setActivityTab] = useState('activas');
   const [emergencyTab, setEmergencyTab] = useState('necesidades');
   const [now, setNow] = useState(Date.now);
@@ -311,7 +331,7 @@ export default function App({ account, onSignOut, onExitDemo, onChangeNeighborho
         setData(result.data); return result.message;
       }} onClose={() => setConversationId(null)}/>}
       {chat && <ManitoChat returnFocusElement={chat.returnFocus} initialMode={chat.mode} name={people[user]} barrio={account?.barrio || emptyDraft.barrio}
-        posts={publications} readOnly={readOnly} saving={saving} loading={loading} onClose={() => setChat(null)} onPublish={publish}
+        posts={publications} readOnly={readOnly} saving={saving} loading={loading} onClose={closeChat} onPublish={publish}
         onOpen={id => { setChat(null); navigate('servicios'); open(id); }}
         onManual={(mode, savedDraft) => { setChat(null); if (mode === 'busqueda') navigate('servicios'); else startPublication(mode, false, savedDraft); }}
       />}
