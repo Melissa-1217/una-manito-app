@@ -30,7 +30,7 @@
   .topbar-community { min-width:0; flex:1; }
   .topbar-location { font-size:12px; }
   .topbar-actions { gap:5px; }
-  .workspace>main { padding-bottom:28px; }
+  .workspace main { padding-bottom:28px; }
   .feed { padding-bottom:20px; }
   html { scroll-padding-bottom:24px; }
   .user-switch { gap:3px; }

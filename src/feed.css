@@ -40,7 +40,7 @@
 .loading-row span:last-child { width:30%; margin:0; }
 @keyframes loading-pulse { to { opacity:.45; } }
 @media(max-width:760px) {
-  .workspace>main { padding-top:22px; }
+  .workspace main { padding-top:22px; }
   .feed { margin-top:8px; }
   .feed .section-heading { align-items:flex-start; flex-direction:column; gap:2px; }
   .feed-filters { width:100%; justify-content:space-between; gap:2px; }

@@ -29,6 +29,8 @@ main:has(.feed-heading) .card-footer, main:has(.feed-heading) .card-open { paddi
 
 .feed-heading { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px 16px; margin-bottom:12px; }
 .feed-heading .feed-title { margin:0; }
+.emergency-page { background-color:#f4ded4; }
+.workspace:has(> .emergency-page) > .topbar { background-color:#efd0c2; border-bottom-color:#d9ab99; }
 .emergency-menu,.emergency-contacts { max-width:800px; margin:0 auto 24px; }
 .emergency-menu>p { margin:8px 0 18px; color:var(--muted); }
 .emergency-options { display:grid; gap:10px; margin-bottom:16px; }
