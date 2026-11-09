@@ -16,14 +16,14 @@ El sábado hay una jornada de lectura en la biblioteca del barrio. Ana encuentra
   </tbody>
 </table>
 
-<p align="center"><em>Capturas de la aplicación con datos de demostración.</em></p>
+<p align="center"><em>Capturas de la aplicación con datos de demostración. La captura de la escalera ilustra el mismo flujo de préstamo que el carrito del caso de la biblioteca.</em></p>
 
 ## Recorrido para el jurado
 
-En la pantalla de acceso, pulsa **Explorar demostración** para probar el recorrido con Ana y Luis. La demo guarda los cambios en ese navegador. Las cuentas registradas comparten publicaciones mediante Supabase.
+En la pantalla de acceso, pulsa **Explorar demostración** para probar el recorrido con Ana y Luis. Para seguir el caso de la biblioteca, crea el pedido del carrito descrito a continuación; los ejemplos iniciales de la demo pueden mostrar otros objetos. La demo guarda los cambios en ese navegador. Las cuentas registradas comparten publicaciones mediante Supabase.
 
-1. **Buscar un servicio.** Entra en **Buscar un servicio**, busca gasfitería y abre el perfil del prestador. Las estrellas y los comentarios proceden de coordinaciones completadas. Cuatro o cinco estrellas expresan un **Visto Bueno Vecinal**. Su contador toma la última valoración de cada vecino. La consulta privada permite acordar precio y disponibilidad.
-2. **Resolver una necesidad.** Como Ana, elige **Pedir una manito**, escribe el pedido de la escalera, revísalo y publícalo. Desde Inicio son tres pulsaciones de botones para el recorrido básico, además de la escritura. Cambia a Luis y ofrece la escalera. Regresa a Ana, acepta la ayuda y marca el pedido como resuelto después de coordinar. Si dos personas responden por el último cupo, el cupo se ocupa al aceptar. La base de datos controla esa aceptación en una transacción.
+1. **Buscar un servicio.** Entra en **Buscar un servicio**, busca gasfitería, abre el perfil de Luis y consúltale si puede revisar la fuga de la biblioteca. Las estrellas y los comentarios proceden de coordinaciones completadas. Cuatro o cinco estrellas expresan un **Visto Bueno Vecinal**. Su contador toma la última valoración de cada vecino. La consulta privada permite acordar precio y disponibilidad.
+2. **Resolver una necesidad.** Como Ana, elige **Pedir una manito**, escribe el pedido de un carrito para trasladar las seis cajas de libros a una sala seca de la biblioteca, revísalo y publícalo. Desde Inicio son tres pulsaciones de botones para el recorrido básico, además de la escritura. Cambia a Luis y ofrece llevar su carrito. Regresa a Ana, acepta la ayuda y marca el pedido como resuelto después de coordinar. Si dos personas responden por el último cupo, el cupo se ocupa al aceptar. La base de datos controla esa aceptación en una transacción.
 3. **Coordinar una emergencia.** Abre **Apoyo en emergencia** para consultar necesidades, recursos y contactos. **Avisar al barrio** permite enviar un reporte con foto opcional. El reporte queda privado hasta que un revisor autorizado decide qué compartir. El aviso aprobado aparece dentro de la aplicación para ese barrio.
 
 ## Qué más se puede probar
