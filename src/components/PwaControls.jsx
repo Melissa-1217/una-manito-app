@@ -25,6 +25,6 @@ export default function PwaControls() {
     {!standalone && (install ? <button className="button secondary" onClick={async () => {
       try { await install.prompt(); await install.userChoice; } catch { setError('Abre el menú del navegador para instalar la app.'); }
       setInstall(null);
-    }}>Instalar app</button> : <details className="pwa-install-help"><summary>Instalar app</summary><p>En Android o computadora, abre el menú del navegador y busca «Instalar app». En iPhone o iPad, abre Safari → Compartir → Añadir a pantalla de inicio. La opción depende del navegador.</p></details>)}
+    }}>Instalar app</button> : <details className="pwa-install-help"><summary>Cómo instalar la app</summary><p>Abre esta página directamente en Chrome o Safari si la estás viendo dentro de otra aplicación.</p><p>Android: en Chrome, pulsa ⋮ y elige «Añadir a la pantalla principal» o «Instalar aplicación». En iPhone: en Safari, pulsa Compartir → Añadir a pantalla de inicio. En computadora: busca el icono de instalación en la barra de direcciones de Chrome o Edge.</p></details>)}
   </aside>;
 }

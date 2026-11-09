@@ -18,3 +18,15 @@ test('mi perfil reúne identidad y actividad de la cuenta elegida sin inventar r
   await profile.getByRole('button', { name:'Ver mi actividad', exact:true }).click();
   await expect(page.getByRole('heading', { name:'Mi actividad', exact:true })).toBeVisible();
 });
+
+test('la publicación de la demo abre el perfil de su autora', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Explorar demostración' }).click();
+  await page.getByRole('heading', { name: '¿Me prestas una escalera?' }).click();
+  await page.getByRole('button', { name: 'Ver perfil de Ana', exact: true }).click();
+  const profile = page.getByRole('dialog', { name: 'Perfil vecinal' });
+  await expect(profile.getByRole('heading', { name: 'Ana', exact: true })).toBeVisible();
+  await expect(profile.getByText(/Barrio Demo/)).toBeVisible();
+  await profile.getByRole('button', { name: 'Cerrar perfil' }).click();
+  await expect(page.getByRole('heading', { name: '¿Me prestas una escalera?' })).toBeVisible();
+});

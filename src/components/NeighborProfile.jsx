@@ -17,33 +17,37 @@ export function RatingHistory({ reviews }) {
   </>;
 }
 
-function ProfileDialog({ id, onClose }) {
+function ProfileDialog({ id, name, localProfile, onClose }) {
   const dialog = useRef(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const useRemoteProfile = !localProfile;
   useEffect(() => {
     const node = dialog.current;
     const previous = document.activeElement;
     node.showModal();
     let active = true;
-    loadNeighbor(id).then(data => { if (active) setResult(data); }).catch(() => {
+    if (useRemoteProfile) loadNeighbor(id).then(data => { if (active) setResult(data); }).catch(() => {
       if (active) setError('No pudimos consultar las referencias. Intenta más tarde.');
     });
     return () => { active = false; node.close(); if (previous instanceof HTMLElement && previous.isConnected) previous.focus(); };
-  }, [id]);
+  }, [id, useRemoteProfile]);
   return <dialog className="neighbor-dialog" ref={dialog} onCancel={event => { event.preventDefault(); onClose(); }} aria-label="Perfil vecinal">
     <button className="neighbor-close" aria-label="Cerrar perfil" onClick={onClose}><X size={22}/></button>
-    {error ? <p role="alert">{error}</p> : !result ? <p role="status">Consultando referencias…</p> : <>
+    {localProfile ? <>
+      <h2>{name}</h2><p>{localProfile.barrio} · Zona de la publicación</p>
+      {localProfile.history ? <p>{localProfile.history.total} ayudas completadas · {localProfile.history.neighbors} recomendaciones en la demo.</p> : <p>Conéctate para consultar las valoraciones actuales.</p>}
+    </> : error ? <p role="alert">{error}</p> : !result ? <p role="status">Consultando referencias…</p> : <>
       <h2>{result.profile.nombre}</h2><p className="muted">{result.profile.barrio} · Barrio elegido por el vecino</p>
       <RatingHistory reviews={result.recommendations}/>
     </>}
   </dialog>;
 }
 
-export default function NeighborProfile({ id, name }) {
+export default function NeighborProfile({ id, name, authorLink = false, localProfile = null }) {
   const [open, setOpen] = useState(false);
-  return <><button className="neighbor-link" onClick={() => setOpen(true)} type="button">Ver perfil de {name}</button>
-    {open && <ProfileDialog id={id} onClose={() => setOpen(false)}/>}</>;
+  return <><button className="neighbor-link" onClick={() => setOpen(true)} aria-label={`Ver perfil de ${name}`} type="button">{authorLink ? name : `Ver perfil de ${name}`}</button>
+    {open && <ProfileDialog id={id} name={name} localProfile={localProfile} onClose={() => setOpen(false)}/>}</>;
 }
 
 export function RecommendAction({ publication, response, userId }) {
