@@ -3,7 +3,7 @@
 <h1 align="center">Una Manito</h1>
 <p align="center"><strong>Entre vecinos, nos damos una manito.</strong><br>Winners32 · Hackathon UTP 2026</p>
 
-Ana necesita una escalera por una tarde. Luis vive en su barrio y puede prestársela. Con Una Manito, Ana publica el pedido, acepta el ofrecimiento de Luis y ambos acuerdan la entrega por privado. La misma aplicación permite encontrar un gasfitero recomendado y coordinar recursos cuando el barrio enfrenta una emergencia.
+El sábado hay una jornada de lectura en la biblioteca del barrio. Ana encuentra una fuga junto a seis cajas de libros: necesita un gasfitero que revise el caño y un carrito para trasladarlas a una sala seca. Con Una Manito, consulta el servicio de gasfitería de Luis y publica el pedido del carrito; cuando Luis ofrece ayudar, Ana acepta y ambos coordinan por privado. Este caso de demostración conecta los servicios cercanos con la colaboración vecinal. La aplicación también permite coordinar necesidades y recursos durante emergencias y consultar avisos con revisión humana.
 
 <p align="center"><strong><a href="https://una-manito-app.vercel.app/">Abrir la aplicación</a> · <a href="docs/Presentacion-Winners32.pdf">Ver la presentación del MVP</a> · <a href="docs/ESTADO-MVP.md">Consultar el estado frente al reto</a></strong></p>
 
